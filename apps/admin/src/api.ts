@@ -40,6 +40,15 @@ function buildUrl(path: string, { params, query }: RequestParts): string {
   return encoded ? `${withParams}?${encoded}` : withParams;
 }
 
+/** A photo travels as its own bytes; everything else is JSON. */
+const isRaw = (body: unknown): body is Uint8Array => body instanceof Uint8Array;
+const bodyHeaders = (body: unknown): Record<string, string> =>
+  body === undefined
+    ? {}
+    : { 'content-type': isRaw(body) ? 'application/octet-stream' : 'application/json' };
+const encodeBody = (body: unknown): BodyInit =>
+  isRaw(body) ? (body as Uint8Array<ArrayBuffer>) : JSON.stringify(body);
+
 export async function call<K extends RouteName>(
   name: K,
   ...args: CallArgs<K>
@@ -52,8 +61,8 @@ export async function call<K extends RouteName>(
     response = await fetch(buildUrl(path, parts), {
       method,
       credentials: 'same-origin',
-      headers: parts.body !== undefined ? { 'content-type': 'application/json' } : {},
-      ...(parts.body !== undefined && { body: JSON.stringify(parts.body) }),
+      headers: bodyHeaders(parts.body),
+      ...(parts.body !== undefined && { body: encodeBody(parts.body) }),
     });
   } catch {
     throw new ApiRequestError('network', 0);

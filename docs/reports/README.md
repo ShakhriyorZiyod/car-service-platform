@@ -18,9 +18,9 @@ Qoidalar:
 |---|---|
 | 0. Poydevor | [bosqich-0.md](bosqich-0.md) |
 | 1. Kirish, rollar va rolga qarab ochilish | [bosqich-1.md](bosqich-1.md) |
-| 2. Ma'lumotnomalar va sozlamalar | — |
-| 3. Garaj va bron (mijoz) | — |
-| 4. Arizalarni boshqarish (admin) | — |
+| 2. Ma'lumotnomalar va sozlamalar | [bosqich-2.md](bosqich-2.md) |
+| 3. Garaj va bron (mijoz) | [bosqich-3.md](bosqich-3.md) |
+| 4. Arizalarni boshqarish (admin) | [bosqich-4.md](bosqich-4.md) |
 | 5. Qabul va ustalar ishi | — |
 | 6. Topshirish va to'lov | — |
 | 7. Ishga tushirish | — |

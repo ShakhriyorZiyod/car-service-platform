@@ -36,7 +36,8 @@ npm run db:generate -- --name <nom>      # sxema o'zgarganda; qo'lda SQL uchun: 
 npm run db:migrate
 ```
 
-Keyingi bosqichlarda qo'shiladi: `seed:reference` va `seed:demo` (2).
+Ma'lumotnomalar: `npm run seed:reference` (TZ 14.1, 14.2, 14.4; production'da ham, faqat bo'sh jadvalga) va
+`npm run seed:demo` (faqat dev; avval `seed:reference` va `owner:create` kerak).
 
 Mini App'da qaysi qism ochilishini faqat server aytadi. Boshqa rolni ko'rish uchun `dev:init-data` ni o'sha
 roldagi foydalanuvchining Telegram id'si bilan ishga tushiring (o'zgargach Vite'ni qayta ishga tushiring).

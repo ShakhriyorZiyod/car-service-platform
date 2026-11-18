@@ -71,9 +71,13 @@
   color: var(--text);
 }
 
-/* A link once the policy text and its address are in the settings (stage 2). */
 .onboarding__policy {
   font-weight: 600;
+}
+
+/* A link once the owner has entered the policy's address in the settings. */
+.onboarding__policy--link {
+  color: var(--accent-text);
 }
 
 .onboarding__actions {

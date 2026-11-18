@@ -193,7 +193,7 @@ murojaat qilmaydi: hammasi API orqali o'tadi.
 
 | Modul | Vazifasi | Egalik qiladigan jadvallar | Qaysi modullarga bog'liq |
 |---|---|---|---|
-| `identity` | Foydalanuvchilar, rollar, `initData`, onboarding, telefonni bog'lash, xodim logini, sessiya, 2FA, huquqlar, xodimlar | `users`, `user_roles`, `sessions`, `login_challenges` | `audit` |
+| `identity` | Foydalanuvchilar, rollar, `initData`, onboarding, telefonni bog'lash, xodim logini, sessiya, 2FA, huquqlar, xodimlar | `users`, `user_roles`, `sessions`, `login_challenges` | `audit`, `workshop` (rozilik versiyasi va `bootstrap` dagi ustaxona ma'lumoti) |
 | `audit` | O'zgarishni yozish, jurnalni o'qish | `audit_log` | — |
 | `workshop` | Ustaxona sozlamalari, ish vaqti, bayramlar, bokslar, ish vaqti hisobi | `settings`, `work_hours`, `holidays`, `boxes`, `box_service_types` | `audit` |
 | `catalog` | Markalar va modellar, xizmat turlari va zonalari, prays-matritsa, bekor qilish sabablari | `car_brands`, `car_models`, `service_types`, `services`, `service_excludes`, `service_prices`, `cancel_reasons` | `audit` |
@@ -567,9 +567,9 @@ Boks vaqtincha ta'mirda bo'lsa, bloklash bilan yopiladi (`bookings.kind = block`
 - **service_excludes** — `(service_id, excluded_service_id)`: "To'liq kuzov" tanlansa olib tashlanadigan
   zonalar. Ikkalasi bir xil xizmat turida bo'lishi kerak (app tekshiradi).
 - **service_prices** — `(service_id, body_class)` asosiy kalit, `price` bigint null (null — kelishiladi),
-  `duration_min` int > 0 (ish daqiqalari, ko'p kunli ish uchun ham).
+  `duration_min` int > 0 (ish daqiqalari, ko'p kunli ish uchun ham). Katak yo'q bo'lsa, zona shu sinfga taklif qilinmaydi. "Boshqa" (`is_custom`) zonaning narxi doim `null`.
 - **cancel_reasons** — `code` unique, `name_uz`, `name_ru`, `applies_to` enum(`client`, `staff`,
-  `system`), `requires_text`, `sort`, `is_active`. Boshlang'ich ro'yxat TZ 14.4 dan, `system` turida
+  `system`), `requires_text`, `sort`, `is_active`. `applies_to`: `client` — mijoz ham, xodim ham tanlay oladi; `staff` — faqat xodim; `system` — faqat tizim. Boshlang'ich ro'yxat TZ 14.4 dan, `system` turida
   `no_contact` ("Aloqa bo'lmadi").
 
 ### 7.6 garage
@@ -939,7 +939,8 @@ Yo'llar `packages/shared/src/routes`, sxemalar `contract` da. Guruhlar va autent
 | `POST /api/admin/orders/:id/call` | `confirmed`, `no_answer` yoki `rejected` (sabab) |
 | `PUT /api/admin/orders/:id/items` | Bandlar va narxlar (`in_work` gacha) |
 | `POST /api/admin/orders/:id/reschedule`, `.../cancel`, `.../no-show` | |
-| `GET /api/admin/availability`, `GET /api/admin/slots` | Mijozniki bilan bir xil algoritm |
+| `GET /api/admin/availability`, `GET /api/admin/slots` | Mijozniki bilan bir xil algoritm; xodimga eng yaqin bron qoidasi qo'llanmaydi (22-bo'lim) |
+| `GET /api/admin/catalog`, `GET /api/admin/cancel-reasons` | Ariza yaratish va tahrirlash uchun zonalar, markalar va sabablar |
 | `GET /api/admin/schedule?date`, `POST /api/admin/blocks`, `DELETE /api/admin/blocks/:id` | Jadval va bloklash |
 | `GET, PUT /api/admin/orders/:id/act`, `PUT .../act/photos/:mediaId`, `POST .../act/send`, `POST .../act/confirm-verbal`, `POST /api/admin/orders/:id/start-work` | Qabul |
 | `POST /api/admin/orders/:id/tasks`, `PATCH /api/admin/tasks/:id`, `POST .../accept`, `POST .../rework` | Vazifalar |
@@ -949,7 +950,10 @@ Yo'llar `packages/shared/src/routes`, sxemalar `contract` da. Guruhlar va autent
 | `GET, PUT /api/admin/settings` | Ustaxona va qoidalar |
 | `GET, PUT /api/admin/work-hours`, `POST, DELETE /api/admin/holidays` | Ish vaqti |
 | `GET, POST, PATCH /api/admin/boxes` | Bokslar va ularning xizmat turlari |
-| `GET, POST, PATCH /api/admin/brands`, `.../models`, `GET /api/admin/cars/unmapped`, `POST .../map` | Markalar va modellar |
+| `GET, POST, PATCH /api/admin/brands`, `POST, PATCH .../models` (modellar markaning ichida keladi) | Markalar va modellar |
+| `GET /api/admin/cars/unmapped`, `POST .../map` | "Boshqa" model bilan qo'shilgan mashinalar (4-bosqichda, mijoz kartasi bilan birga) |
+| `GET /api/admin/workshop` | Ustaxona nomi, manzili, telefoni: hamma panel roli o'qiydi |
+| `GET, PUT /api/admin/prices/:serviceTypeId`, `POST, PATCH /api/admin/services` | Prays-matritsa va zonalar (`GET /api/admin/service-types` ro'yxat uchun) |
 | `GET, POST, PATCH /api/admin/service-types`, `.../services`, `PUT /api/admin/prices/:serviceTypeId` | Xizmatlar va prays-matritsa |
 | `GET, POST, PATCH /api/admin/staff`, `PUT .../:id/password` | Xodimlar |
 | `GET /api/admin/audit?cursor` | Audit jurnali |
@@ -1047,10 +1051,10 @@ Docker yo'q, barbershop_bot bilan bir xil yondashuv:
 | № | Bosqich | Holat | Hisobot |
 |---|---|---|---|
 | 0 | Poydevor | Qabul qilindi | [bosqich-0.md](reports/bosqich-0.md) |
-| 1 | Kirish, rollar va rolga qarab ochilish | Bajarildi, qabul kutilmoqda | [bosqich-1.md](reports/bosqich-1.md) |
-| 2 | Ma'lumotnomalar va sozlamalar | — | — |
-| 3 | Garaj va bron (mijoz) | — | — |
-| 4 | Arizalarni boshqarish (admin) | — | — |
+| 1 | Kirish, rollar va rolga qarab ochilish | Qabul qilindi | [bosqich-1.md](reports/bosqich-1.md) |
+| 2 | Ma'lumotnomalar va sozlamalar | Qabul qilindi | [bosqich-2.md](reports/bosqich-2.md) |
+| 3 | Garaj va bron (mijoz) | Qabul qilindi | [bosqich-3.md](reports/bosqich-3.md) |
+| 4 | Arizalarni boshqarish (admin) | Qabul qilindi | [bosqich-4.md](reports/bosqich-4.md) |
 | 5 | Qabul va ustalar ishi | — | — |
 | 6 | Topshirish va to'lov | — | — |
 | 7 | Ishga tushirish | — | — |
@@ -1204,6 +1208,8 @@ eslatmalarni oladi.
   - qo'lda ariza (mijozni topish yoki yaratish, mashina, bandlar, vaqt, manba, "mijoz tasdiqladi");
   - `call-sla` va `reminders` vazifalari.
 - **`booking`:** kunlik jadval, bloklash.
+- **`garage` (3-bosqichdan ko'chdi):** admin uchun `GET /api/admin/cars/unmapped` va `POST .../map`
+  ("Boshqa" modelni haqiqiy modelga bog'lash, kuzov sinfini to'g'rilash).
 - **`clients`:** ro'yxat, filtrlar (hammasi, doimiy, 90 kundan beri kelmagan, Telegramsiz), karta,
   yaratish, ichki izoh, anonimlashtirish (egasi).
 - **`dashboard`:** hisoblagichlar, bugungi kelishlar.
@@ -1384,6 +1390,24 @@ Yangilari tepada.
 
 | Sana | Qaror | Sabab |
 |---|---|---|
+| 2026-11-18 | Tranzaksiya (yoki unga berilgan ulanish) ichidagi so'rovlar `Promise.all` bilan emas, ketma-ket bajariladi | Bitta ulanishga parallel so'rov `pg` 8 da ogohlantirish beradi va `pg` 9 da xato bo'ladi; testda topildi |
+| 2026-11-18 | Xodimlarga xabar (`staff.*`) adminlar va egasiga boradi (`platform/ports.ts` dagi `StaffDirectory`, uni `identity` beradi); rahbarga faqat `staff.order_unanswered` (4-bosqich) | Rahbar faqat o'qiydi: har yangi arizada uni bezovta qilmaslik. `orders` `identity` ga bog'lanmaydi |
+| 2026-11-18 | `client.*` guruhi: faqat `client` qismidagi foydalanuvchi (rolsiz yoki bloklangan xodim) va rozilik bergan odam; telefon tasdig'ini katalogdan boshqa har use-case o'zi tekshiradi (`phone_required`) | 4.7 va 13-bo'lim: telefonsiz katalogni ko'rish mumkin, garaj va bron telefon so'raydi |
+| 2026-11-18 | Mijoz faqat `applies_to = client` sabablarni beradi; "Boshqa" sabab matn talab qiladi; bekor qilish `WHERE status = <tekshirilgan>` bilan | Xodim sabablari (`cannot_perform`, `no_show`) va tizim sababi mijozga ochiq emas; bir vaqtdagi o'zgarish bekor bo'lib ketmasin |
+| 2026-11-18 | Mijoz ko'chirishni bir marta so'raydi (`reschedule_requested_at`); `canCancel` va `canRequestReschedule` serverdan keladi | 2-bo'lim, 13-qoida: klient qaror qilmaydi, faqat ko'rsatadi |
+| 2026-11-18 | Zonalar bir-birini chiqarib tashlasa (`To'liq kuzov` + `Kapot`), server so'rovni `service_unavailable` bilan rad etadi, jimgina olib tashlamaydi | Mijoz ikki marta to'lamasin; ilova `excludes` ro'yxati bo'yicha tanlovni o'zi tuzatadi, yakuniy tekshiruv serverda (4.10) |
+| 2026-11-18 | Bron ufqi: bugundan boshlab `horizonDays` ta kun (30 ta); `slotStepMin` qadami ochilishdan boshlanadi, tanaffusdagi vaqt berilmaydi; ish yopilishdan oshsa vaqt berilmaydi; bir kundan uzun ish faqat ochilish vaqtida boshlanadi | 10.2–10.3 ni aniq qilish; testlar bilan (`booking/domain/slots.ts`) |
+| 2026-11-18 | Yaratishda ariza avval yoziladi, boks oxirida band qilinadi; hamma boks band bo'lsa tranzaksiya qaytadi (`slot_taken`) va ariza qolmaydi. Bir xil `requestId` parallel kelsa ikkinchisi birinchi arizani qaytaradi | 10.4 va 2-bo'lim, 12-qoida; 100 parallel so'rov testi bilan tasdiqlandi |
+| 2026-11-18 | Outbox qatori `recipient_id` va `payload` (til va xabar nusxasi) saqlaydi; holatlari `pending`, `sent`, `skipped` (Telegramsiz yoki aloqasiz odam), `dead` (8 urinishdan keyin); worker har 2 soniyada, rejalashtiruvchi har daqiqada | 4.8-bo'lim; Telegramsiz mijozga yozilmaydi va xato chiqmaydi |
+| 2026-11-18 | Bron qoralamasi Telegram CloudStorage'da (zonalar va mashina), ariza yuborilganda o'chadi; brauzerda faqat dev'da `localStorage` | 1.3-bo'lim: serverda qoralama kodi kerak emas |
+| 2026-11-18 | Panelda ustaxona sozlamalarining hamma yozuvi auditga tushadi (sozlamalar, ish vaqti, bayramlar, bokslar, markalar, modellar, ish turlari, zonalar, prays); o'zgarmagan saqlash yozilmaydi. Prays auditida faqat o'zgargan kataklar, zona nomi bilan | Jurnal o'qiladigan bo'lsin: butun matritsa har safar yozilsa, kerakli o'zgarish ko'rinmay qoladi |
+| 2026-11-18 | Siyosat va xarita havolalari faqat `https://` | Havola Mini App'da `href` bo'ladi: `javascript:` kabi manzillar o'tmasin |
+| 2026-11-18 | Me'yoriy vaqt daqiqada kiritiladi, soat va daqiqada ko'rsatiladi ("1 s 21 d"); dizayndagi "3 ish kuni" ko'rinishi yo'q | Ish kuni uzunligi ish vaqtiga bog'liq va 3-bosqichda hisoblanadi; ko'rsatish uchun ikkinchi manba kerak emas |
+| 2026-11-18 | `seed:reference` har guruhni (markalar, ish turlari va zonalar, bekor qilish sabablari) faqat bo'sh jadvalga yozadi; ikki parallel ishga tushirish advisory lock bilan navbatlashadi. Yangi ma'lumotnoma qatori keyingi bosqichda kerak bo'lsa, migratsiya bilan qo'shiladi | Egasi nomini o'zgartirgan yoki yashirgan yozuv qayta paydo bo'lmasin, takrorlanmasin |
+| 2026-11-18 | `cancel_reasons.applies_to` bitta qiymat: `client` — mijoz ham, xodim ham, `staff` — faqat xodim, `system` — faqat tizim | Ro'yxatni ikkilantirmaslik; TZ 14.4 dagi to'qqiz sabab shu bilan sig'adi |
+| 2026-11-18 | Prays katagi yo'q bo'lsa, zona shu kuzov sinfiga taklif qilinmaydi; "Boshqa" zonaning narxi doim kelishiladi (`null`) | Yarim to'ldirilgan matritsa bilan ham slot va narx hisoblash aniq qoladi |
+| 2026-11-18 | `identity` `workshop` ga bog'liq: rozilik versiyasi va `bootstrap` dagi ustaxona ma'lumoti sozlamalardan keladi (T0 dagi siyosat havolaga aylanadi) | 1-bosqich hisoboti va 4.7-bo'lim shuni kutgan; bog'liqlik grafi tsiklsiz qoladi |
+| 2026-11-18 | `GET /api/admin/cars/unmapped` va `POST .../map` 4-bosqichga ko'chdi (2-bosqichdan 3-ga, undan 4-ga) | `cars` jadvali 3-bosqichda keldi, lekin admin ekrani (mijoz kartasi) 4-bosqichda |
 | 2026-11-18 | Telefon raqami Mini App'ning `requestContactComplete` xom javobidan olinadi; server imzoni bot tokeni bilan tekshiradi, `contact.user_id` so'rovchiga teng, javob ≤ 1 soat | Raqam Telegram tasdiqlagan bo'ladi va ilovaning gapiga ishonilmaydi; bot `contact` xabarini kutish kerak emas. Haqiqiy Telegram'da hali sinalmadi (hisobot) |
 | 2026-11-18 | 2-qadam kodi outbox'siz, darhol bot orqali; yetkazib bo'lmasa `two_factor_unavailable` va `bot_access = blocked`. Outbox, rejalashtiruvchi va `jobs` 3-bosqichga | Odam kodni ekranda kutadi, 5 daqiqadan keyin kod keraksiz: navbat va qayta urinish foyda bermaydi. 1-bosqichda outbox'ning boshqa foydalanuvchisi yo'q |
 | 2026-11-18 | Huquq use-case ichida tekshiriladi (`requirePermission`); admin route guruhi faqat sessiyani talab qiladi | Qoida bitta joyda va biznes-qoida testida sinaladi; route'dagi e'lon bilan ikki joyda yuritish kerak emas |
@@ -1435,3 +1459,20 @@ Yangilari tepada.
 | 2026-11-18 | Usta bo'lgan xodim Mini App'da faqat usta qismini ko'radi, admin rolida panel havolasi | Rolni almashtirish v2 da |
 | 2026-11-18 | Media: polimorf emas, nullable FK va `num_nonnulls = 1` CHECK | Baza yaxlitlikni o'zi tekshiradi |
 | 2026-11-18 | Admin panel 10 soniyada yangilanadi (polling) | WebSocket'siz yetarli; 19-bo'limda yo'li bor |
+| 2026-11-18 | Xodim "eshik oldidagi mijoz" uchun eng yaqin bron qoidasini (`minLeadMin`) chetlab o'tadi: qo'lda ariza, ko'chirish va bandlarni tahrirlashda. Panel ham shu vaqtlarni ko'rsatadi (`admin.slots`, `admin.availability`). O'tgan vaqtga, ish vaqtidan tashqariga va ufqdan keyinga bron qilib bo'lmaydi | Mijoz telefonda yoki ustaxonada turibdi; 10.3 faqat xodim uchun yumshaydi, qolgan qoidalar o'zgarmaydi |
+| 2026-11-18 | Bandlarni tahrirlash: arizada bor zona sotilgan narxini saqlaydi, yangi zona praysdan narxlanadi, admin yozgan narx ustun (`null` = kelishiladi). Bron `rebook` bilan qayta hisoblanadi (avval qaytariladi, keyin band qilinadi): sig'masa hamma o'zgarish qaytadi (`slot_taken`), eski bron qoladi. Faqat tugash vaqti o'zgarsa boshlanish vaqti qayta tekshirilmaydi (`keepStart`) | Prays o'zgarishi ochiq arizaga ta'sir qilmasin (10.4); ariza ikki bron bilan yoki bronsiz qolmasin |
+| 2026-11-18 | "Kelmadi" faqat tasdiqlangan arizada va slot boshlangandan keyin. Xodim `client` yoki `staff` sababini beradi, `system` sababini emas; "Rad etdi" va bekor qilish sababsiz o'tmaydi, "Boshqa" izoh talab qiladi | Slot boshlanmasdan "kelmadi" deb yozib bo'lmaydi (4-bosqich testi); tizim sababi odam tanlaydigan narsa emas |
+| 2026-11-18 | Qo'lda ariza: "mijoz tasdiqladi" belgisi bilan darhol `confirmed` (tarix `null → confirmed`, ushlab turish yo'q), belgisiz `new` va ushlab turiladi. Mijoz mavjud yoki yangi (ism va telefon, `phone_verified = false`); Telegramsiz mijozga xabar yozilmaydi, xato ham chiqmaydi | 9.1: telefonda tasdiqlangan ariza qayta qo'ng'iroq kutmaydi. Telefon Telegram tasdiqlamaguncha hisoblarni bog'lamaydi (2-bo'lim) |
+| 2026-11-18 | `call-sla`: ish vaqtidagi daqiqalar `callEscalateMin` ga yetsa, hech kim qo'ng'iroq qilmagan arizada `staff.order_unanswered` rahbar va egasiga bir marta ketadi; har qanday natijali qo'ng'iroqdan keyin ketmaydi. `reminders`: `rules.reminderHours` bo'yicha, faqat oynadan oldin tasdiqlangan arizaga va `remindersEnabled` da; kalit `reminder:<orderId>:<N>:<startsAt>`, shuning uchun ko'chirilgan ariza yangi vaqt uchun qayta eslatiladi | Tunda kelgan ariza ertalab "kech" bo'lmasin; bir xabar ikki marta ketmasin |
+| 2026-11-18 | Ariza `created_at` bazaning `now()` idan emas, `Clock` dan yoziladi | Kutish vaqti (taymer, SLA) va testlar bitta soat bo'yicha hisoblansin. Testda topildi |
+| 2026-11-18 | Ma'lumotni o'chirish (anonimlashtirish): ism, telefon, Telegram bog'lanishi va ichki izoh o'chadi, mashina raqami `ANON-…` bo'lib arxivga tushadi, arizadagi mashina nusxasida raqam "—". Ariza, bandlar va to'lovlar qoladi. Faqat egasi (`clients.anonymize`), qaytarib bo'lmaydi. Mijoz so'rovi (`POST /api/tma/me/deletion-request`) `deletion_requested_at` ni belgilaydi va egasiga bir marta xabar yozadi, qaror egasiniki. Bo'shagan telefonni boshqa kishi ishlatishi mumkin | TZ 15.3 va 2-bo'lim: ariza, to'lov, tarix va audit o'chirilmaydi, shaxsiy ma'lumot o'chadi |
+| 2026-11-18 | Mijozlar ro'yxati: "doimiy" — kamida 2 ta bajarilgan ariza; "90 kundan beri kelmagan" — oxirgi bajarilgan ariza 90 kundan eski va faol arizasi yo'q; "oxirgi kelish" — bajarilgan arizaning bron boshlanishi. Mijoz — roli ham, logini ham yo'q odam | PLAN 18 filtrlarni aytadi, chegarasini aytmaydi; eng oddiy talqin tanlandi |
+| 2026-11-18 | Mijozning ichki izohi jurnalga matni bilan yozilmaydi, faqat "izoh bor/yo'q" (`hasNote`) | Izohda shaxsiy gap bo'lishi mumkin, jurnalni ko'p odam o'qiydi |
+| 2026-11-18 | Faqat o'qiydigan rolga (rahbar) `actions` bayroqlari serverdan hammasi `false` keladi | Panel serverning gapini ko'rsatadi (2-bo'lim, 13-qoida); aks holda rahbarga bosilganda `forbidden` beradigan tugmalar chiqardi. Brauzer tekshiruvida topildi |
+| 2026-11-18 | `ScheduledTask` interfeysi `platform/ports.ts` da | `app` qatlami `jobs` ni import qila olmaydi (ESLint); rejalashtiruvchi ham, modul ham uni shu yerdan oladi |
+| 2026-11-18 | Soatni faqat server beradi: `admin.today` va `admin.schedule` javobida `now`; `admin.schedule` da `date` bo'lmasa bugun. Panel blok vaqtini ustaxonaning qat'iy +05:00 siljishi bilan UTC ga aylantirib yuboradi | Klient vaqtni hisoblamaydi (CLAUDE.md). `z.iso.datetime()` siljishli vaqtni qabul qilmaydi: brauzer tekshiruvida topildi |
+| 2026-11-18 | Yangi arizada ovoz: `NewOrderWatcher` har 10 soniyada ochiq arizalarni so'raydi (fon varaqada ham) va "Yangi" holatda yangi ariza chiqsa Web Audio bilan ikki ton chaladi; faqat `orders.write` bor xodimda | 18-bo'lim talabi; ovoz fayli kerak emas. Brauzer foydalanuvchi sahifani bosmaguncha ovozga ruxsat bermaydi |
+| 2026-11-18 | Panelning yuqori qidiruvi arizalarni qidiradi (`/orders?q=`: raqam, mijoz ismi yoki telefoni, davlat raqami); mijozlar ro'yxatining o'z qidiruvi bor. Kanban jarayondagi arizalarni ko'rsatadi (javobsiz yangilar doim); tugaganlari mijoz kartasida | Dizayn A1: "Raqam, telefon yoki davlat raqami" |
+| 2026-11-18 | `GET /api/admin/catalog` — mijoz katalogining xodim uchun nusxasi (zonalar, markalar, sabablar), `orders.read` bilan | Kanban filtri, yangi ariza va bandlarni tahrirlash zonalarni shundan oladi; ikkinchi manba yo'q |
+| 2026-11-18 | `garage.map`: "Boshqa" mashinani modelga bog'laydi; kuzov sinfi modeldan olinadi, admin to'g'rilashi mumkin; faqat modelsiz va arxivlanmagan mashina; audit `car.map` | PLAN 18 (4-bosqichga ko'chgan); sinfsiz narx va slot hisoblanmaydi |
+| 2026-11-18 | Arizaning kalendardagi o'rni — u hozir ushlab turgan bronning (bo'lmasa, oxirgi bronning) boshlanishi; ko'chirilganda qaytarilgan eski bron hisobga olinmaydi. "Bugun", ro'yxat sanasi va mijozning "oxirgi kelish"i shundan hisoblanadi | `max(starts_at)` ko'chirilgan arizani eski, kechroq kunda qoldirardi. Qo'lda tekshiruvda topildi, test bilan tasdiqlandi |

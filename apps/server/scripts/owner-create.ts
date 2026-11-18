@@ -13,6 +13,7 @@ import { loadConfig } from '../src/config';
 import { createDatabase } from '../src/db/client';
 import { createLogger } from '../src/logger';
 import { systemClock } from '../src/platform/clock';
+import { storageDeps } from '../src/storage';
 import { isAppError } from '../src/platform/errors';
 
 function readHidden(question: string): Promise<string> {
@@ -74,6 +75,7 @@ const services = createServices({
   initDataMaxAgeSeconds: INIT_DATA_MAX_AGE_SECONDS,
   adminUrl: config.urls?.admin ?? null,
   loginCodes: { send: () => Promise.reject(new Error('not used by this script')) },
+  ...storageDeps(config),
 });
 
 try {

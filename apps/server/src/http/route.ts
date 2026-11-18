@@ -38,7 +38,8 @@ export interface GroupOptions<Context> {
 
 /** PostgreSQL cannot store this character: left alone, it would come back as a server error. */
 const hasNullCharacter = (value: unknown): boolean =>
-  JSON.stringify(value ?? null).includes('\\u0000');
+  // A photo's bytes are anything at all; only text fields have this problem.
+  !(value instanceof Uint8Array) && JSON.stringify(value ?? null).includes('\\u0000');
 
 function parseField(schema: z.ZodType, value: unknown, field: string): unknown {
   if (hasNullCharacter(value)) throw new AppError('validation', `invalid request ${field}`);

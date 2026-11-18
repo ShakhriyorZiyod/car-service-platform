@@ -151,3 +151,174 @@
   font-size: 13px;
   font-weight: 700;
 }
+
+select.field__input {
+  padding-right: var(--space-2);
+}
+
+/* A checkbox with its words (settings forms). */
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  cursor: pointer;
+}
+
+.check input {
+  margin-top: 3px;
+  accent-color: var(--accent);
+}
+
+.check__text {
+  display: grid;
+}
+
+.check__text .muted {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+/* A list on the left, the chosen row's form on the right (brands, boxes). */
+.split {
+  display: grid;
+  grid-template-columns: minmax(280px, 2fr) minmax(380px, 3fr);
+  align-items: start;
+  gap: var(--space-5);
+}
+
+.split__list {
+  overflow: hidden;
+}
+
+.split__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.split__rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.split__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  border-top: 1px solid var(--border);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.split__row:hover {
+  background: var(--surface-muted);
+}
+
+.split__row.is-active {
+  background: var(--accent-soft);
+}
+
+.split__row-text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.split__row-name {
+  font-weight: 600;
+}
+
+.split__row-text .muted {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.split__editor {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+}
+
+.form-stack {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+/* The bar that keeps unsaved changes in view (docs/DESIGN.md, section 6). */
+.unsaved-bar {
+  position: sticky;
+  bottom: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--ink);
+  color: var(--on-ink);
+}
+
+.unsaved-bar__text {
+  margin: 0;
+}
+
+.unsaved-bar__actions {
+  display: flex;
+  flex: none;
+  gap: var(--space-2);
+}
+
+.unsaved-bar__cancel {
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--ink-raised);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--on-ink);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Filter pills (the kinds of work in the price list). */
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pill {
+  min-height: 36px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.pill.is-active {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--on-ink);
+}
+
+.pill.is-hidden {
+  color: var(--text-muted);
+  border-style: dashed;
+}

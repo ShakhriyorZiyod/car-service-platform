@@ -46,6 +46,8 @@ So'ng:
 ```bash
 npm run db:migrate
 npm run owner:create -- --phone=+998901234567 --login=owner --name="Ism Familiya"   # parolni so'raydi
+npm run seed:reference   # markalar, modellar, ish turlari va zonalar, bekor qilish sabablari (production'da ham)
+npm run seed:demo        # faqat dev: ish vaqti, 4 boks, narxlar, demo xodimlar (egasi va seed:reference kerak)
 ```
 
 Egasi panelga kirganda 2-qadam kodi Telegram botga keladi. Buning uchun egasi botni ochib, shu telefon
@@ -94,6 +96,7 @@ npm test               # TEST_DATABASE_URL bazasida
 npm run check:bundle   # build'dan keyin: Mini App tezlik byudjeti
 npm run db:generate -- --name <nom>   # sxema o'zgarganda; qo'lda SQL uchun --custom
 npm run db:migrate
+npm run seed:reference | seed:demo   # ma'lumotnomalar; seed:demo faqat dev
 ```
 
 Har bosqich oxirida `npm run check` yashil bo'lishi shart.

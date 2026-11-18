@@ -2,6 +2,7 @@ import '@cs/shared/tokens.css';
 import '@fontsource/barlow-semi-condensed/latin-600.css';
 import './styles/base.css';
 import './styles/components.css';
+import './styles/components-ui.css';
 import { DEFAULT_LANG, langFromCode, type Lang } from '@cs/shared/i18n';
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode, useEffect, useState } from 'react';

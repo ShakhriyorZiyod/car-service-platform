@@ -35,6 +35,8 @@ export const users = pgTable(
     fullName: text().notNull(),
     lang: langEnum().notNull().default('uz'),
     botAccess: botAccessEnum().notNull().default('unknown'),
+    /** The client wants reminders before a visit (T13). */
+    remindersEnabled: boolean().notNull().default(true),
     consentVersion: text(),
     consentAt: instant(),
     /** Lower-case; only for staff who sign in to the panel. */
@@ -42,6 +44,12 @@ export const users = pgTable(
     /** Argon2id. */
     passwordHash: text(),
     specialization: text(),
+    /** The admin's own words about a client; the client never sees it (design A10). */
+    internalNote: text(),
+    /** The client asked for their data to be erased (TZ 15.3); the owner decides. */
+    deletionRequestedAt: instant(),
+    /** Name, phone and Telegram were erased; orders and payments stay. */
+    anonymizedAt: instant(),
     /** Staff access switched off; their roles stay for the history but do nothing. */
     isBlocked: boolean().notNull().default(false),
     lastSeenAt: instant(),

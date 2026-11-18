@@ -24,6 +24,11 @@ const envSchema = z.object({
   HTTP_PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   /** The panel's session cookie travels only over HTTPS; by default on in production only. */
   COOKIE_SECURE: optional(z.enum(['true', 'false'])),
+
+  /** Where photos are kept on disk (docs/PLAN.md, section 4.9). */
+  UPLOADS_DIR: z.string().min(1).default('./data/uploads'),
+  /** Signs the photo links; at least 32 characters. Required in production. */
+  MEDIA_URL_SECRET: optional(z.string().min(32)),
 });
 
 /** Where people open the two clients (docs/PLAN.md, section 4.1). */
@@ -44,6 +49,12 @@ export interface Config {
   };
   http: { host: string; port: number };
   cookieSecure: boolean;
+  uploadsDir: string;
+  /**
+   * Absent in development: a random one is made at start, which only means that photo links stop
+   * working after a restart.
+   */
+  mediaUrlSecret: string | undefined;
 }
 
 export class ConfigError extends Error {
@@ -62,6 +73,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     throw new ConfigError(`Invalid environment variables:\n${z.prettifyError(parsed.error)}`);
   }
   const e = parsed.data;
+  if (e.NODE_ENV === 'production' && !e.MEDIA_URL_SECRET) {
+    throw new ConfigError('MEDIA_URL_SECRET is required in production.');
+  }
   return {
     env: e.NODE_ENV,
     logLevel: e.LOG_LEVEL,
@@ -70,6 +84,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     telegram: { botToken: e.TELEGRAM_BOT_TOKEN },
     http: { host: e.HTTP_HOST, port: e.HTTP_PORT },
     cookieSecure: e.COOKIE_SECURE ? e.COOKIE_SECURE === 'true' : e.NODE_ENV === 'production',
+    uploadsDir: e.UPLOADS_DIR,
+    mediaUrlSecret: e.MEDIA_URL_SECRET,
   };
 }
 

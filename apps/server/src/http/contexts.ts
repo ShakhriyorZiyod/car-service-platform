@@ -1,4 +1,4 @@
-import type { StaffActor, TmaActor } from '../platform/actors';
+import type { ClientActor, MasterActor, StaffActor, TmaActor } from '../platform/actors';
 import type { GroupRoutes } from './route';
 
 /**
@@ -8,6 +8,16 @@ import type { GroupRoutes } from './route';
 
 export interface TmaContext {
   actor: TmaActor;
+}
+
+/** A client in the Mini App: consent given, no staff role (a verified phone is checked per use case). */
+export interface ClientContext {
+  actor: ClientActor;
+}
+
+/** A master in the Mini App: holds the master role; every query is filtered to their own tasks. */
+export interface MasterContext {
+  actor: MasterActor;
 }
 
 /** Signing in: no actor yet, but the session cookie can be read, set and cleared. */
@@ -25,5 +35,7 @@ export interface AdminContext {
 }
 
 export type TmaRoutes = GroupRoutes<'tma', TmaContext>;
+export type ClientRoutes = GroupRoutes<'client', ClientContext>;
+export type MasterRoutes = GroupRoutes<'master', MasterContext>;
 export type AuthRoutes = GroupRoutes<'auth', AuthContext>;
 export type AdminRoutes = GroupRoutes<'admin', AdminContext>;

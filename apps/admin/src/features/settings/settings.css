@@ -198,3 +198,393 @@
 .audit__more {
   padding: var(--space-4);
 }
+
+.split__fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.split__fieldset .field__hint {
+  margin: 0;
+}
+
+/* Ustaxona */
+.workshop {
+  display: grid;
+  gap: var(--space-5);
+  max-width: 880px;
+}
+
+.workshop__card {
+  padding: var(--space-5);
+}
+
+.workshop__card header p {
+  margin: var(--space-1) 0 0;
+}
+
+.workshop__rules {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4) var(--space-5);
+  align-items: start;
+}
+
+/* Ish jadvali va bayramlar */
+.hours {
+  display: grid;
+  gap: var(--space-5);
+  max-width: 880px;
+}
+
+.hours__card {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+}
+
+.hours__head p {
+  margin: var(--space-1) 0 0;
+}
+
+.hours__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.hours__table th,
+.hours__table td {
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.hours__table th {
+  width: 180px;
+  font-weight: 600;
+}
+
+.hours__table tr.is-off th,
+.hours__table tr.is-off td {
+  color: var(--text-muted);
+}
+
+.hours__times {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.hours__time {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.hours__time .muted {
+  font-size: 12px;
+}
+
+.hours__time input {
+  width: 112px;
+}
+
+.hours__break-toggle {
+  align-items: center;
+  min-height: 40px;
+}
+
+.hours__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.hours__holidays {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hours__holidays li {
+  display: grid;
+  grid-template-columns: 220px 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--border);
+}
+
+.hours__holiday-date {
+  font-weight: 600;
+}
+
+.hours__add {
+  display: grid;
+  grid-template-columns: 200px 1fr auto;
+  align-items: end;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+/* Markalar va modellar */
+.models {
+  display: grid;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.models h3,
+.models p {
+  margin: 0;
+}
+
+.models__rows {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.models__row,
+.models__new-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 72px auto auto;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.models__new-form {
+  grid-template-columns: minmax(0, 1fr) 72px auto;
+}
+
+.models__row.is-hidden .models__name {
+  color: var(--text-muted);
+}
+
+.models__row--new {
+  display: block;
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--border);
+}
+
+.models__hide {
+  align-items: center;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.models__error {
+  grid-column: 1 / -1;
+}
+
+.models__legend {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+  font-size: 12px;
+}
+
+.models__legend div {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.models__legend dt,
+.models__legend dd {
+  margin: 0;
+}
+
+/* Prays va me'yorlar (A12) */
+.prices {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.prices__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.prices__legend {
+  margin: 0;
+  font-size: 12px;
+}
+
+.prices__editor {
+  padding: var(--space-5);
+  max-width: 720px;
+}
+
+.prices__editor-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.matrix {
+  overflow-x: auto;
+}
+
+.matrix__table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+}
+
+.matrix__table th,
+.matrix__table td {
+  padding: var(--space-3);
+  text-align: left;
+  vertical-align: top;
+}
+
+.matrix__table thead th {
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.matrix__table tbody tr + tr > * {
+  border-top: 1px solid var(--border);
+}
+
+.matrix__zone-head {
+  width: 220px;
+}
+
+.matrix__class {
+  display: block;
+  color: var(--text);
+  font-size: 18px;
+  line-height: 22px;
+}
+
+.matrix__examples {
+  display: block;
+  max-width: 150px;
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.matrix__zone {
+  font-weight: 600;
+}
+
+.matrix__zone-name {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.matrix__zone-name:hover {
+  color: var(--accent-text);
+}
+
+.matrix__zone-note {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.matrix__table tr.is-hidden .matrix__zone-name {
+  color: var(--text-muted);
+}
+
+.matrix__cell {
+  min-width: 140px;
+}
+
+.matrix__price,
+.matrix__minutes {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.matrix__price {
+  width: 100%;
+  height: 40px;
+  padding: 0 var(--space-3);
+  font-size: 15px;
+  text-align: right;
+}
+
+.matrix__price:disabled {
+  background: var(--surface-muted);
+}
+
+.matrix__price::placeholder,
+.matrix__minutes::placeholder {
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-weight: 400;
+}
+
+.matrix__price:focus,
+.matrix__minutes:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.matrix__time {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.matrix__minutes {
+  width: 56px;
+  height: 28px;
+  padding: 0 var(--space-2);
+  font-size: 12px;
+  text-align: right;
+}
+
+.matrix__human {
+  min-width: 56px;
+  font-size: 12px;
+  text-align: right;
+}
+
+.matrix__cell.is-changed {
+  background: var(--accent-soft);
+}
+
+.matrix__cell.is-changed .matrix__price {
+  border: 2px solid var(--accent);
+}
+
+.matrix__cell.is-invalid .matrix__minutes {
+  border-color: var(--danger);
+}
+
+.matrix__cell .field__error {
+  display: block;
+  margin-top: var(--space-1);
+}
+
+.matrix__empty {
+  padding: var(--space-4);
+}
+
+.matrix__footer {
+  padding: var(--space-2) var(--space-3);
+  border-top: 1px solid var(--border);
+}

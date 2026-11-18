@@ -1,0 +1,164 @@
+.reception {
+  display: grid;
+  gap: var(--space-4);
+  padding-bottom: 96px;
+}
+
+.reception__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.reception__panel {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+}
+
+.reception__panel p {
+  margin: 0;
+}
+
+.fuel {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--space-1);
+}
+
+.fuel__level {
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.fuel__level.is-active {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--on-ink);
+}
+
+.fuel__level:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.checks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.checks legend {
+  grid-column: 1 / -1;
+  padding: 0;
+}
+
+.reception__body {
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) minmax(320px, 1fr);
+  align-items: start;
+  gap: var(--space-5);
+}
+
+.defects {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.defects__row {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.defects__row.is-selected {
+  border-color: var(--accent);
+}
+
+.defects__num {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--warning);
+  color: var(--on-accent);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.defects__num.body__mark--chip {
+  background: var(--info);
+}
+
+.defects__num.body__mark--dent,
+.defects__num.body__mark--crack {
+  background: var(--danger);
+}
+
+.defects__num.body__mark--other {
+  background: var(--text-muted);
+}
+
+.defects__fields {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.defects__line {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: var(--space-2);
+}
+
+.reception__sides {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+/* StickyActionBar (design 6): what is missing on the left, the buttons on the right. */
+.action-bar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-6);
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.action-bar__text {
+  margin: 0;
+  color: var(--warning);
+  font-weight: 600;
+}
+
+.action-bar__buttons {
+  display: flex;
+  flex: none;
+  gap: var(--space-2);
+}
+
+/* A defect's photo is a thumbnail next to its fields, not a full-width picture. */
+.defects__fields .photo-tile {
+  max-width: 200px;
+}

@@ -32,6 +32,40 @@ export const API_ERROR_CODES = [
   'login_taken',
   /** The change would leave the workshop without an active owner. */
   'last_owner',
+
+  // Stage 2: reference data
+  /** A brand, a model of the brand or a service type with this name or code already exists. */
+  'name_taken',
+
+  // Stage 3: garage, booking and orders
+  /** The client has no verified phone number yet: the garage and booking need one. */
+  'phone_required',
+  /** Another car of this client already has this plate. */
+  'plate_taken',
+  /** The car cannot be archived or changed while it has an order in progress. */
+  'car_has_active_orders',
+  /** The zones chosen are not all offered for this car, or contradict each other. */
+  'service_unavailable',
+  /** The start time is not one the workshop offers (outside the horizon, too soon, off the grid). */
+  'slot_unavailable',
+  /** Somebody took the time first: every box that could do the job is held. */
+  'slot_taken',
+  /** The order is not in a state where this can be done. */
+  'invalid_transition',
+
+  // Stage 5: reception, tasks and photos
+  /** The act cannot be sent yet: the mileage, the fuel or a side's photo is missing. */
+  'act_incomplete',
+  /** The work cannot start: the client has not confirmed the act. */
+  'act_not_confirmed',
+  /** The file is not a JPEG, PNG or WebP picture, or is too big. */
+  'invalid_photo',
+  /** The report needs at least one photo of the work done. */
+  'photo_required',
+  /** A zone is already in another task, or is not yet approved by the client. */
+  'item_unavailable',
+  /** The extra work was already answered. */
+  'already_decided',
 ] as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

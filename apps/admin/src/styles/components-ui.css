@@ -1,0 +1,750 @@
+/* Components of orders, schedule and clients (docs/DESIGN.md, section 6). Tokens only. */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.btn--danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+a.btn {
+  text-decoration: none;
+}
+
+/* A hint under one field must not push the next field's input out of line. */
+.form-row > .field {
+  align-content: start;
+}
+
+.field__input--area {
+  height: auto;
+  padding: var(--space-2) var(--space-3);
+  resize: vertical;
+}
+
+/* Status chip: a dot and the word on the status colour (DESIGN 2.3). */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 24px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: currentcolor;
+}
+
+.status--new {
+  background: var(--info-soft);
+  color: var(--info);
+}
+
+.status--confirmed {
+  background: var(--teal-soft);
+  color: var(--teal);
+}
+
+.status--in_work {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.status--ready_for_pickup {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.status--completed {
+  background: var(--surface-muted);
+  color: var(--text);
+}
+
+.status--cancelled,
+.status--no_show {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* The plate looks the same in every theme (DESIGN 2.4). */
+.plate {
+  display: inline-flex;
+  align-items: stretch;
+  border: 2px solid var(--plate-ink);
+  border-radius: 4px;
+  background: var(--plate-bg);
+  color: var(--plate-ink);
+  font-size: 13px;
+  line-height: 16px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.plate__region {
+  padding: 0 var(--space-1);
+  border-right: 2px solid var(--plate-ink);
+}
+
+.plate__number {
+  padding: 0 var(--space-2);
+}
+
+/* Tables (DESIGN 6, DataTable). */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  padding: var(--space-3) var(--space-4);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.table td {
+  min-height: 56px;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.table__num {
+  text-align: right;
+}
+
+.table__total td {
+  font-weight: 700;
+}
+
+.table__link {
+  color: var(--accent-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.table__link:hover {
+  text-decoration: underline;
+}
+
+/* Dialog */
+.dialog {
+  width: min(480px, calc(100vw - var(--space-8)));
+  max-height: calc(100vh - var(--space-8));
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.dialog--wide {
+  width: min(760px, calc(100vw - var(--space-8)));
+}
+
+.dialog::backdrop {
+  background: color-mix(in srgb, var(--ink) 55%, transparent);
+}
+
+.dialog__body {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-5) 0;
+}
+
+.dialog__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.dialog__close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+}
+
+.dialog__close:hover {
+  background: var(--surface-muted);
+}
+
+.dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* In a dialog the buttons stay in view when a long dialog scrolls. */
+.dialog .dialog__actions {
+  position: sticky;
+  bottom: 0;
+  padding: var(--space-3) 0 var(--space-5);
+  background: var(--surface);
+}
+
+/* KPI cards (A6) */
+.kpi {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-5);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.kpi--alert {
+  border-color: var(--accent);
+}
+
+.kpi__label {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.kpi__value {
+  font-size: 36px;
+  line-height: 40px;
+}
+
+.kpi--alert .kpi__value {
+  color: var(--danger);
+}
+
+.kpi__note {
+  font-size: 12px;
+}
+
+/* A line of alarm above the board (A1). */
+.alert-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.alert-banner a {
+  color: inherit;
+}
+
+/* The three answers after a call (DESIGN 6, CallActions). */
+.call-actions {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.call-actions__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.call-btn {
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.call-btn:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.call-btn--confirm {
+  border-color: var(--teal);
+  background: var(--teal);
+  color: var(--on-accent);
+}
+
+.call-btn--reject {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.call-actions--compact .call-btn {
+  flex: 1;
+  min-height: 32px;
+  padding: 0 var(--space-2);
+  font-size: 12px;
+}
+
+.call-actions__error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 12px;
+}
+
+/* Zones and slot pickers (new order, edit items, reschedule). */
+.zones,
+.slots {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.zones__count {
+  margin-left: var(--space-2);
+  color: var(--accent-text);
+}
+
+.pill.is-active .zones__count {
+  color: var(--on-ink);
+}
+
+.zones__group {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.zones__legend {
+  padding: 0;
+  font-size: 12px;
+}
+
+.zone {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.zone:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.zone.is-disabled {
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.zone input {
+  accent-color: var(--accent);
+}
+
+.zone__name {
+  display: grid;
+  flex: 1;
+}
+
+.zone__note {
+  font-size: 12px;
+}
+
+.zone__price {
+  display: grid;
+  justify-items: end;
+}
+
+.zone__time {
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.slots__days {
+  display: flex;
+  gap: var(--space-2);
+  padding-bottom: var(--space-1);
+  overflow-x: auto;
+}
+
+.slots__day {
+  display: grid;
+  flex: none;
+  justify-items: center;
+  min-width: 52px;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.slots__day:disabled {
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.slots__day.is-active {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--on-ink);
+}
+
+.slots__weekday,
+.slots__state {
+  font-size: 11px;
+  line-height: 14px;
+}
+
+.slots__number {
+  font-size: 18px;
+}
+
+.slots__times {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.slots__time {
+  display: grid;
+  justify-items: center;
+  min-width: 72px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.slots__time.is-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.slots__box {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.slots__chosen {
+  margin: 0;
+}
+
+/* A short list to pick one row from. */
+.picklist {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.picklist__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  text-align: left;
+  cursor: pointer;
+}
+
+.picklist__row:hover {
+  background: var(--surface-muted);
+}
+
+.picklist__row.is-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* Facts: a label and its value, in rows. */
+.facts {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.facts > div {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: var(--space-3);
+}
+
+.facts dt {
+  color: var(--text-muted);
+}
+
+.facts dd {
+  margin: 0;
+}
+
+/* A short history: what happened, and when. */
+.timeline {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline li {
+  display: grid;
+  gap: 2px;
+}
+
+.timeline__what {
+  font-weight: 600;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  width: fit-content;
+  color: var(--accent-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* The car's outline (BodySchema). */
+.body {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+}
+
+.body.is-editable {
+  cursor: crosshair;
+}
+
+.body__shape {
+  fill: var(--surface);
+  stroke: var(--text-muted);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.body__mark {
+  cursor: pointer;
+}
+
+.body__mark circle {
+  fill: var(--warning);
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+
+.body__mark text {
+  fill: var(--on-accent);
+  font-size: 13px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.body__mark--scratch circle {
+  fill: var(--warning);
+}
+
+.body__mark--chip circle {
+  fill: var(--info);
+}
+
+.body__mark--dent circle,
+.body__mark--crack circle {
+  fill: var(--danger);
+}
+
+.body__mark--other circle {
+  fill: var(--text-muted);
+}
+
+.body__mark.is-selected circle {
+  stroke: var(--ink);
+  stroke-width: 3;
+}
+
+/* PhotoTile / CaptureTile (design 6) */
+.photo-tile {
+  position: relative;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.photo-tile__capture,
+.photo-tile__image {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--space-1);
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.photo-tile__capture {
+  border: 2px dashed var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.photo-tile__capture:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.photo-tile__image {
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+
+.photo-tile__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-tile__retake {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  min-height: 32px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--ink);
+  color: var(--on-ink);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.photo-tile__label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* A strip of small photos that open big. */
+.strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.strip__item {
+  width: 96px;
+  height: 72px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  cursor: pointer;
+}
+
+.strip__item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.strip__big {
+  width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+}
+
+/* A task's status (design 2.3): not started is neutral, the rest follow the order's colours. */
+.status--task-assigned {
+  background: var(--surface-muted);
+  color: var(--text);
+}
+
+.status--task-in_progress {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.status--task-on_review {
+  background: var(--info-soft);
+  color: var(--info);
+}
+
+.status--task-rework {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.status--task-accepted {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.act-chip--draft {
+  background: var(--surface-muted);
+}
+
+.act-chip--sent {
+  background: var(--info-soft);
+  color: var(--info);
+}
+
+.act-chip--confirmed {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+/* StepChips (design 6): the steps of a form. */
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.steps__chip {
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.steps__chip.is-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}

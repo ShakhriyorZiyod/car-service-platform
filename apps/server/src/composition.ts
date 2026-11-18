@@ -4,13 +4,36 @@
  */
 import type { Db } from './db/client';
 import type { Logger } from './logger';
+import type { ScheduledTask } from './platform/ports';
 import { createAuditService, type AuditService } from './modules/audit';
 import {
+  createBookingService,
+  createScheduleService,
+  type BookingService,
+  type ScheduleService,
+} from './modules/booking';
+import { createCatalogService, type CatalogService } from './modules/catalog';
+import { createClients, type ClientsService } from './modules/clients';
+import { createGarage, type GarageService } from './modules/garage';
+import {
   createIdentityService,
+  createStaffDirectory,
   type IdentityService,
   type LoginCodeSender,
 } from './modules/identity';
+import {
+  createOrders,
+  type AdminOrdersService,
+  type ExtrasService,
+  type OrdersService,
+} from './modules/orders';
+import { createWorkshopService, type WorkshopService } from './modules/workshop';
+import { createMedia, type MediaService } from './modules/media';
+import { createReception, type ReceptionService } from './modules/reception';
+import { createTasks, type TasksService } from './modules/tasks';
 import type { Clock } from './platform/clock';
+import type { FileStore } from './platform/ports';
+import { createOutbox } from './platform/outbox';
 
 export interface ServicesDeps {
   db: Db;
@@ -21,11 +44,29 @@ export interface ServicesDeps {
   initDataMaxAgeSeconds: number;
   adminUrl: string | null;
   loginCodes: LoginCodeSender;
+  /** Where the photos' files lie, and the secret that signs their links. */
+  files: FileStore;
+  mediaSecret: string;
 }
 
 export interface Services {
   audit: AuditService;
+  workshop: WorkshopService;
+  catalog: CatalogService;
   identity: IdentityService;
+  garage: GarageService;
+  booking: BookingService;
+  orders: OrdersService;
+  adminOrders: AdminOrdersService;
+  extras: ExtrasService;
+  clients: ClientsService;
+  schedule: ScheduleService;
+  media: MediaService;
+  reception: ReceptionService;
+  /** The masters' tasks (not to be mixed up with `tasks`, the timer jobs below). */
+  taskService: TasksService;
+  /** What the system does by itself on a timer (jobs/scheduler.ts). */
+  tasks: ScheduledTask[];
 }
 
 export const INIT_DATA_MAX_AGE_SECONDS = 24 * 60 * 60;
@@ -33,13 +74,66 @@ export const INIT_DATA_MAX_AGE_SECONDS = 24 * 60 * 60;
 export function createServices(deps: ServicesDeps): Services {
   const platform = { db: deps.db, clock: deps.clock, logger: deps.logger };
   const audit = createAuditService(platform);
+  const workshop = createWorkshopService({ ...platform, audit });
+  const catalog = createCatalogService({ ...platform, audit });
+  const outbox = createOutbox({ clock: deps.clock });
+  const media = createMedia({ ...platform, files: deps.files, secret: deps.mediaSecret });
   const identity = createIdentityService({
     ...platform,
     audit,
+    workshop,
+    outbox,
     loginCodes: deps.loginCodes,
     botToken: deps.botToken,
     initDataMaxAgeSeconds: deps.initDataMaxAgeSeconds,
     adminUrl: deps.adminUrl,
   });
-  return { audit, identity };
+  const garage = createGarage({ ...platform, audit });
+  const booking = createBookingService({ ...platform, workshop });
+  const orders = createOrders({
+    ...platform,
+    workshop,
+    catalog: catalog.offers,
+    garage,
+    booking,
+    outbox,
+    staff: createStaffDirectory(),
+    audit,
+  });
+  return {
+    audit,
+    workshop,
+    catalog,
+    identity,
+    garage,
+    booking,
+    orders: orders.service,
+    adminOrders: orders.admin,
+    extras: orders.extras,
+    clients: createClients({
+      ...platform,
+      audit,
+      identity: identity.clients,
+      garage,
+      orders: orders.admin,
+    }),
+    schedule: createScheduleService({ ...platform, workshop, audit }),
+    media,
+    taskService: createTasks({
+      ...platform,
+      audit,
+      outbox,
+      media,
+      orders: orders.admin,
+      staff: createStaffDirectory(),
+    }),
+    reception: createReception({
+      ...platform,
+      audit,
+      outbox,
+      media,
+      orders: orders.admin,
+    }),
+    tasks: orders.tasks,
+  };
 }

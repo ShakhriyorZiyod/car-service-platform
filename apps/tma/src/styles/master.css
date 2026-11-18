@@ -1,0 +1,387 @@
+/* The master's app (docs/DESIGN.md, 7.2 and 8: U1–U3). Tokens only; both themes. */
+
+.master {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding-bottom: calc(var(--button-height) + 76px);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The dark "ink" header: the name and whether the phone is online. */
+.master-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  background: var(--ink);
+  color: var(--on-ink);
+}
+
+.master-header__name {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.master-online {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--ink-raised);
+  font-size: 12px;
+}
+
+.master-online__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--warning);
+}
+
+.master-online.is-online .master-online__dot {
+  background: var(--success);
+}
+
+.master-tabs {
+  display: flex;
+  background: var(--ink);
+  color: var(--on-ink);
+}
+
+.master-tabs__tab {
+  flex: 1;
+  min-height: 56px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: inherit;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+.master-tabs__tab.is-active {
+  border-bottom-color: var(--accent);
+  opacity: 1;
+}
+
+.master-tabs__count {
+  margin-left: var(--space-2);
+}
+
+.master-list {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.master-card {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.master-card--rework {
+  border: 2px solid var(--danger);
+}
+
+/* Hands are in gloves: every tap target is at least 56 px. */
+.master-card .button,
+.master-task .button {
+  min-height: 56px;
+}
+
+.master-card__body {
+  display: grid;
+  gap: var(--space-2);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.master-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.master-card__car {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: 17px;
+}
+
+.master-card__items {
+  color: var(--text);
+}
+
+.master-card__remark {
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.master-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.master-chip--assigned {
+  background: var(--surface-muted);
+  color: var(--text);
+}
+
+.master-chip--in_progress {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.master-chip--on_review {
+  background: var(--info-soft);
+  color: var(--info);
+}
+
+.master-chip--rework {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.master-chip--accepted {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.master-timer {
+  font-size: 15px;
+}
+
+.master-error {
+  margin: 0;
+  color: var(--danger);
+}
+
+/* The dark button for the report (design 5, Button "dark"). */
+.button--dark {
+  background: var(--ink);
+  color: var(--on-ink);
+}
+
+.master-banner {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.master-banner p {
+  margin: 0;
+}
+
+.master-banner__failed {
+  color: var(--danger);
+}
+
+/* U2 / U3 */
+.master-task {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0 0 var(--space-4);
+}
+
+.master-task > :not(.master-task__head) {
+  margin-inline: var(--space-4);
+}
+
+.master-task__head {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+  padding: var(--space-4);
+  background: var(--ink);
+  color: var(--on-ink);
+}
+
+.master-task__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  font-size: 13px;
+}
+
+.master-task__car {
+  margin: 0;
+  font-size: 20px;
+}
+
+.master-task__items {
+  margin: 0;
+  color: var(--accent-on-ink);
+  font-weight: 600;
+}
+
+.master-remark {
+  border: 2px solid var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.master-remark p,
+.master-defects p,
+.master-defects ul {
+  margin: 0;
+}
+
+/* The soft colours stay light in the dark theme too, so the text takes the paired colour. */
+.master-defects {
+  display: grid;
+  gap: var(--space-2);
+  border: 1px solid var(--warning);
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.master-defects .caption {
+  color: var(--warning);
+}
+
+.master-defects ul {
+  display: grid;
+  gap: var(--space-2);
+  padding: 0;
+  list-style: none;
+}
+
+.master-photos {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.master-photos__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.master-photos__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.master-capture {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--space-1);
+  aspect-ratio: 1;
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.master-photo {
+  position: relative;
+  aspect-ratio: 1;
+  margin: 0;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+}
+
+.master-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.master-photo__badge {
+  position: absolute;
+  bottom: var(--space-1);
+  left: var(--space-1);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--warning);
+  color: var(--on-accent);
+  font-size: 11px;
+}
+
+.master-photo__badge--done {
+  background: var(--success);
+}
+
+/* The circle is small, the area that takes the tap is 56 px (design: master ≥ 56 px). */
+.master-photo__remove {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  width: 56px;
+  height: 56px;
+  padding: var(--space-1);
+  border: 0;
+  background: transparent;
+}
+
+.master-photo__remove-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-pill);
+  background: var(--ink);
+  color: var(--on-ink);
+}
+
+.master-comment {
+  height: auto;
+  padding: var(--space-3);
+}
+
+.master-profile {
+  padding: var(--space-4);
+}
+
+.master .tab-bar {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.master .tab-bar__item,
+.master .segmented__option,
+.master-banner .button {
+  min-height: 56px;
+}
+
+.master-task > .bottom-bar {
+  margin-inline: 0;
+}

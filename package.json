@@ -26,7 +26,9 @@
     "check": "npm run typecheck && npm run lint && npm test && npm run build && npm run check:bundle",
     "db:generate": "npm run db:generate -w @cs/server --",
     "db:migrate": "npm run db:migrate -w @cs/server",
-    "owner:create": "npm run owner:create -w @cs/server --"
+    "owner:create": "npm run owner:create -w @cs/server --",
+    "seed:reference": "npm run seed:reference -w @cs/server",
+    "seed:demo": "npm run seed:demo -w @cs/server"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

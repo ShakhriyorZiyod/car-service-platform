@@ -6,7 +6,48 @@ export const LIMITS = {
   specialization: { max: 100 },
   /** A sign-in code is six digits. */
   codeLength: 6,
+
+  // Reference data (stage 2)
+  workshopName: { max: 100 },
+  address: { max: 200 },
+  url: { max: 500 },
+  /** Names of brands, models, zones, service types, boxes and holidays. */
+  name: { min: 1, max: 100 },
+  note: { max: 300 },
+  /** A service type's stable code: lower case, digits and underscores. */
+  code: { min: 2, max: 32 },
+  /** A price in so‘m. */
+  price: { max: 1_000_000_000 },
+  /** Working minutes one zone takes: up to two weeks around the clock, far beyond any real job. */
+  durationMin: { min: 1, max: 20_160 },
+
+  // Reception and tasks (stage 5)
+  mileageKm: { max: 5_000_000 },
+  personalItems: { max: 300 },
+  defects: { max: 40 },
+  /** The admin's instruction for a task. */
+  instruction: { max: 1_000 },
+  /** The master's report and the admin's remark on it. */
+  report: { max: 1_000 },
+  /** One photo, after the phone has shrunk it to about 2 Mp. */
+  photoBytes: { max: 3 * 1024 * 1024 },
+  /** Photos of one attempt of one task. */
+  taskPhotos: { max: 20 },
 } as const;
 
 /** Telegram's signed contact string; real ones are a few hundred characters. */
 export const MAX_CONTACT_LENGTH = 4096;
+
+/** The limits of the workshop's rules, for the server's check and the form's hints. */
+export const RULE_LIMITS = {
+  slotStepMin: { min: 5, max: 240 },
+  minLeadMin: { min: 0, max: 20_160 },
+  horizonDays: { min: 1, max: 365 },
+  bufferMin: { min: 0, max: 240 },
+  holdNewWorkMin: { min: 1, max: 2_880 },
+  holdNoAnswerHours: { min: 1, max: 168 },
+  callWarnMin: { min: 1, max: 1_440 },
+  callEscalateMin: { min: 1, max: 1_440 },
+  reminderHours: { min: 1, max: 168, count: 4 },
+  adminDiscountLimitPct: { min: 0, max: 100 },
+} as const;

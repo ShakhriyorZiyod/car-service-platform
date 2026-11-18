@@ -1,0 +1,82 @@
+.tasks,
+.task {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.tasks__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-4);
+}
+
+.task-card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.task-card:hover {
+  border-color: var(--accent);
+}
+
+.task-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.task-card__car {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-weight: 600;
+}
+
+.task-card__items,
+.task-card__who {
+  margin: 0;
+}
+
+.task__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.task__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(280px, 2fr);
+  align-items: start;
+  gap: var(--space-4);
+}
+
+.task__main,
+.task__side {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.task__panel {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+}
+
+.task__panel p {
+  margin: 0;
+}
+
+.task__attempt {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.task__photos {
+  display: grid;
+  gap: var(--space-2);
+}

@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { ApiRequestError } from '../api';
 import { useApi, useSetBootstrap } from '../bootstrap';
 import { useT } from '../i18n';
-import { requestPhone } from '../telegram';
+import { openExternal, requestPhone } from '../telegram';
 import { Button } from '../ui/Button';
 import { Notice } from '../ui/Notice';
 import { Segmented } from '../ui/Segmented';
@@ -32,6 +32,8 @@ export function Onboarding({
   const [fullName, setFullName] = useState(bootstrap.user.fullName);
   const [consent, setConsent] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
+  // Plain text until the owner has entered the policy's address in the settings.
+  const policyUrl = bootstrap.workshop.policyUrl;
 
   const finish = useMutation({
     mutationFn: async (withPhone: boolean) => {
@@ -123,7 +125,23 @@ export function Onboarding({
             onChange={(event) => setConsent(event.target.checked)}
           />
           <span className="secondary onboarding__consent">
-            {t.consent} <span className="onboarding__policy">{t.policy}</span>
+            {t.consent}{' '}
+            {policyUrl ? (
+              <a
+                className="onboarding__policy onboarding__policy--link"
+                href={policyUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(event) => {
+                  event.preventDefault();
+                  openExternal(policyUrl);
+                }}
+              >
+                {t.policy}
+              </a>
+            ) : (
+              <span className="onboarding__policy">{t.policy}</span>
+            )}
           </span>
         </label>
       </main>

@@ -22,6 +22,48 @@
       "when": 1794966068613,
       "tag": "0002_audit_log_append_only",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794968947931,
+      "tag": "0003_workshop_and_catalog",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794972144654,
+      "tag": "0004_order_number_seq",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794972149682,
+      "tag": "0005_garage_orders_booking_platform",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794972150954,
+      "tag": "0006_bookings_no_overlap",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794984194809,
+      "tag": "0007_client_notes_and_anonymizing",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794988630245,
+      "tag": "0008_reception_tasks_media",
+      "breakpoints": true
     }
   ]
 }

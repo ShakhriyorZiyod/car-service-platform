@@ -1,0 +1,40 @@
+.today {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.today__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+}
+
+.today__kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.today__late {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.today__table-card {
+  overflow: hidden;
+}
+
+.today__table-title {
+  padding: var(--space-4) var(--space-4) var(--space-2);
+}
+
+.today__empty {
+  margin: 0;
+  padding: var(--space-4);
+}
+
+.today__car {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}

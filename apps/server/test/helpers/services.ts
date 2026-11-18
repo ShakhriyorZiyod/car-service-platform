@@ -3,6 +3,7 @@ import { createServices, INIT_DATA_MAX_AGE_SECONDS, type Services } from '../../
 import type { Db } from '../../src/db/client';
 import type { LoginCodeSender } from '../../src/modules/identity';
 import { createFakeClock, type FakeClock } from './clock';
+import { createMemoryFileStore } from './file-store';
 
 export const TEST_BOT_TOKEN = '1234567890:test-token-for-signatures-only';
 export const ADMIN_URL = 'https://cs.example.uz/admin/';
@@ -29,8 +30,11 @@ export function createFakeLoginCodes(): FakeLoginCodes {
   };
 }
 
+export const TEST_MEDIA_SECRET = 'test-media-secret-at-least-32-characters-long';
+
 export interface TestContext {
   services: Services;
+  files: ReturnType<typeof createMemoryFileStore>;
   clock: FakeClock;
   loginCodes: FakeLoginCodes;
 }
@@ -39,6 +43,7 @@ export interface TestContext {
 export function createTestServices(db: Db): TestContext {
   const clock = createFakeClock();
   const loginCodes = createFakeLoginCodes();
+  const files = createMemoryFileStore();
   const services = createServices({
     db,
     clock,
@@ -47,6 +52,8 @@ export function createTestServices(db: Db): TestContext {
     initDataMaxAgeSeconds: INIT_DATA_MAX_AGE_SECONDS,
     adminUrl: ADMIN_URL,
     loginCodes,
+    files,
+    mediaSecret: TEST_MEDIA_SECRET,
   });
-  return { services, clock, loginCodes };
+  return { services, clock, loginCodes, files };
 }

@@ -19,3 +19,14 @@ export function genericMessage(error: unknown, t: Texts): string {
   if (code === 'validation') return t.errors.validation;
   return t.errors.generic;
 }
+
+/** Every field path the server named, whole ("body.rules.slotStepMin"), for nested forms. */
+export function invalidPaths(error: unknown): ReadonlySet<string> {
+  if (!(error instanceof ApiRequestError) || error.code !== 'validation') return new Set();
+  return new Set(error.paths);
+}
+
+/** The message for a failed call: what the rule says when it has words, else the generic one. */
+export function apiMessage(error: unknown, t: Texts): string {
+  return t.apiErrors[errorCodeOf(error)] ?? genericMessage(error, t);
+}

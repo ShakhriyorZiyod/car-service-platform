@@ -1,0 +1,682 @@
+/* The client's part of the Mini App (docs/DESIGN.md, sections 4 and 5). Tokens only, both themes. */
+
+.client,
+.screen {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+}
+
+.client {
+  padding-bottom: 88px;
+}
+
+.screen {
+  padding: var(--space-4);
+}
+
+.screen--with-bar {
+  padding-bottom: 168px;
+}
+
+.list {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+}
+
+.form-stack {
+  display: grid;
+  gap: var(--space-3);
+}
+
+/* Header */
+.screen-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+}
+
+.screen-header__back {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-left: calc(-1 * var(--space-2));
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.screen-header__title {
+  flex: 1;
+}
+
+.progress {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.progress__bit {
+  flex: 1;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--border);
+}
+
+.progress__bit.is-done {
+  background: var(--accent);
+}
+
+/* Bottom bar: the summary and the main action, or the tabs */
+.bottom-bar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.bottom-bar__summary {
+  display: grid;
+}
+
+.tab-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin: calc(-1 * var(--space-1)) calc(-1 * var(--space-3));
+}
+
+.tab-bar__item {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-height: var(--tap-min);
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.tab-bar__item.is-active {
+  color: var(--accent-text);
+}
+
+/* Status chip: a dot and words, never colour alone */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 24px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-chip__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status-chip--info {
+  background: var(--info-soft);
+  color: var(--info);
+}
+
+.status-chip--teal {
+  background: var(--teal-soft);
+  color: var(--teal);
+}
+
+.status-chip--warning {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.status-chip--success {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.status-chip--danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.status-chip--neutral {
+  background: var(--surface-muted);
+  color: var(--text);
+}
+
+/* The number plate is white in both themes (DESIGN 2.4) */
+.plate {
+  display: inline-flex;
+  align-items: stretch;
+  border: 2px solid var(--plate-ink);
+  border-radius: var(--radius-sm);
+  background: var(--plate-bg);
+  color: var(--plate-ink);
+  font-family: var(--font-num);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.plate__region {
+  padding: 0 var(--space-2);
+  border-right: 2px solid var(--plate-ink);
+}
+
+.plate__number {
+  padding: 0 var(--space-2);
+}
+
+/* Empty states and the phone gate */
+.empty-state,
+.phone-gate {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+}
+
+.phone-gate {
+  align-content: start;
+  min-height: 60vh;
+}
+
+.empty-state > .button,
+.phone-gate > .button {
+  width: 100%;
+}
+
+.empty-state__icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.skeleton {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.skeleton__row {
+  height: 72px;
+  border-radius: var(--radius-lg);
+  background: var(--surface-muted);
+}
+
+/* Choices */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip-choice {
+  min-height: var(--tap-min);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.chip-choice.is-selected {
+  border: 2px solid var(--accent);
+  background: var(--accent-soft);
+}
+
+.class-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.class-card {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  text-align: left;
+  cursor: pointer;
+}
+
+.class-card.is-selected {
+  border: 2px solid var(--accent);
+  background: var(--accent-soft);
+}
+
+/* The garage */
+.car-row {
+  grid-template-columns: 1fr;
+}
+
+.car-row__main {
+  display: grid;
+  gap: var(--space-1);
+  justify-items: start;
+}
+
+.car-row__name {
+  font-weight: 600;
+}
+
+.car-row__actions {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.booking-car {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Zones */
+.zone-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 56px;
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  text-align: left;
+  cursor: pointer;
+}
+
+.zone-row:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.zone-row.is-selected {
+  border: 2px solid var(--accent);
+  background: var(--accent-soft);
+}
+
+.zone-row__check {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--on-accent);
+}
+
+.zone-row.is-selected .zone-row__check {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.zone-row__text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.zone-row__price {
+  flex: none;
+  font-size: 16px;
+}
+
+/* Days and times */
+.day-strip {
+  display: flex;
+  gap: var(--space-2);
+  padding-bottom: var(--space-1);
+  overflow-x: auto;
+}
+
+.day {
+  display: grid;
+  flex: none;
+  justify-items: center;
+  gap: 2px;
+  width: 56px;
+  min-height: 76px;
+  padding: var(--space-2) 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.day:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.day.is-selected {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--on-ink);
+}
+
+.day__note {
+  min-height: 16px;
+  color: var(--text-muted);
+}
+
+.day.is-selected .day__note {
+  color: var(--on-ink);
+}
+
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.slot {
+  display: grid;
+  justify-items: center;
+  min-height: var(--tap-min);
+  padding: var(--space-2) 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.slot:disabled {
+  border-style: dashed;
+  color: var(--text-muted);
+  text-decoration: line-through;
+  cursor: default;
+}
+
+.slot.is-selected {
+  border: 2px solid var(--accent);
+  background: var(--accent-soft);
+}
+
+/* Summary and orders */
+.summary__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.summary__row > span:last-child {
+  display: grid;
+  justify-items: end;
+  gap: var(--space-1);
+  text-align: right;
+}
+
+.summary__items {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  list-style: none;
+}
+
+.summary__items li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.order-card {
+  width: 100%;
+  cursor: pointer;
+}
+
+.order-card__top,
+.order-card__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.order-card__works {
+  font-weight: 600;
+}
+
+.tracker {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tracker__step {
+  display: grid;
+  grid-template-columns: 16px 1fr auto;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.tracker__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+/* Profile */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.toggle-row__text {
+  display: grid;
+}
+
+.toggle {
+  width: 24px;
+  height: 24px;
+  accent-color: var(--accent);
+}
+
+/* No internet: said at the top of the screen (client PDF, page 19) */
+.offline-banner {
+  margin: 0;
+  padding: var(--space-2) var(--space-4);
+  background: var(--ink);
+  color: var(--on-ink);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+/* A skeleton that appears only if loading takes longer than 300 ms (client PDF, page 20) */
+.skeleton {
+  opacity: 0;
+  animation: skeleton-in 0s linear 300ms forwards;
+}
+
+@keyframes skeleton-in {
+  to {
+    opacity: 1;
+  }
+}
+
+/* T6 (stage 5): the act, extra work and how far each zone has got. */
+.zone-state {
+  display: inline-block;
+  margin-top: var(--space-1);
+  margin-left: var(--space-2);
+  padding: 2px var(--space-2);
+  line-height: 16px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.zone-state--queued {
+  background: var(--surface-muted);
+  color: var(--text-muted);
+}
+
+.zone-state--in_progress {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.zone-state--ready {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.item-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+}
+
+.item-badge {
+  padding: 2px var(--space-2);
+  line-height: 16px;
+  border-radius: var(--radius-pill);
+  background: var(--info-soft);
+  color: var(--info);
+  font-size: 12px;
+}
+
+.summary__items .is-refused {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.approval {
+  display: grid;
+  gap: var(--space-3);
+  border: 2px solid var(--accent);
+}
+
+.approval p {
+  margin: 0;
+}
+
+.approval__what {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.approval__buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.act {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.act p,
+.act h3 {
+  margin: 0;
+}
+
+.act__facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.act__facts dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.act__defects {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.act__defects li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.act__num {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+  background: var(--warning);
+  color: var(--on-accent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.act__thumb {
+  width: 48px;
+  height: 36px;
+  margin-left: auto;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+}
+
+.act__sides {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.act__side {
+  margin: 0;
+}
+
+.act__side img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+}

@@ -1,8 +1,10 @@
 import { LANG_NAMES, LANGS, ROLE_LABELS } from '@cs/shared/i18n';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { LogOut, Search } from 'lucide-react';
+import { useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router';
 import { call } from '../api';
-import { useMe, useSetMe } from '../auth/session';
+import { useCan, useMe, useSetMe } from '../auth/session';
 import { useLang, useT } from '../i18n';
 import { Button } from '../ui/Button';
 
@@ -21,6 +23,16 @@ export function Topbar() {
   const me = useMe();
   const setMe = useSetMe();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const [text, setText] = useState('');
+  const can = useCan();
+
+  // The search finds orders: by number, the client's name or phone, or the plate.
+  const search = (event: FormEvent) => {
+    event.preventDefault();
+    const q = text.trim();
+    void navigate(q ? `/orders?q=${encodeURIComponent(q)}` : '/orders');
+  };
 
   const changeLang = useMutation({
     mutationFn: (next: (typeof LANGS)[number]) => call('auth.updateMe', { body: { lang: next } }),
@@ -36,10 +48,17 @@ export function Topbar() {
 
   return (
     <header className="topbar">
-      <label className="topbar__search">
+      <form className="topbar__search" role="search" onSubmit={search}>
         <Search size={16} aria-hidden="true" />
-        <input type="search" placeholder={t.search} disabled />
-      </label>
+        <input
+          type="search"
+          placeholder={t.search}
+          aria-label={t.search}
+          disabled={!can('orders.read')}
+          value={text}
+          onChange={(event) => setText(event.target.value)}
+        />
+      </form>
       <div className="topbar__user">
         <div className="topbar__langs">
           {LANGS.map((value) => (

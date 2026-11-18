@@ -31,6 +31,9 @@ interface RequestParts {
   body?: unknown;
 }
 
+/** A photo travels as its own bytes; everything else is JSON. */
+const isRaw = (body: unknown): body is Uint8Array => body instanceof Uint8Array;
+
 function buildUrl(path: string, { params, query }: RequestParts): string {
   const withParams = path.replace(/:(\w+)/g, (_match, key: string) =>
     encodeURIComponent(String(params?.[key])),
@@ -60,9 +63,15 @@ export function createApiClient(initData: string): ApiClient {
           method,
           headers: {
             authorization,
-            ...(parts.body !== undefined && { 'content-type': 'application/json' }),
+            ...(parts.body !== undefined && {
+              'content-type': isRaw(parts.body) ? 'application/octet-stream' : 'application/json',
+            }),
           },
-          ...(parts.body !== undefined && { body: JSON.stringify(parts.body) }),
+          ...(parts.body !== undefined && {
+            body: isRaw(parts.body)
+              ? (parts.body as Uint8Array<ArrayBuffer>)
+              : JSON.stringify(parts.body),
+          }),
         });
       } catch {
         throw new ApiRequestError('network', 0);

@@ -1,3 +1,4 @@
+import type { Lang } from '@cs/shared/i18n';
 import type { Permission, Role } from '@cs/shared/vocabulary';
 import { AppError } from './errors';
 
@@ -25,4 +26,29 @@ export interface StaffActor {
 
 export function requirePermission(actor: StaffActor, permission: Permission): void {
   if (!actor.permissions.has(permission)) throw new AppError('forbidden', `missing ${permission}`);
+}
+
+/** A master in the Mini App: someone holding the master role, who sees only their own tasks. */
+export interface MasterActor {
+  kind: 'master';
+  userId: string;
+  telegramId: number;
+  lang: Lang;
+  fullName: string;
+}
+
+/** A client in the Mini App: someone with no staff role who has given their consent. */
+export interface ClientActor {
+  kind: 'client';
+  userId: string;
+  telegramId: number;
+  lang: Lang;
+  fullName: string;
+  /** The number Telegram verified; null until the client shares it. */
+  phone: string | null;
+}
+
+/** The garage and booking need a phone number the workshop can call (docs/PLAN.md, section 4.7). */
+export function requireVerifiedPhone(actor: ClientActor): void {
+  if (actor.phone === null) throw new AppError('phone_required');
 }

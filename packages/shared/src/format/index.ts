@@ -4,6 +4,7 @@
  * still work. No dependencies, safe for the Mini App bundle.
  */
 export * from './datetime';
+export * from './duration';
 export * from './money';
 export * from './phone';
 export * from './plate';

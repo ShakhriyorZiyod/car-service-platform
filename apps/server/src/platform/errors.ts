@@ -24,3 +24,7 @@ export class AppError extends Error {
 }
 
 export const isAppError = (error: unknown): error is AppError => error instanceof AppError;
+
+/** A request that failed validation in a use case, naming the field as "body.some.path". */
+export const invalidAt = (path: string, message: string = 'invalid value'): AppError =>
+  new AppError('validation', message, { paths: [path] });

@@ -10,8 +10,10 @@ import { loadConfig } from '../src/config';
 import { createDatabase } from '../src/db/client';
 import { createHttpApp } from '../src/http/app';
 import { startHttpServer } from '../src/http/server';
+import { startScheduler } from '../src/jobs/scheduler';
 import { createLogger } from '../src/logger';
 import { systemClock } from '../src/platform/clock';
+import { storageDeps } from '../src/storage';
 import { devBotToken } from './dev-token';
 
 const config = loadConfig();
@@ -33,7 +35,11 @@ const services = createServices({
       return Promise.resolve('sent');
     },
   },
+  ...storageDeps(config),
 });
+
+// Held orders are cancelled on time here too; there is no bot, so no message leaves the outbox.
+startScheduler({ tasks: services.tasks, clock: systemClock, logger });
 
 await startHttpServer(
   createHttpApp({

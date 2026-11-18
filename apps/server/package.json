@@ -14,7 +14,9 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx --env-file-if-exists=../../.env src/db/migrate.ts",
     "dev:init-data": "tsx --env-file-if-exists=../../.env scripts/dev-init-data.ts",
-    "owner:create": "tsx --env-file-if-exists=../../.env scripts/owner-create.ts"
+    "owner:create": "tsx --env-file-if-exists=../../.env scripts/owner-create.ts",
+    "seed:reference": "tsx --env-file-if-exists=../../.env scripts/seed-reference.ts",
+    "seed:demo": "tsx --env-file-if-exists=../../.env scripts/seed-demo.ts"
   },
   "dependencies": {
     "@cs/shared": "^0.0.0",

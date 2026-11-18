@@ -72,9 +72,10 @@
 
 .topbar__search {
   display: flex;
+  flex: 0 1 420px;
   align-items: center;
   gap: var(--space-2);
-  width: min(420px, 100%);
+  min-width: 140px;
   height: 36px;
   padding: 0 var(--space-3);
   border-radius: var(--radius-sm);
@@ -130,8 +131,22 @@
 
 .topbar__name {
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .layout__page {
   padding: var(--space-6);
+}
+
+.sidebar__brand-text {
+  display: grid;
+  min-width: 0;
+  line-height: 18px;
+}
+
+.sidebar__workshop {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

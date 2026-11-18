@@ -3,10 +3,10 @@ import { langFromCode, type Lang } from '@cs/shared/i18n';
 import { LIMITS } from '@cs/shared/vocabulary';
 import { eq, isNull, lt, or } from 'drizzle-orm';
 import { users } from '../../../db/schema';
-import type { TmaActor } from '../../../platform/actors';
+import type { ClientActor, MasterActor, TmaActor } from '../../../platform/actors';
 import type { PlatformDeps } from '../../../platform/deps';
 import { AppError } from '../../../platform/errors';
-import { CURRENT_POLICY_VERSION } from '../domain/consent';
+import type { SettingsService } from '../../workshop';
 import { decidePhoneLink } from '../domain/phone-link';
 import { effectiveRoles, shellOf } from '../domain/roles';
 import { readContact, readInitData, type TelegramUser } from '../domain/telegram-data';
@@ -23,12 +23,36 @@ export interface TmaServiceDeps extends PlatformDeps {
   initDataMaxAgeSeconds: number;
   /** The web panel, shown to staff in the Mini App; null until PUBLIC_URL is set. */
   adminUrl: string | null;
+  /** The workshop's data for the first screen and the policy version a consent is recorded with. */
+  settings: SettingsService;
 }
 
 export interface TmaService {
   /** The actor of signed init data, creating the user on their first visit; null if not valid. */
   authenticate(rawInitData: string): Promise<TmaActor | null>;
   bootstrap(actor: TmaActor): Promise<Bootstrap>;
+  /**
+   * The actor of a client's request: refuses staff (they use their own part) and anyone who has
+   * not given consent. The phone is checked by the use cases that need it.
+   */
+  client(actor: TmaActor): Promise<ClientActor>;
+  /**
+   * The client behind a Telegram account, for a button pressed in the chat: there is no signed
+   * init data there, only the account Telegram vouches for. Null for staff, for someone who has
+   * not given consent, and for an account we do not know.
+   */
+  clientByTelegramId(telegramId: number): Promise<ClientActor | null>;
+  /** The actor of a master's request: refuses anyone who does not hold the master role. */
+  master(actor: TmaActor): Promise<MasterActor>;
+  /** The profile: language, name and reminders (client PDF, T13). */
+  updateProfile(
+    actor: TmaActor,
+    patch: {
+      lang?: Lang | undefined;
+      fullName?: string | undefined;
+      remindersEnabled?: boolean | undefined;
+    },
+  ): Promise<Bootstrap>;
   saveOnboarding(actor: TmaActor, input: { lang: Lang; fullName: string }): Promise<Bootstrap>;
   setLang(actor: TmaActor, lang: Lang): Promise<Bootstrap>;
   /** Links the Telegram-verified number in `rawContact` to this person (section 7.2). */
@@ -95,6 +119,7 @@ export function createTmaService(deps: TmaServiceDeps): TmaService {
     const actor = await actorOf(telegramId);
     const [user] = await db.select().from(users).where(eq(users.id, actor.userId));
     if (!user) throw new AppError('not_found');
+    const workshop = await deps.settings.publicInfo();
     return {
       user: {
         id: user.id,
@@ -102,10 +127,12 @@ export function createTmaService(deps: TmaServiceDeps): TmaService {
         lang: user.lang,
         phone: user.phoneVerified ? user.phone : null,
         consentGiven: user.consentVersion !== null,
+        remindersEnabled: user.remindersEnabled,
       },
       shell: shellOf(actor.roles),
       roles: [...actor.roles],
       links: { admin: actor.roles.length > 0 ? deps.adminUrl : null },
+      workshop,
     };
   }
 
@@ -128,13 +155,69 @@ export function createTmaService(deps: TmaServiceDeps): TmaService {
 
     bootstrap: (actor) => bootstrapOf(actor.telegramId),
 
+    async client(actor) {
+      if (actor.roles.length > 0) throw new AppError('forbidden', 'staff use their own part');
+      const [user] = await db.select().from(users).where(eq(users.id, actor.userId));
+      if (!user) throw new AppError('unauthorized');
+      if (!user.consentVersion) throw new AppError('consent_required');
+      return {
+        kind: 'client',
+        userId: user.id,
+        telegramId: actor.telegramId,
+        lang: user.lang,
+        fullName: user.fullName,
+        phone: user.phoneVerified ? user.phone : null,
+      };
+    },
+
+    async clientByTelegramId(telegramId) {
+      const [user] = await db.select().from(users).where(eq(users.telegramId, telegramId));
+      if (!user?.consentVersion || user.anonymizedAt !== null) return null;
+      if ((await rolesOf(db, user.id)).length > 0) return null;
+      return {
+        kind: 'client',
+        userId: user.id,
+        telegramId,
+        lang: user.lang,
+        fullName: user.fullName,
+        phone: user.phoneVerified ? user.phone : null,
+      };
+    },
+
+    async master(actor) {
+      if (!actor.roles.includes('master')) throw new AppError('forbidden', 'not a master');
+      const [user] = await db.select().from(users).where(eq(users.id, actor.userId));
+      if (!user) throw new AppError('unauthorized');
+      return {
+        kind: 'master',
+        userId: user.id,
+        telegramId: actor.telegramId,
+        lang: user.lang,
+        fullName: user.fullName,
+      };
+    },
+
+    async updateProfile(actor, patch) {
+      await db
+        .update(users)
+        .set({
+          ...(patch.lang !== undefined && { lang: patch.lang }),
+          ...(patch.fullName !== undefined && { fullName: patch.fullName }),
+          ...(patch.remindersEnabled !== undefined && { remindersEnabled: patch.remindersEnabled }),
+        })
+        .where(eq(users.id, actor.userId));
+      return bootstrapOf(actor.telegramId);
+    },
+
     async saveOnboarding(actor, input) {
+      // The version of the policy in force is what this person agrees to.
+      const { workshop } = await deps.settings.current();
       await db
         .update(users)
         .set({
           lang: input.lang,
           fullName: input.fullName,
-          consentVersion: CURRENT_POLICY_VERSION,
+          consentVersion: workshop.policyVersion,
           consentAt: clock.now(),
         })
         .where(eq(users.id, actor.userId));

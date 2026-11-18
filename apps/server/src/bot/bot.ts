@@ -1,7 +1,14 @@
 import { autoRetry } from '@grammyjs/auto-retry';
 import { sequentialize } from '@grammyjs/runner';
 import { DEFAULT_LANG, langFromCode } from '@cs/shared/i18n';
-import { Bot, type Api, type ApiClientOptions, type BotError, type Context } from 'grammy';
+import {
+  Bot,
+  type Api,
+  type ApiClientOptions,
+  type BotError,
+  type Composer,
+  type Context,
+} from 'grammy';
 import type { UserFromGetMe } from 'grammy/types';
 import type { Logger } from '../logger';
 import { startHandlers, type BotUi, type TmaService } from '../modules/identity';
@@ -42,10 +49,19 @@ export function createBot(deps: BotDeps): Bot {
   return bot;
 }
 
-export function installBotHandlers(bot: Bot, deps: { tma: TmaService; ui: BotUi }): void {
+export function installBotHandlers(
+  bot: Bot,
+  deps: {
+    tma: TmaService;
+    ui: BotUi;
+    /** The handlers of the buttons that answer in the chat, from the modules that own them. */
+    actions: readonly Composer<Context>[];
+  },
+): void {
   // Updates run concurrently, but updates from the same chat stay in order.
   bot.use(sequentialize((ctx: Context) => ctx.chat?.id.toString()));
   bot.use(startHandlers(deps.tma, deps.ui));
+  for (const handlers of deps.actions) bot.use(handlers);
 
   // Buttons of old messages that no handler recognises: stop the loading spinner.
   bot.on('callback_query', (ctx) => ctx.answerCallbackQuery());

@@ -1,4 +1,5 @@
-import { GrammyError, HttpError } from 'grammy';
+import { GrammyError, HttpError, InlineKeyboard, type Api } from 'grammy';
+import type { MessageSender } from '../jobs/outbox-worker';
 
 const BAD_REQUEST = 400;
 const FORBIDDEN = 403;
@@ -18,4 +19,36 @@ export function describeDeliveryError(error: unknown): string {
   if (error instanceof GrammyError) return `telegram ${error.error_code}: ${error.description}`;
   if (error instanceof HttpError) return `network: ${error.message}`;
   return error instanceof Error ? error.name : 'unknown error';
+}
+
+/** Sends outbox messages: the text, and a button that opens the Mini App or the panel. */
+export function createMessageSender(
+  api: Api,
+  urls: { miniApp: string | undefined; admin: string | undefined },
+): MessageSender {
+  return {
+    async send(chatId, message) {
+      const keyboard = new InlineKeyboard();
+      // Answers in the chat come first, each on its own row; the link opens the screen.
+      for (const action of message.actions ?? []) keyboard.text(action.text, action.data).row();
+      const button = message.button;
+      if (button) {
+        if (button.target === 'panel') {
+          if (urls.admin) keyboard.url(button.text, urls.admin);
+        } else if (urls.miniApp) {
+          const query =
+            button.target === 'task' ? `?task=${button.taskId}` : `?order=${button.orderId}`;
+          keyboard.webApp(button.text, `${urls.miniApp}${query}`);
+        }
+      }
+      const hasButtons = keyboard.inline_keyboard.some((row) => row.length > 0);
+      try {
+        await api.sendMessage(chatId, message.text, hasButtons ? { reply_markup: keyboard } : {});
+        return 'sent';
+      } catch (error) {
+        if (isUnreachableChatError(error)) return 'unreachable';
+        throw error;
+      }
+    },
+  };
 }

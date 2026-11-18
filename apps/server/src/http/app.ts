@@ -1,15 +1,35 @@
 import fastifyCookie from '@fastify/cookie';
 import fastifyRateLimit from '@fastify/rate-limit';
 import { INIT_DATA_AUTH_SCHEME, SESSION_COOKIE } from '@cs/shared/routes';
+import { LIMITS } from '@cs/shared/vocabulary';
 import Fastify, { type FastifyError, type FastifyInstance, type FastifyRequest } from 'fastify';
 import type { Services } from '../composition';
 import type { Logger } from '../logger';
 import { auditAdminRoutes } from '../modules/audit';
+import { catalogAdminRoutes, catalogClientRoutes, catalogStaffRoutes } from '../modules/catalog';
+import { clientsAdminRoutes } from '../modules/clients';
+import { receptionAdminRoutes, receptionClientRoutes } from '../modules/reception';
+import { tasksAdminRoutes, tasksMasterRoutes } from '../modules/tasks';
+import { registerMediaRoute } from '../modules/media';
+import { garageAdminRoutes, garageClientRoutes } from '../modules/garage';
 import { authRoutes, staffAdminRoutes, tmaRoutes } from '../modules/identity';
-import type { StaffActor, TmaActor } from '../platform/actors';
+import {
+  adminOrdersRoutes,
+  extrasAdminRoutes,
+  extrasClientRoutes,
+  ordersClientRoutes,
+} from '../modules/orders';
+import { workshopAdminRoutes } from '../modules/workshop';
+import type { ClientActor, MasterActor, StaffActor, TmaActor } from '../platform/actors';
 import { AppError } from '../platform/errors';
 import { registerErrorHandling } from './plugins/errors';
-import type { AdminContext, AuthContext, TmaContext } from './contexts';
+import type {
+  AdminContext,
+  AuthContext,
+  ClientContext,
+  MasterContext,
+  TmaContext,
+} from './contexts';
 import { registerGroup } from './route';
 
 export interface HttpDeps {
@@ -26,12 +46,16 @@ export interface HttpDeps {
 declare module 'fastify' {
   interface FastifyRequest {
     tmaActor: TmaActor | null;
+    clientActor: ClientActor | null;
+    masterActor: MasterActor | null;
     staffActor: StaffActor | null;
   }
 }
 
-/** Requests carry JSON only (photos arrive in stage 5 through their own route). */
+/** Requests carry JSON, except a photo, which is raw bytes. */
 const BODY_LIMIT_BYTES = 256 * 1024;
+/** A photo may be a little over the limit the media module sets, so that module gives the answer. */
+const PHOTO_BODY_LIMIT_BYTES = LIMITS.photoBytes.max + 64 * 1024;
 const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
@@ -64,9 +88,31 @@ export function createHttpApp(deps: HttpDeps): FastifyInstance {
   const app = Fastify({ logger: false, bodyLimit: BODY_LIMIT_BYTES, trustProxy: '127.0.0.1' });
 
   registerErrorHandling(app, deps.logger);
+
+  // A photo comes as its own bytes: the type is found out from them, whatever the header says.
+  app.addContentTypeParser(
+    ['application/octet-stream', 'image/jpeg', 'image/png', 'image/webp'],
+    { parseAs: 'buffer', bodyLimit: PHOTO_BODY_LIMIT_BYTES },
+    (_request, body, done) => {
+      done(null, body);
+    },
+  );
+
+  /** Init data in `Authorization: tma <init data>`; the actor, or 401. */
+  const authenticateTma = async (request: FastifyRequest): Promise<TmaActor> => {
+    const header = request.headers.authorization;
+    const prefix = `${INIT_DATA_AUTH_SCHEME} `;
+    const actor = header?.startsWith(prefix)
+      ? await services.identity.tma.authenticate(header.slice(prefix.length))
+      : null;
+    return required(actor);
+  };
   void app.register(fastifyCookie);
   // A floor against floods; the business rules (sign-in pauses, code attempts) do the rest.
   void app.register(fastifyRateLimit, { max: 120, timeWindow: '1 minute' });
+
+  // A photo: the signed link is its own permission, so there is no session or init data here.
+  registerMediaRoute(app, services.media);
 
   app.get('/health', async (_request, reply) => {
     const database = await deps.checkDatabase();
@@ -77,17 +123,58 @@ export function createHttpApp(deps: HttpDeps): FastifyInstance {
   void app.register((scope, _options, done) => {
     scope.decorateRequest('tmaActor', null);
     scope.addHook('preHandler', async (request) => {
-      const header = request.headers.authorization;
-      const prefix = `${INIT_DATA_AUTH_SCHEME} `;
-      request.tmaActor = header?.startsWith(prefix)
-        ? await services.identity.tma.authenticate(header.slice(prefix.length))
-        : null;
-      required(request.tmaActor);
+      request.tmaActor = await authenticateTma(request);
     });
-    registerGroup<'tma', TmaContext>(scope, 'tma', tmaRoutes(services.identity.tma), {
-      context: (request) => ({ actor: required(request.tmaActor) }),
-      validateResponses,
+    registerGroup<'tma', TmaContext>(
+      scope,
+      'tma',
+      tmaRoutes(services.identity.tma, services.identity.clients),
+      {
+        context: (request) => ({ actor: required(request.tmaActor) }),
+        validateResponses,
+      },
+    );
+    done();
+  });
+
+  // The client's part of the Mini App: the same init data, and the person must be a client who has
+  // given consent. A verified phone is checked by the use cases that need it.
+  void app.register((scope, _options, done) => {
+    scope.decorateRequest('clientActor', null);
+    scope.addHook('preHandler', async (request) => {
+      request.clientActor = await services.identity.tma.client(await authenticateTma(request));
     });
+    registerGroup<'client', ClientContext>(
+      scope,
+      'client',
+      {
+        ...catalogClientRoutes(services.catalog.offers),
+        ...garageClientRoutes(services.garage),
+        ...ordersClientRoutes(services.orders),
+        ...receptionClientRoutes(services.reception),
+        ...extrasClientRoutes(services.extras),
+      },
+      { context: (request) => ({ actor: required(request.clientActor) }), validateResponses },
+    );
+    done();
+  });
+
+  // The master's part of the Mini App: the same init data, and the person must hold the master
+  // role. Every use case works on the master's own tasks only.
+  void app.register((scope, _options, done) => {
+    scope.decorateRequest('masterActor', null);
+    scope.addHook('preHandler', async (request) => {
+      request.masterActor = await services.identity.tma.master(await authenticateTma(request));
+    });
+    registerGroup<'master', MasterContext>(
+      scope,
+      'master',
+      tasksMasterRoutes(services.taskService),
+      {
+        context: (request) => ({ actor: required(request.masterActor) }),
+        validateResponses,
+      },
+    );
     done();
   });
 
@@ -137,7 +224,19 @@ export function createHttpApp(deps: HttpDeps): FastifyInstance {
     registerGroup<'admin', AdminContext>(
       scope,
       'admin',
-      { ...staffAdminRoutes(services.identity.staff), ...auditAdminRoutes(services.audit) },
+      {
+        ...staffAdminRoutes(services.identity.staff),
+        ...auditAdminRoutes(services.audit),
+        ...workshopAdminRoutes(services.workshop),
+        ...catalogAdminRoutes(services.catalog),
+        ...catalogStaffRoutes(services.catalog.offers),
+        ...adminOrdersRoutes(services.adminOrders, services.schedule),
+        ...clientsAdminRoutes(services.clients),
+        ...garageAdminRoutes(services.garage),
+        ...receptionAdminRoutes(services.reception),
+        ...tasksAdminRoutes(services.taskService),
+        ...extrasAdminRoutes(services.extras),
+      },
       {
         context: (request) => ({ actor: required(request.staffActor), ip: request.ip }),
         validateResponses,

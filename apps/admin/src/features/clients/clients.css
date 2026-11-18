@@ -1,0 +1,124 @@
+.clients,
+.client {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.clients__head,
+.client__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.client__head {
+  justify-content: flex-start;
+}
+
+.client__head-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.clients__tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.clients__search {
+  flex: 0 1 360px;
+}
+
+.clients__chip {
+  margin-left: var(--space-2);
+}
+
+.table--rows tbody tr:hover {
+  background: var(--surface-muted);
+}
+
+.client__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(300px, 2fr);
+  align-items: start;
+  gap: var(--space-4);
+}
+
+.client__main,
+.client__side {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.client__panel {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+}
+
+.client__panel .table td {
+  padding-inline: 0;
+}
+
+.client__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.client__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.client__cars {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.client__cars li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.unmapped {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border-color: var(--warning);
+}
+
+.unmapped p {
+  margin: 0;
+}
+
+.unmapped__rows {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.unmapped__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.unmapped__text {
+  display: grid;
+  flex: 1;
+}

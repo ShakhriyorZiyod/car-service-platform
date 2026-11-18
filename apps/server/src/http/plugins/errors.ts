@@ -21,6 +21,22 @@ const APP_ERROR_STATUS: Record<AppErrorCode, number> = {
   phone_taken: 409,
   login_taken: 409,
   last_owner: 409,
+
+  name_taken: 409,
+
+  phone_required: 403,
+  plate_taken: 409,
+  car_has_active_orders: 409,
+  service_unavailable: 422,
+  slot_unavailable: 422,
+  slot_taken: 409,
+  invalid_transition: 409,
+  act_incomplete: 422,
+  act_not_confirmed: 422,
+  invalid_photo: 422,
+  photo_required: 422,
+  item_unavailable: 409,
+  already_decided: 409,
 };
 
 export const errorBody = (code: ApiErrorCode, paths?: readonly string[]): ApiError => ({

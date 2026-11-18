@@ -27,11 +27,4 @@ export async function rolesOfMany(
   return byUser;
 }
 
-/** The PostgreSQL unique constraint a failed write ran into, if that is why it failed. */
-export function violatedUniqueConstraint(error: unknown): string | undefined {
-  for (let current: unknown = error; current; current = (current as { cause?: unknown }).cause) {
-    const pg = current as { code?: unknown; constraint?: unknown };
-    if (pg.code === '23505') return typeof pg.constraint === 'string' ? pg.constraint : '';
-  }
-  return undefined;
-}
+export { violatedUniqueConstraint } from '../../../platform/pg-errors';

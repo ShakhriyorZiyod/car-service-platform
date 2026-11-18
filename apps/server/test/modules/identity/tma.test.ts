@@ -4,7 +4,13 @@ import { signContact, signInitData, type DevTelegramUser } from '../../../script
 import { users } from '../../../src/db/schema';
 import type { TmaActor } from '../../../src/platform/actors';
 import { useTestDatabase } from '../../helpers/db';
-import { insertStaff, insertUser, uniquePhone, uniqueTelegramId } from '../../helpers/factories';
+import {
+  insertStaff,
+  insertUser,
+  staffActorOf,
+  uniquePhone,
+  uniqueTelegramId,
+} from '../../helpers/factories';
 import {
   ADMIN_URL,
   createTestServices,
@@ -221,5 +227,48 @@ describe('which part opens', () => {
     const actor = await open(user);
     expect(actor.roles).toEqual([]);
     expect(await tma().bootstrap(actor)).toMatchObject({ shell: 'client', roles: [] });
+  });
+});
+
+describe('the workshop in the first launch (PLAN 4.7, 7.4)', () => {
+  async function ownerSaves(overrides: { policyUrl?: string; policyVersion?: string }) {
+    const owner = await insertStaff(database.db, ['owner']);
+    const current = await t.services.workshop.settings.current();
+    await t.services.workshop.settings.update(staffActorOf(owner, ['owner']), {
+      ...current,
+      workshop: { ...current.workshop, name: 'Avto Pro', ...overrides },
+    });
+  }
+
+  it('the app is told the workshop’s name, and the policy link once the owner has entered it', async () => {
+    const actor = await open(telegramUser());
+    expect((await tma().bootstrap(actor)).workshop).toEqual({
+      name: 'CarService',
+      address: null,
+      phone: null,
+      mapUrl: null,
+      policyUrl: null,
+    });
+
+    await ownerSaves({ policyUrl: 'https://example.uz/policy' });
+    expect((await tma().bootstrap(actor)).workshop).toMatchObject({
+      name: 'Avto Pro',
+      policyUrl: 'https://example.uz/policy',
+    });
+  });
+
+  it('consent records the version of the policy in force at that moment', async () => {
+    const first = await open(telegramUser());
+    await tma().saveOnboarding(first, { lang: 'uz', fullName: 'Aziz' });
+    await ownerSaves({ policyVersion: '2026-12-01' });
+    const second = await open(telegramUser());
+    await tma().saveOnboarding(second, { lang: 'uz', fullName: 'Dilnoza' });
+
+    const versionOf = async (actor: TmaActor) => {
+      const [row] = await database.db.select().from(users).where(eq(users.id, actor.userId));
+      return row?.consentVersion;
+    };
+    expect(await versionOf(first)).toBe('draft-2026-11');
+    expect(await versionOf(second)).toBe('2026-12-01');
   });
 });

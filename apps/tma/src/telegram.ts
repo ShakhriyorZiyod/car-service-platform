@@ -1,4 +1,6 @@
 import {
+  backButton,
+  cloudStorage,
   init,
   isTMA,
   miniApp,
@@ -153,4 +155,57 @@ export async function requestPhone(): Promise<string | null> {
 export function openExternal(url: string): void {
   const opened = insideTelegram ? openLink.ifAvailable(url) : { ok: false as const };
   if (!opened.ok) window.open(url, '_blank', 'noopener');
+}
+
+/** True inside Telegram, where the native back button exists; elsewhere the page draws its own. */
+export const hasNativeBack = (): boolean => insideTelegram;
+
+/**
+ * Shows Telegram's back button and calls `onBack` when it is pressed; the returned function takes
+ * it away again. A no-op outside Telegram.
+ */
+export function showBackButton(onBack: () => void): () => void {
+  if (!insideTelegram) return () => undefined;
+  let off: () => void = () => undefined;
+  optional(() => {
+    backButton.mount.ifAvailable();
+    backButton.show.ifAvailable();
+    off = backButton.onClick(onBack);
+  });
+  return () => {
+    optional(() => off());
+    optional(() => backButton.hide.ifAvailable());
+  };
+}
+
+/**
+ * Small notes that should outlive the app (an unfinished booking): Telegram's CloudStorage, so they
+ * follow the person to another device. Outside Telegram, in development, the browser's storage.
+ * Nothing here may fail the app: a draft is a convenience.
+ */
+export async function readStored(key: string): Promise<string | null> {
+  try {
+    if (!insideTelegram) return localStorage.getItem(key);
+    const read = cloudStorage.getItem.ifAvailable(key);
+    return read.ok ? (await read.data) || null : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function writeStored(key: string, value: string | null): Promise<void> {
+  try {
+    if (!insideTelegram) {
+      if (value === null) localStorage.removeItem(key);
+      else localStorage.setItem(key, value);
+      return;
+    }
+    const done =
+      value === null
+        ? cloudStorage.deleteItem.ifAvailable(key)
+        : cloudStorage.setItem.ifAvailable(key, value);
+    if (done.ok) await done.data;
+  } catch {
+    // The draft is lost, the booking is not.
+  }
 }

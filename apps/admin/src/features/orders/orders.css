@@ -1,0 +1,146 @@
+.orders {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-4);
+}
+
+.orders__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+/* On a tablet the four columns do not fit: the board scrolls, the page does not. */
+.board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(220px, 1fr));
+  align-items: start;
+  gap: var(--space-4);
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+}
+
+.board__column {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.board__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.board__square {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--text-muted);
+}
+
+.board__column--new .board__square {
+  background: var(--info);
+}
+
+.board__column--confirmed .board__square {
+  background: var(--teal);
+}
+
+.board__column--in_work .board__square {
+  background: var(--warning);
+}
+
+.board__column--ready_for_pickup .board__square {
+  background: var(--success);
+}
+
+.board__count {
+  margin-left: auto;
+  color: var(--text-muted);
+}
+
+.board__empty {
+  margin: 0;
+}
+
+.order-card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.order-card--warn {
+  border-color: var(--danger);
+}
+
+.order-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.order-card__number {
+  color: var(--text);
+  font-size: 16px;
+  text-decoration: none;
+}
+
+.order-card__number:hover {
+  text-decoration: underline;
+}
+
+.order-card__timer {
+  margin-left: auto;
+}
+
+.order-card__timer.is-warn {
+  color: var(--danger);
+}
+
+.order-card__date {
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.order-card__car {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-weight: 600;
+}
+
+.order-card__visit {
+  margin: 0;
+}
+
+.order-card__items,
+.order-card__who,
+.order-card__flags,
+.order-card__hold {
+  margin: 0;
+}
+
+.order-card__items {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.order-card__flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.order-card__hold {
+  font-size: 12px;
+}
