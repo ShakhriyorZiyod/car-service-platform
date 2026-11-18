@@ -8,5 +8,5 @@ export function createTasks(deps: TasksDeps): TasksService {
   return createTasksService(deps);
 }
 
-export type { TasksService } from './app/tasks';
+export type { TasksService, TaskWork } from './app/tasks';
 export { tasksAdminRoutes, tasksMasterRoutes } from './http/routes';

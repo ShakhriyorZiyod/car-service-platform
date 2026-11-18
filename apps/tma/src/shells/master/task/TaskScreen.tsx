@@ -131,7 +131,12 @@ export function TaskScreen({ taskId, onBack }: { taskId: string; onBack: () => v
               <ul>
                 {defects.map((defect, index) => (
                   <li key={defect.id}>
-                    {t.defectLine(index + 1, defect.view, defect.kind, defect.note ?? '')}
+                    {t.defectLine(
+                      index + 1,
+                      t.views[defect.view],
+                      t.kinds[defect.kind],
+                      defect.note ?? '',
+                    )}
                   </li>
                 ))}
               </ul>

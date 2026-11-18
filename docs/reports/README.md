@@ -21,6 +21,6 @@ Qoidalar:
 | 2. Ma'lumotnomalar va sozlamalar | [bosqich-2.md](bosqich-2.md) |
 | 3. Garaj va bron (mijoz) | [bosqich-3.md](bosqich-3.md) |
 | 4. Arizalarni boshqarish (admin) | [bosqich-4.md](bosqich-4.md) |
-| 5. Qabul va ustalar ishi | — |
-| 6. Topshirish va to'lov | — |
+| 5. Qabul va ustalar ishi | [bosqich-5.md](bosqich-5.md) |
+| 6. Topshirish va to'lov | [bosqich-6.md](bosqich-6.md) |
 | 7. Ishga tushirish | — |

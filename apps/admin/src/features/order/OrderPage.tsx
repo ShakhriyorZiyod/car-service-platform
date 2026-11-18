@@ -100,6 +100,14 @@ function OrderView({ order }: { order: AdminOrder }) {
           <span className="chip">{t.source[order.source]}</span>
         </div>
         <div className="order__actions">
+          {(actions.canCheckout || order.status === 'completed') && (
+            <Link
+              className={actions.canCheckout ? 'btn btn--primary' : 'btn btn--secondary'}
+              to={`/orders/${order.id}/handover`}
+            >
+              {actions.canCheckout ? t.order.handover : t.order.payment}
+            </Link>
+          )}
           {actions.canEditItems && (
             <Button variant="secondary" onClick={() => setDialog('items')}>
               {t.order.actions.edit}
@@ -225,6 +233,16 @@ function OrderView({ order }: { order: AdminOrder }) {
                     </td>
                   </tr>
                 ))}
+                {order.discount && (
+                  <tr>
+                    <td className="muted">
+                      {t.order.discount}
+                      {order.discount.reason && ` · ${order.discount.reason}`}
+                      {order.discount.percent !== null && ` · ${order.discount.percent}%`}
+                    </td>
+                    <td className="table__num num">−{formatMoney(order.discount.amount, lang)}</td>
+                  </tr>
+                )}
                 <tr className="table__total">
                   <td>{t.order.total}</td>
                   <td className="table__num num">{formatMoney(order.total, lang)}</td>

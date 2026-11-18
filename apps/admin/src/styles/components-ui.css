@@ -124,7 +124,8 @@ a.btn {
   vertical-align: middle;
 }
 
-.table__num {
+.table__num,
+.table th.table__num {
   text-align: right;
 }
 
@@ -747,4 +748,46 @@ a.btn {
   border-color: var(--accent);
   background: var(--accent-soft);
   color: var(--accent-text);
+}
+
+/* "Bugungi kassa" (design A6): the day's takings by method. */
+.cash {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+}
+
+.cash__rows {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.cash__row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.cash__row dt {
+  color: var(--text-muted);
+}
+
+.cash__row dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.cash__row--total {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+.cash__row--total dt {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.cash__row--total dd {
+  font-size: 22px;
 }

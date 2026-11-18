@@ -13,6 +13,7 @@ import {
   index,
   integer,
   jsonb,
+  smallint,
   numeric,
   pgEnum,
   pgTable,
@@ -154,4 +155,21 @@ export const orderCalls = pgTable(
     at: instant().notNull(),
   },
   (t) => [index('order_calls_order_idx').on(t.orderId, t.at)],
+);
+
+/** The client's rating of a finished order, given once; the words may follow the stars (stage 6). */
+export const reviews = pgTable(
+  'reviews',
+  {
+    orderId: uuid()
+      .primaryKey()
+      .references(() => orders.id),
+    clientId: uuid()
+      .notNull()
+      .references(() => users.id),
+    rating: smallint().notNull(),
+    text: text(),
+    createdAt: createdAt(),
+  },
+  (t) => [check('reviews_rating_range', sql`${t.rating} between 1 and 5`)],
 );

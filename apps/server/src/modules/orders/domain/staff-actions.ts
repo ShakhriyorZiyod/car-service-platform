@@ -19,6 +19,37 @@ export function noShowAllowed(status: OrderStatus, startsAt: Date, now: Date): b
   return status === 'confirmed' && now >= startsAt;
 }
 
+export interface HandoverActions {
+  canDiscount: boolean;
+  canPriceItems: boolean;
+  canCheckout: boolean;
+}
+
+/**
+ * The money side of an order (docs/PLAN.md, sections 8 and 11): a discount until the car is handed
+ * over, a price for a zone "to be agreed" once the work began, and checkout when it is ready.
+ */
+export function handoverActions(input: {
+  status: OrderStatus;
+  /** Zones that count and have no price. */
+  unpricedCount: number;
+  /** The person may give discounts and take payment (`checkout.write`). */
+  maySettle: boolean;
+}): HandoverActions {
+  const { status } = input;
+  const open =
+    status === 'new' ||
+    status === 'confirmed' ||
+    status === 'in_work' ||
+    status === 'ready_for_pickup';
+  return {
+    canDiscount: input.maySettle && open,
+    canPriceItems:
+      (status === 'in_work' || status === 'ready_for_pickup') && input.unpricedCount > 0,
+    canCheckout: input.maySettle && status === 'ready_for_pickup',
+  };
+}
+
 export function staffActions(input: {
   status: OrderStatus;
   /** When the booked slot begins. */

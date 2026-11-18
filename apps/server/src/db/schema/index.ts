@@ -9,6 +9,7 @@ export * from './garage';
 export * from './identity';
 export * from './media';
 export * from './orders';
+export * from './payments';
 export * from './platform';
 export * from './reception';
 export * from './tasks';

@@ -32,6 +32,10 @@ interface Words {
   readyTitle: string;
   readyTotal: string;
   readyUntil: (time: string) => string;
+  completedTitle: string;
+  completedPaid: string;
+  completedReceipt: string;
+  completedAsk: string;
   taskTitle: string;
   taskWorks: string;
   taskNorm: string;
@@ -75,6 +79,10 @@ const WORDS: Record<Lang, Words> = {
     readyTitle: 'Mashinangiz tayyor',
     readyTotal: 'Summa',
     readyUntil: (time) => `Bugun soat ${time} gacha olib ketishingiz mumkin.`,
+    completedTitle: 'Rahmat! Ish yakunlandi',
+    completedPaid: 'To‘landi',
+    completedReceipt: 'Fiskal chek',
+    completedAsk: 'Ish qanday bo‘ldi? Baholang:',
     taskTitle: 'Yangi vazifa',
     taskWorks: 'Ishlar',
     taskNorm: 'Me’yor',
@@ -111,6 +119,10 @@ const WORDS: Record<Lang, Words> = {
     readyTitle: 'Ваш автомобиль готов',
     readyTotal: 'Сумма',
     readyUntil: (time) => `Забрать можно сегодня до ${time}.`,
+    completedTitle: 'Спасибо! Работа завершена',
+    completedPaid: 'Оплачено',
+    completedReceipt: 'Фискальный чек',
+    completedAsk: 'Как прошла работа? Оцените:',
     taskTitle: 'Новая задача',
     taskWorks: 'Работы',
     taskNorm: 'Норма',
@@ -179,6 +191,25 @@ export function renderWork(notification: WorkNotification, lang: Lang): Rendered
         button: open,
       };
     }
+    case 'order.completed':
+      return {
+        text: [
+          `<b>${w.completedTitle}, ${number}</b>`,
+          '',
+          car,
+          `${w.completedPaid}: ${esc(formatMoney(notification.total, lang))}`,
+          `${w.completedReceipt}: ${esc(notification.receiptNo)}`,
+          '',
+          w.completedAsk,
+        ].join('\n'),
+        button: open,
+        // One to five stars on one row above the link (bot/delivery.ts).
+        actions: [1, 2, 3, 4, 5].map((stars) => ({
+          text: `${stars} ★`,
+          data: `rate:${stars}:${notification.orderId}`,
+        })),
+        actionsInRow: true,
+      };
     case 'staff.task_assigned': {
       const instruction = notification.instruction
         ? `\n${w.taskInstruction}: ${esc(notification.instruction)}`

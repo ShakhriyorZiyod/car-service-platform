@@ -94,6 +94,12 @@ export const notificationSchema = z.discriminatedUnion('type', [
     /** When the workshop closes today, if it is open. */
     closesAt: z.string().nullable(),
   }),
+  /** To the client: the car was handed over and paid for; how was it? (stage 6) */
+  orderRef.extend({
+    type: z.literal('order.completed'),
+    total: z.number().int(),
+    receiptNo: z.string(),
+  }),
   /** To the master: a task was given to them. */
   orderRef.extend({
     type: z.literal('staff.task_assigned'),
@@ -140,6 +146,7 @@ export type WorkNotification = Extract<
       | 'act.confirm_request'
       | 'extra.approval_request'
       | 'order.ready'
+      | 'order.completed'
       | 'staff.task_assigned'
       | 'staff.task_rework'
       | 'staff.report_submitted'
@@ -182,4 +189,6 @@ export interface RenderedMessage {
   button: MessageButton | null;
   /** Buttons that answer in the chat; each goes on its own row above the link button. */
   actions?: readonly MessageAction[];
+  /** All the answering buttons on one row (the five ratings) instead of a row each. */
+  actionsInRow?: boolean;
 }

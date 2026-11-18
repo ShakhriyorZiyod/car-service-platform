@@ -20,6 +20,8 @@ import {
   ordersClientRoutes,
 } from '../modules/orders';
 import { workshopAdminRoutes } from '../modules/workshop';
+import { dashboardAdminRoutes } from '../modules/dashboard';
+import { paymentsAdminRoutes, paymentsClientRoutes } from '../modules/payments';
 import type { ClientActor, MasterActor, StaffActor, TmaActor } from '../platform/actors';
 import { AppError } from '../platform/errors';
 import { registerErrorHandling } from './plugins/errors';
@@ -153,6 +155,7 @@ export function createHttpApp(deps: HttpDeps): FastifyInstance {
         ...ordersClientRoutes(services.orders),
         ...receptionClientRoutes(services.reception),
         ...extrasClientRoutes(services.extras),
+        ...paymentsClientRoutes(services.payments),
       },
       { context: (request) => ({ actor: required(request.clientActor) }), validateResponses },
     );
@@ -236,6 +239,8 @@ export function createHttpApp(deps: HttpDeps): FastifyInstance {
         ...receptionAdminRoutes(services.reception),
         ...tasksAdminRoutes(services.taskService),
         ...extrasAdminRoutes(services.extras),
+        ...paymentsAdminRoutes(services.payments),
+        ...dashboardAdminRoutes(services.dashboard),
       },
       {
         context: (request) => ({ actor: required(request.staffActor), ip: request.ip }),

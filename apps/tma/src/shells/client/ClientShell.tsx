@@ -55,7 +55,15 @@ export default function ClientShell({ bootstrap }: { bootstrap: Bootstrap }) {
   if (flow?.kind === 'car') {
     return <CarForm carId={flow.carId} onBack={close} onDone={close} />;
   }
-  if (flow?.kind === 'order') return <OrderDetail orderId={flow.orderId} onBack={close} />;
+  if (flow?.kind === 'order') {
+    return (
+      <OrderDetail
+        orderId={flow.orderId}
+        onBack={close}
+        onBook={() => setFlow({ kind: 'booking' })}
+      />
+    );
+  }
   if (flow?.kind === 'sent') {
     return (
       <SentScreen

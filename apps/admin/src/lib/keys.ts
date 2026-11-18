@@ -30,3 +30,6 @@ export const actKey = (orderId: string) => ['act', orderId] as const;
 export const TASKS_KEY = ['tasks'] as const;
 export const taskKey = (id: string) => ['task', id] as const;
 export const MASTERS_KEY = ['masters'] as const;
+
+/** The handover of an order: the act of the work done, the payment and the receipt (stage 6). */
+export const handoverKey = (orderId: string) => ['handover', orderId] as const;

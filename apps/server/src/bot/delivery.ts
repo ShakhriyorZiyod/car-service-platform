@@ -30,7 +30,11 @@ export function createMessageSender(
     async send(chatId, message) {
       const keyboard = new InlineKeyboard();
       // Answers in the chat come first, each on its own row; the link opens the screen.
-      for (const action of message.actions ?? []) keyboard.text(action.text, action.data).row();
+      for (const action of message.actions ?? []) {
+        keyboard.text(action.text, action.data);
+        if (!message.actionsInRow) keyboard.row();
+      }
+      if (message.actionsInRow) keyboard.row();
       const button = message.button;
       if (button) {
         if (button.target === 'panel') {

@@ -33,6 +33,14 @@ export const LIMITS = {
   photoBytes: { max: 3 * 1024 * 1024 },
   /** Photos of one attempt of one task. */
   taskPhotos: { max: 20 },
+
+  // Handover and payment (stage 6)
+  /** The number of the fiscal receipt the cash register printed (docs/PLAN.md, section 11). */
+  receiptNo: { min: 1, max: 64 },
+  /** Why a discount was given: "Doimiy mijoz". */
+  discountReason: { min: 1, max: 200 },
+  /** The client's words about the work. */
+  reviewText: { max: 1_000 },
 } as const;
 
 /** Telegram's signed contact string; real ones are a few hundred characters. */

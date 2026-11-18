@@ -95,6 +95,15 @@ export interface TaskPhotoUpload {
   bytes: Uint8Array;
 }
 
+/** The finished work of one task, for the handover and the client (designs A8 and T12). */
+export interface TaskWork {
+  taskId: string;
+  masterName: string;
+  items: { id: string; nameUz: string; nameRu: string }[];
+  before: PhotoLink[];
+  after: PhotoLink[];
+}
+
 export interface TasksService {
   /** The masters the admin may give a task to. */
   masters(actor: StaffActor): Promise<MasterRef[]>;
@@ -108,6 +117,12 @@ export interface TasksService {
   update(actor: StaffActor, id: string, patch: TaskPatch, ip?: string): Promise<AdminTask>;
   accept(actor: StaffActor, id: string, ip?: string): Promise<AdminTask>;
   rework(actor: StaffActor, id: string, remark: string, ip?: string): Promise<AdminTask>;
+
+  /**
+   * The accepted tasks of an order: who did which zones, the photos taken before the work and
+   * those of the attempt that was accepted. The caller has checked who may see them.
+   */
+  workOf(from: DbOrTx, orderId: string): Promise<TaskWork[]>;
 
   forMaster(master: MasterActor, tab: MasterTaskTab): Promise<MasterTaskSummary[]>;
   taskForMaster(master: MasterActor, id: string): Promise<MasterTask>;
@@ -410,6 +425,45 @@ export function createTasksService(deps: TasksDeps): TasksService {
     async get(actor, id) {
       requirePermission(actor, 'tasks.review');
       return adminTask(db, id);
+    },
+
+    async workOf(from, orderId) {
+      const rows = await from
+        .select()
+        .from(tasks)
+        .where(and(eq(tasks.orderId, orderId), eq(tasks.status, 'accepted')))
+        .orderBy(asc(tasks.createdAt), asc(tasks.id));
+      if (rows.length === 0) return [];
+      const items = await itemsOf(
+        from,
+        rows.map((row) => row.id),
+      );
+      const names = await namesOf(
+        from,
+        rows.map((row) => row.masterId),
+      );
+      const result: TaskWork[] = [];
+      // One query after another: the caller may pass a transaction.
+      for (const row of rows) {
+        const photos = await media.ofTask(from, row.id);
+        const accepted = attemptOf(row.reworkCount);
+        const link = (photo: Photo): PhotoLink => ({
+          mediaId: photo.id,
+          url: media.link(photo.id),
+        });
+        result.push({
+          taskId: row.id,
+          masterName: names.get(row.masterId) ?? '',
+          items: items
+            .filter((item) => item.taskId === row.id)
+            .map((item) => ({ id: item.id, nameUz: item.nameUz, nameRu: item.nameRu })),
+          before: photos.filter((photo) => photo.purpose === 'task_before').map(link),
+          after: photos
+            .filter((photo) => photo.purpose === 'task_after' && photo.attempt === accepted)
+            .map(link),
+        });
+      }
+      return result;
     },
 
     async create(actor, orderId, input, ip) {

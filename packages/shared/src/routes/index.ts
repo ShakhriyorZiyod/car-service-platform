@@ -135,6 +135,14 @@ export const ROUTES = {
     path: '/api/admin/orders/:id/extra-items/:itemId/decision',
   },
   'client.decideExtra': { method: 'POST', path: '/api/client/orders/:id/extra/:itemId' },
+  // Stage 6: handover and payment
+  'admin.setDiscount': { method: 'PUT', path: '/api/admin/orders/:id/discount' },
+  'admin.priceItem': { method: 'PUT', path: '/api/admin/orders/:id/items/:itemId/price' },
+  'admin.handover': { method: 'GET', path: '/api/admin/orders/:id/handover' },
+  'admin.checkout': { method: 'POST', path: '/api/admin/orders/:id/checkout' },
+  'admin.correctPayment': { method: 'PATCH', path: '/api/admin/payments/:id/method' },
+  'client.orderResult': { method: 'GET', path: '/api/client/orders/:id/result' },
+  'client.review': { method: 'POST', path: '/api/client/orders/:id/review' },
   'admin.unmappedCars': { method: 'GET', path: '/api/admin/cars/unmapped' },
   'admin.mapCar': { method: 'POST', path: '/api/admin/cars/:id/map' },
 } as const satisfies RouteTable;

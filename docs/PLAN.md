@@ -909,9 +909,11 @@ Yo'llar `packages/shared/src/routes`, sxemalar `contract` da. Guruhlar va autent
 | `GET /api/client/orders?tab=active\|history`, `GET .../:id` | Ro'yxat, kuzatuv (zonalar holati bilan) |
 | `POST /api/client/orders/:id/cancel` | Sabab (`client` turidagi) |
 | `POST /api/client/orders/:id/reschedule-request` | Adminlarga so'rov |
+| `GET /api/client/orders/:id/act` | Yuborilgan dalolatnomani ko'rish (`canConfirm` serverdan) |
 | `POST /api/client/orders/:id/act/confirm` | Dalolatnomani tasdiqlash |
 | `POST /api/client/orders/:id/extra/:itemId` | `approve` yoki `reject` |
-| `POST /api/client/orders/:id/review` | 1–5 va izoh |
+| `POST /api/client/orders/:id/review` | 1–5 va izoh (yulduz bir marta; botdagi yulduzga izoh keyin ilovada) |
+| `GET /api/client/orders/:id/result` | T12: ish fotolari (oldin va qabul qilingan urinishning keyin), to'lov usullari, chek raqami (22-bo'lim) |
 
 **Usta**
 
@@ -944,8 +946,10 @@ Yo'llar `packages/shared/src/routes`, sxemalar `contract` da. Guruhlar va autent
 | `GET /api/admin/schedule?date`, `POST /api/admin/blocks`, `DELETE /api/admin/blocks/:id` | Jadval va bloklash |
 | `GET, PUT /api/admin/orders/:id/act`, `PUT .../act/photos/:mediaId`, `POST .../act/send`, `POST .../act/confirm-verbal`, `POST /api/admin/orders/:id/start-work` | Qabul |
 | `POST /api/admin/orders/:id/tasks`, `PATCH /api/admin/tasks/:id`, `POST .../accept`, `POST .../rework` | Vazifalar |
+| `GET /api/admin/tasks?tab&orderId`, `GET /api/admin/tasks/:id`, `GET /api/admin/masters` | Tekshiruv sahifasi (A3), vazifa kartasi va ustalar ro'yxati (22-bo'lim) |
 | `POST /api/admin/orders/:id/extra-items`, `POST .../extra-items/:itemId/decision` | Qo'shimcha ish |
 | `PUT /api/admin/orders/:id/discount`, `POST /api/admin/orders/:id/checkout`, `PATCH /api/admin/payments/:id/method` | To'lov |
+| `GET /api/admin/orders/:id/handover`, `PUT /api/admin/orders/:id/items/:itemId/price` | A8: topshirish ma'lumoti; ish boshlangach "kelishiladi" bandga narx (22-bo'lim) |
 | `GET, POST /api/admin/clients`, `GET, PATCH .../:id`, `POST .../:id/cars`, `POST .../:id/anonymize` | Mijozlar |
 | `GET, PUT /api/admin/settings` | Ustaxona va qoidalar |
 | `GET, PUT /api/admin/work-hours`, `POST, DELETE /api/admin/holidays` | Ish vaqti |
@@ -1055,8 +1059,8 @@ Docker yo'q, barbershop_bot bilan bir xil yondashuv:
 | 2 | Ma'lumotnomalar va sozlamalar | Qabul qilindi | [bosqich-2.md](reports/bosqich-2.md) |
 | 3 | Garaj va bron (mijoz) | Qabul qilindi | [bosqich-3.md](reports/bosqich-3.md) |
 | 4 | Arizalarni boshqarish (admin) | Qabul qilindi | [bosqich-4.md](reports/bosqich-4.md) |
-| 5 | Qabul va ustalar ishi | — | — |
-| 6 | Topshirish va to'lov | — | — |
+| 5 | Qabul va ustalar ishi | Qabul qilindi | [bosqich-5.md](reports/bosqich-5.md) |
+| 6 | Topshirish va to'lov | Qabulga tayyor | [bosqich-6.md](reports/bosqich-6.md) |
 | 7 | Ishga tushirish | — | — |
 
 ### Bosqich 0 — Poydevor
@@ -1390,6 +1394,31 @@ Yangilari tepada.
 
 | Sana | Qaror | Sabab |
 |---|---|---|
+| 2026-11-18 | Chegirma `orders` modulida (`orders/domain/discount.ts`, `admin.setDiscount`), `payments` da emas | Chegirma ustunlari `orders` jadvalida, unga faqat `orders` yozadi (4.4); bandlar o'zgarganda qayta hisob ham `orders` da. `payments` faqat checkout, to'lovlar va chek |
+| 2026-11-18 | Bandlar o'zgarganda (bandlarni tahrirlash, qo'shimcha ishga rozilik, narx qo'yish) `subtotal` bandlardan qayta yig'iladi, chegirma foiz bo'lsa foizdan, summa bo'lsa `min(summa, subtotal)`; admin limiti qayta tekshirilmaydi | 11-bo'lim formulasi. Avval qo'shimcha ishga rozilikda foizli chegirma o'smasdi (topildi, test bilan) |
+| 2026-11-18 | Ish boshlangach (`in_work`, `ready_for_pickup`) narxi yo'q bandga bir marta narx qo'yiladi (`PUT .../items/:itemId/price`, `orders.write`, audit); narxi bor band o'zgarmaydi | "Boshqa" zona doim "kelishiladi", bandlarni tahrirlash esa `in_work` gacha: usiz bunday ariza hech qachon checkout'dan o'tmasdi (`unpriced_items`) |
+| 2026-11-18 | Checkout: avval arizani qulflaydi, keyin `requestId` bo'yicha chekni qidiradi (bor bo'lsa o'sha natija, boshqa arizaniki bo'lsa `validation`); to'lov qatorlarida bitta usul bir marta, summa > 0; jami 0 bo'lsa to'lovsiz o'tadi | Ikki parallel checkout'dan bittasi o'tadi, bir xil `requestId` bitta natija (testlar bilan). 100% chegirmali ariza ham yopiladi |
+| 2026-11-18 | Baho: yulduz (1–5) bir marta; botda faqat yulduz, izoh keyin ilovada o'sha yulduz bilan bir marta qo'shiladi; boshqa har qanday ikkinchi javob `already_decided` | 18-bo'lim: "mijoz botda baho beradi va ilovada izoh yozadi"; bahoni o'zgartirib bo'lmaydi |
+| 2026-11-18 | `order.completed` dagi 5 ta baho tugmasi bitta qatorda (`rate:<n>:<orderId>`) | Beshta qator xabarni juda uzaytiradi; `RenderedMessage.actionsInRow` |
+| 2026-11-18 | "Bugun" (`admin.today`) `dashboard` modulida: `orders.today` + tekshiruvdagi hisobotlar (`tasks.review` huquqi bo'lsa) + bugungi kassa (`checkout.write` bo'lsa, aks holda `null`) | 13-bo'lim; rahbar kassani ko'rmaydi (pul bilan ishlamaydi). Kassa to'lov vaqti (`received_at`) bo'yicha Toshkent kunida |
+| 2026-11-18 | Qo'shimcha ish kartasidagi "yangi jami" serverdan (`items[].totalIfApproved`, chegirma bilan) | Ilova avval `total + narx` ni o'zi hisoblardi, chegirmali arizada noto'g'ri edi (2-bo'lim, 13-qoida) |
+| 2026-11-18 | Fiskal chek `FiscalProvider` porti (`payments/app/fiscal.ts`), v1 `manual`: admin chek raqamini yozadi (1–64 belgi, bo'shliqlar kesiladi) | 11-bo'lim; v2 kassa API shu portni amalga oshiradi |
+| 2026-11-18 | Foto xom baytlar bilan `PUT` qilinadi (`application/octet-stream`), `mediaId` klientda yaratiladi; tur (JPEG, PNG, WebP) va o'lcham baytlardan aniqlanadi, ≤ 3 MB, bitta urinishda ≤ 20 ta. Telefon rasmni ≈ 2 Mp gacha kichraytiradi | Multipart kutubxonasi kerak emas; takror yuborish bitta yozuv qoldiradi (TZ 16.4). Tur klient aytganidan emas, baytlardan olinadi (15-bo'lim) |
+| 2026-11-18 | Foto `UPLOADS_DIR` ga `FileStore` porti orqali yoziladi, nomi tasodifiy UUID; ko'rish `/media/:id?exp&sig` (HMAC, 15 daqiqa), kalit `MEDIA_URL_SECRET` (production'da majburiy) | 4.9 va 15-bo'lim; keyin S3 ga o'tish bitta adapter almashtirish. Havola vaqtinchalik, shuning uchun jurnalga tushsa ham tez eskiradi |
+| 2026-11-18 | Usta ro'yxati va kartasida narx, mijoz ismi va telefon yo'q; hamma so'rov `master_id = actor.userId` bilan SQL'da filtrlanadi, begona vazifa `404`. Yordamchi faqat ma'lumot uchun (vazifani ko'rmaydi) | 2-bo'lim, 13-qoida; 18-bo'limdagi huquq testi. Yordamchiga alohida ekran PLAN'da yo'q |
+| 2026-11-18 | Hisobot topshirishdan oldin kamida bitta "keyin" foto kerak; qayta ishlashga izoh bilan qaytariladi; urinish raqami = `reworkCount + 1`, fotolar urinish bo'yicha ajratiladi | 9.2 va 18-bo'lim testlari; admin eski urinishlarni ham ko'ra oladi |
+| 2026-11-18 | Vazifa vaqtini server sanaydi (`elapsedSec`), telefondagi sekundomer faqat uni sanab turadi va har yangilanishda serverdan qayta o'rnatiladi | Klient vaqtni hisoblamaydi (CLAUDE.md); telefon soati noto'g'ri bo'lsa ham usta ko'rgan vaqt admin ko'rganiga teng |
+| 2026-11-18 | Oflayn navbat (IndexedDB) tartib bilan ishlaydi: foto, keyin topshirish. Vaqtinchalik xato (tarmoq, 5xx, 429, 401) kutish bilan qayta uriniladi; doimiy xato (vazifa o'zgargan, foto emas) navbatdan olinib ustaga ko'rsatiladi | Foto yetib bormasdan topshirish "keyin foto kerak" bilan rad etilardi; doimiy xato navbatni abadiy to'sib qo'ymasin. Navbat kodi `lib/photo-queue/` va `ui/` da, chunki shell'lar bir-birini import qilmaydi |
+| 2026-11-18 | Dalolatnoma: yuborish uchun probeg, yoqilg'i va 4 tomon foto majburiy; tahrirlansa `sent` → `draft`; og'zaki tasdiq faqat to'liq to'ldirilgan `draft` yoki `sent` dan; mijoz tasdig'i idempotent (takror bosish xato emas) | 9.4; mijoz botda ham, ilovada ham bosadi, ikkinchi bosish xatoga aylanmasin |
+| 2026-11-18 | "Ishga topshirish" (`in_work`) faqat tasdiqlangan dalolatnomadan keyin | 18-bo'lim testi: tasdiqsiz `in_work` yo'q |
+| 2026-11-18 | Qo'shimcha ish bandi (`kind = extra`): `pending` → `approved` yoki `rejected`, faqat bir marta; ikkinchi javob `already_decided`. Tasdiqlangunga qadar jami summaga ham, vazifaga ham kirmaydi (bandlar faqat `not_required` yoki `approved` bo'lsa biriktiriladi); rad etilgani arizada ko'rinib qoladi | 9.3; mijoz botda ham, ilovada ham bosishi mumkin, ikki javob to'qnashmasin. Narx va nom bandga nusxalanadi (2-bo'lim) |
+| 2026-11-18 | Ariza `ready_for_pickup` ga o'zi o'tadi: tasdiqlangan hamma zona qabul qilingan vazifalarda va kutilayotgan qo'shimcha ish yo'q bo'lganda; bron qisqartiriladi yoki bo'shatiladi | 9.1; admin qo'lda "tayyor" bosmaydi. Hisob `orders.onTasksChanged` da, `tasks` uni ichki (`tx` oladigan) metod bilan chaqiradi |
+| 2026-11-18 | `tasks`, `reception` va `media` `orders` dan past: ular `orders.itemsForTask`, `attachItems`, `startWorkInside` ni chaqiradi (hammasi `tx` oladi), `orders` ularni import qilmaydi | 4.4: bog'liqlik grafi tsiklsiz; hamma yozuv bitta tranzaksiyada |
+| 2026-11-18 | `Outbox.tell`: kimgadir tayyor matn bilan xabar (til va nusxa saqlanadi); `staff.*` adminlar va egasiga, `staff.extra_decided` va `staff.report_submitted` ham | Xabar turi har safar yangi `recipient` qidiruvini talab qilmasin; 4.8-bo'lim |
+| 2026-11-18 | Botdagi tugmalar: `act:ok:<orderId>` va `extra:yes|no:<itemId>`. Egalikni server `tma.clientByTelegramId` orqali tekshiradi, xato kodlari (`already_decided`, `forbidden` …) bot matnlariga o'giriladi | Callback'dagi id'ga ishonilmaydi (CLAUDE.md, xavfsizlik) |
+| 2026-11-18 | Admin vazifa marshrutlari `tasks.review` huquqi bilan; rahbar ko'radi, yoza olmaydi (`actions` hammasi `false`) | 8-bo'lim; 4-bosqichdagi qoida shu yerga ham |
+| 2026-11-18 | `GET /api/admin/tasks`, `GET /api/admin/tasks/:id`, `GET /api/admin/masters` va `GET /api/client/orders/:id/act` qo'shildi (13-bo'lim) | A3 ro'yxati, vazifa kartasi, usta tanlash va mijozning dalolatnomasi ularsiz ishlamaydi; reja marshrutlarni sanab o'tmagan edi |
+| 2026-11-18 | Foto o'chirish tugmasi ustada 56 px bosiladigan maydon, ko'rinadigan doira 28 px; tasdiq so'ralmaydi | Dizayn: usta ≥ 56 px, qo'lqopda. Tasdiq oynasi "kam matn kiritish" qoidasiga zid; topshirishdan oldin foto o'chirilib, qayta olinishi mumkin. Tasodifiy bosish xavfi bor: qo'lda tekshiruvda qurilmada ko'rilmadi |
 | 2026-11-18 | Tranzaksiya (yoki unga berilgan ulanish) ichidagi so'rovlar `Promise.all` bilan emas, ketma-ket bajariladi | Bitta ulanishga parallel so'rov `pg` 8 da ogohlantirish beradi va `pg` 9 da xato bo'ladi; testda topildi |
 | 2026-11-18 | Xodimlarga xabar (`staff.*`) adminlar va egasiga boradi (`platform/ports.ts` dagi `StaffDirectory`, uni `identity` beradi); rahbarga faqat `staff.order_unanswered` (4-bosqich) | Rahbar faqat o'qiydi: har yangi arizada uni bezovta qilmaslik. `orders` `identity` ga bog'lanmaydi |
 | 2026-11-18 | `client.*` guruhi: faqat `client` qismidagi foydalanuvchi (rolsiz yoki bloklangan xodim) va rozilik bergan odam; telefon tasdig'ini katalogdan boshqa har use-case o'zi tekshiradi (`phone_required`) | 4.7 va 13-bo'lim: telefonsiz katalogni ko'rish mumkin, garaj va bron telefon so'raydi |

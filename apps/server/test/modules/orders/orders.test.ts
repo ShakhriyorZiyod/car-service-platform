@@ -196,7 +196,9 @@ describe('placing an order (PLAN 10.4)', () => {
     expect(lost).toHaveLength(98);
     expect(await database.db.select().from(orders)).toHaveLength(2);
     expect(await activeBookings()).toHaveLength(2);
-  });
+    // The test checks who wins, not how fast: a hundred transactions share a pool of ten
+    // connections, which takes about five seconds on a slow disk, right at vitest's default limit.
+  }, 30_000);
 
   it('a start the workshop does not offer is refused', async () => {
     const { client, car } = await clientWithCar();

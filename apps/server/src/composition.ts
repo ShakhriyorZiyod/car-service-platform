@@ -28,6 +28,13 @@ import {
   type OrdersService,
 } from './modules/orders';
 import { createWorkshopService, type WorkshopService } from './modules/workshop';
+import { createDashboard, type DashboardService } from './modules/dashboard';
+import {
+  createManualFiscalProvider,
+  createPayments,
+  type FiscalProvider,
+  type PaymentsService,
+} from './modules/payments';
 import { createMedia, type MediaService } from './modules/media';
 import { createReception, type ReceptionService } from './modules/reception';
 import { createTasks, type TasksService } from './modules/tasks';
@@ -47,6 +54,8 @@ export interface ServicesDeps {
   /** Where the photos' files lie, and the secret that signs their links. */
   files: FileStore;
   mediaSecret: string;
+  /** Issues fiscal receipts; the manual one (the admin types the number) when left out. */
+  fiscal?: FiscalProvider;
 }
 
 export interface Services {
@@ -65,6 +74,8 @@ export interface Services {
   reception: ReceptionService;
   /** The masters' tasks (not to be mixed up with `tasks`, the timer jobs below). */
   taskService: TasksService;
+  payments: PaymentsService;
+  dashboard: DashboardService;
   /** What the system does by itself on a timer (jobs/scheduler.ts). */
   tasks: ScheduledTask[];
 }
@@ -90,6 +101,7 @@ export function createServices(deps: ServicesDeps): Services {
   });
   const garage = createGarage({ ...platform, audit });
   const booking = createBookingService({ ...platform, workshop });
+  const staff = createStaffDirectory();
   const orders = createOrders({
     ...platform,
     workshop,
@@ -97,8 +109,24 @@ export function createServices(deps: ServicesDeps): Services {
     garage,
     booking,
     outbox,
-    staff: createStaffDirectory(),
+    staff,
     audit,
+  });
+  const taskService = createTasks({
+    ...platform,
+    audit,
+    outbox,
+    media,
+    orders: orders.admin,
+    staff,
+  });
+  const payments = createPayments({
+    ...platform,
+    audit,
+    workshop,
+    orders: orders.admin,
+    tasks: taskService,
+    fiscal: deps.fiscal ?? createManualFiscalProvider(),
   });
   return {
     audit,
@@ -119,13 +147,13 @@ export function createServices(deps: ServicesDeps): Services {
     }),
     schedule: createScheduleService({ ...platform, workshop, audit }),
     media,
-    taskService: createTasks({
-      ...platform,
-      audit,
-      outbox,
-      media,
+    taskService,
+    payments,
+    dashboard: createDashboard({
+      clock: deps.clock,
       orders: orders.admin,
-      staff: createStaffDirectory(),
+      tasks: taskService,
+      payments,
     }),
     reception: createReception({
       ...platform,

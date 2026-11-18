@@ -64,6 +64,13 @@
       "when": 1794988630245,
       "tag": "0008_reception_tasks_media",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1795006108449,
+      "tag": "0009_payments_and_reviews",
+      "breakpoints": true
     }
   ]
 }

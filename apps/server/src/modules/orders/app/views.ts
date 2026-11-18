@@ -3,11 +3,13 @@ import type { OrderStatus } from '@cs/shared/vocabulary';
 import { and, asc, eq, inArray } from 'drizzle-orm';
 import type { DbOrTx } from '../../../db/client';
 import type { orders } from '../../../db/schema';
-import { orderItems, statusHistory, tasks } from '../../../db/schema';
+import { orderItems, reviews, statusHistory, tasks } from '../../../db/schema';
 import { presentInstant } from '../../../lib/time';
 import type { OrderNotification } from '../../../notifications/types';
 import type { BookingService, Reservation } from '../../booking';
+import { totalsAt, unpricedOf } from '../domain/discount';
 import { clientActions } from '../domain/order-status';
+import { reviewActions } from '../domain/review';
 
 /**
  * How an order is shown and told (docs/PLAN.md, sections 4.6 and 12): the client's view of it, and
@@ -71,6 +73,7 @@ export function createViews(booking: Pick<BookingService, 'reservations'>) {
       .from(statusHistory)
       .where(and(eq(statusHistory.entity, 'order'), inArray(statusHistory.entityId, ids)))
       .orderBy(asc(statusHistory.at), asc(statusHistory.id));
+    const reviewRows = await from.select().from(reviews).where(inArray(reviews.orderId, ids));
 
     return rows.map((row) => {
       const reservation = reservations.get(row.id);
@@ -78,6 +81,8 @@ export function createViews(booking: Pick<BookingService, 'reservations'>) {
       const mine = items.filter((item) => item.orderId === row.id);
       const snapshot = row.carSnapshot as { label: string; plate: string };
       const rescheduleRequested = row.rescheduleRequestedAt !== null;
+      const stored = reviewRows.find((review) => review.orderId === row.id);
+      const review = stored ? { rating: stored.rating, text: stored.text } : null;
       return {
         id: row.id,
         number: row.number,
@@ -100,20 +105,30 @@ export function createViews(booking: Pick<BookingService, 'reservations'>) {
           typeNameRu: item.typeNameRu,
           price: item.price,
           durationMin: item.durationMin,
+          totalIfApproved:
+            item.approval === 'pending'
+              ? totalsAt(row, row.subtotal + (item.price ?? 0)).total
+              : null,
         })),
         subtotal: row.subtotal,
         // Only work that counts: a refused or unanswered extra is not "to be agreed" yet.
-        unpricedCount: mine.filter(
-          (item) =>
-            item.price === null &&
-            (item.approval === 'not_required' || item.approval === 'approved'),
-        ).length,
+        unpricedCount: unpricedOf(mine).length,
+        discount:
+          row.discountAmount > 0 || row.discountPercent !== null
+            ? {
+                amount: row.discountAmount,
+                percent: row.discountPercent,
+                reason: row.discountReason,
+              }
+            : null,
         total: row.total,
         comment: row.clientComment,
         holdUntil: row.status === 'new' && row.holdUntil ? instant(row.holdUntil) : null,
         rescheduleRequested,
         boxName: reservation.boxName,
         ...clientActions({ status: row.status, rescheduleRequested }),
+        review,
+        ...reviewActions(row.status, review),
         history: history
           .filter((step) => step.entityId === row.id)
           .map((step) => ({ status: step.toStatus as OrderStatus, at: instant(step.at) })),

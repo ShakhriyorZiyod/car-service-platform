@@ -16,6 +16,7 @@ const uz = {
   extraApproved: 'Qo‘shimcha ishga rozilik qabul qilindi.',
   extraRejected: 'Qo‘shimcha ish bajarilmaydi.',
   alreadyAnswered: 'Javob allaqachon qabul qilingan.',
+  rated: 'Bahoingiz uchun rahmat! Izohni ilovada yozishingiz mumkin.',
   notAvailable: 'Bu amal endi mumkin emas. Arizani ilovada oching.',
   notFound: 'Topilmadi. Arizani ilovada oching.',
   loginCode: (code: string) =>
@@ -33,6 +34,7 @@ const ru: Dictionary<typeof uz> = {
   extraApproved: 'Согласие на дополнительную работу принято.',
   extraRejected: 'Дополнительная работа выполняться не будет.',
   alreadyAnswered: 'Ответ уже принят.',
+  rated: 'Спасибо за оценку! Отзыв можно написать в приложении.',
   notAvailable: 'Это действие уже недоступно. Откройте заявку в приложении.',
   notFound: 'Не найдено. Откройте заявку в приложении.',
   loginCode: (code) =>

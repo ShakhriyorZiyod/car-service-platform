@@ -64,8 +64,16 @@ export const API_ERROR_CODES = [
   'photo_required',
   /** A zone is already in another task, or is not yet approved by the client. */
   'item_unavailable',
-  /** The extra work was already answered. */
+  /** The extra work was already answered, or the order already rated. */
   'already_decided',
+
+  // Stage 6: handover and payment
+  /** A zone that counts has no price yet: it must be priced before the car is handed over. */
+  'unpriced_items',
+  /** The payments do not add up to the order's total. */
+  'payment_mismatch',
+  /** The discount is above the admin's limit: only the owner may give more. */
+  'discount_over_limit',
 ] as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

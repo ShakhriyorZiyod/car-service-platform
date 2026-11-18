@@ -111,6 +111,9 @@ describe('who may work with orders (PLAN 8)', () => {
       canReschedule: false,
       canCancel: false,
       canNoShow: false,
+      canDiscount: false,
+      canPriceItems: false,
+      canCheckout: false,
     });
     expect((await admin().get(shop.admin, order.id)).actions.canCall).toBe(true);
   });
@@ -787,6 +790,9 @@ describe('the list and "Today" (design A1, A6)', () => {
       canReschedule: true,
       canCancel: true,
       canNoShow: false,
+      canDiscount: true,
+      canPriceItems: false,
+      canCheckout: false,
     });
   });
 

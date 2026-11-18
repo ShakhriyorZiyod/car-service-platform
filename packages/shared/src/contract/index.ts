@@ -23,6 +23,7 @@ import {
   LIMITS,
   MAX_CONTACT_LENGTH,
   ORDER_SOURCES,
+  PAYMENT_METHODS,
   PERMISSIONS,
   ROLES,
   RULE_LIMITS,
@@ -455,6 +456,8 @@ const orderItemView = z.object({
   typeNameRu: z.string(),
   price: z.number().int().nullable(),
   durationMin: z.number().int(),
+  /** Extra work waiting for the client: the order's total if they agree (discount included). */
+  totalIfApproved: z.number().int().nullable(),
 });
 
 export const orderSchema = z.object({
@@ -468,6 +471,15 @@ export const orderSchema = z.object({
   items: z.array(orderItemView),
   subtotal: z.number().int(),
   unpricedCount: z.number().int(),
+  /** Off the whole order (docs/PLAN.md, section 11); `total = subtotal - discount.amount`. */
+  discount: z
+    .object({
+      amount: z.number().int(),
+      /** Null when it was given as an amount. */
+      percent: z.number().nullable(),
+      reason: z.string().nullable(),
+    })
+    .nullable(),
   total: z.number().int(),
   comment: z.string().nullable(),
   /** The slot is held until then, waiting for the workshop's call (only while new). */
@@ -477,6 +489,12 @@ export const orderSchema = z.object({
   /** What the client may do now: the server decides, the app only shows. */
   canCancel: z.boolean(),
   canRequestReschedule: z.boolean(),
+  /** The client's stars and words about finished work (stage 6). */
+  review: z.object({ rating: z.number().int(), text: z.string().nullable() }).nullable(),
+  /** The order is finished and not rated yet. */
+  canRate: z.boolean(),
+  /** Rated in the bot, no words yet: the app may add them. */
+  canComment: z.boolean(),
   /** The steps the order has been through, oldest first. */
   history: z.array(z.object({ status: orderStatusSchema, at: instantSchema })),
 });
@@ -526,6 +544,12 @@ export const adminOrderSchema = orderSchema.extend({
     canReschedule: z.boolean(),
     canCancel: z.boolean(),
     canNoShow: z.boolean(),
+    /** Give or change the discount (stage 6). */
+    canDiscount: z.boolean(),
+    /** Price a zone "to be agreed" after the work began. */
+    canPriceItems: z.boolean(),
+    /** Hand the car over and take the money. */
+    canCheckout: z.boolean(),
   }),
 });
 export type AdminOrder = z.infer<typeof adminOrderSchema>;
@@ -547,6 +571,16 @@ export const todaySchema = z.object({
   arrivals: z.array(adminOrderSchema),
 });
 export type Today = z.infer<typeof todaySchema>;
+
+export const paymentMethodSchema = z.enum(PAYMENT_METHODS);
+
+/** The day's takings (design A6, "Bugungi kassa"): by method, in all, and how many receipts. */
+export const cashSchema = z.object({
+  byMethod: z.array(z.object({ method: paymentMethodSchema, amount: z.number().int() })),
+  total: z.number().int(),
+  receipts: z.number().int(),
+});
+export type Cash = z.infer<typeof cashSchema>;
 
 export const scheduleSchema = z.object({
   date: localDate,
@@ -821,6 +855,72 @@ export type AdminTask = z.infer<typeof adminTaskSchema>;
 
 export const adminTaskListSchema = z.object({ items: z.array(adminTaskSummarySchema) });
 
+// ---------------------------------------------------------------------------------------------
+// Stage 6: handover and payment (docs/PLAN.md, sections 7.12, 9.1 and 11)
+
+/** The "Bugun" screen (design A6) with the reports to check and the day's takings. */
+export const dashboardSchema = todaySchema.extend({
+  /** Reports waiting for the admin's check, oldest first; empty for who may not check them. */
+  reports: z.array(adminTaskSummarySchema.extend({ waitingMin: z.number().int() })),
+  /** Null for who may not see the money. */
+  cash: cashSchema.nullable(),
+});
+export type Dashboard = z.infer<typeof dashboardSchema>;
+
+/** The photos of one task's work: before it began and of the attempt that was accepted. */
+const workPhotosSchema = z.object({
+  taskId: id,
+  items: z.array(z.object({ nameUz: z.string(), nameRu: z.string() })),
+  before: z.array(photoLinkSchema),
+  after: z.array(photoLinkSchema),
+});
+export type WorkPhotos = z.infer<typeof workPhotosSchema>;
+
+export const paymentSchema = z.object({
+  id,
+  method: paymentMethodSchema,
+  amount: z.number().int(),
+  receivedAt: instantSchema,
+});
+
+export const receiptSchema = z.object({
+  receiptNo: z.string(),
+  amount: z.number().int(),
+  createdAt: instantSchema,
+});
+
+/** The handover (design A8): what was done and by whom, what to take, and what was taken. */
+export const handoverSchema = z.object({
+  order: adminOrderSchema,
+  /** Who did each zone: the master of its task; null for a zone in no task. */
+  masters: z.array(z.object({ itemId: id, masterName: z.string().nullable() })),
+  photos: z.array(workPhotosSchema),
+  /** The admin's discount limit, in percent; the owner has none (`discountUnlimited`). */
+  discountLimitPct: z.number(),
+  discountUnlimited: z.boolean(),
+  /** Minutes since the car became ready; null when it is not waiting. */
+  waitingMin: z.number().int().nullable(),
+  payments: z.array(paymentSchema),
+  receipt: receiptSchema.nullable(),
+  /** The owner corrects a method chosen by mistake (the amount stays). */
+  canCorrectPayments: z.boolean(),
+});
+export type Handover = z.infer<typeof handoverSchema>;
+
+/** What the client sees of a finished order (design T12): the work's photos and the payment. */
+export const orderResultSchema = z.object({
+  photos: z.array(workPhotosSchema),
+  payments: z.array(z.object({ method: paymentMethodSchema, amount: z.number().int() })),
+  receiptNo: z.string().nullable(),
+});
+export type OrderResult = z.infer<typeof orderResultSchema>;
+
+const discountReason = z
+  .string()
+  .trim()
+  .min(LIMITS.discountReason.min)
+  .max(LIMITS.discountReason.max);
+
 const staffReason = z.object({ reasonId: id, note: comment.nullable().optional() });
 
 // ---------------------------------------------------------------------------------------------
@@ -911,7 +1011,7 @@ export const contract = {
 
   'tma.requestDeletion': { response: done },
 
-  'admin.today': { response: todaySchema },
+  'admin.today': { response: dashboardSchema },
   'admin.catalog': { response: clientCatalogSchema },
   'admin.cancelReasons': {
     response: z.object({
@@ -1143,6 +1243,58 @@ export const contract = {
   'client.decideExtra': {
     params: z.object({ id, itemId: id }),
     body: z.object({ decision: z.enum(['approve', 'reject']) }),
+    response: orderSchema,
+  },
+  'admin.setDiscount': {
+    params: z.object({ id }),
+    /** `none` takes the discount off. */
+    body: z.discriminatedUnion('kind', [
+      z.object({
+        kind: z.literal('percent'),
+        percent: z.number().gt(0).max(100).multipleOf(0.01),
+        reason: discountReason,
+      }),
+      z.object({
+        kind: z.literal('amount'),
+        amount: z.number().int().min(1).max(LIMITS.price.max),
+        reason: discountReason,
+      }),
+      z.object({ kind: z.literal('none') }),
+    ]),
+    response: adminOrderSchema,
+  },
+  'admin.priceItem': {
+    params: z.object({ id, itemId: id }),
+    body: z.object({ price: z.number().int().min(0).max(LIMITS.price.max) }),
+    response: adminOrderSchema,
+  },
+  'admin.handover': { params: z.object({ id }), response: handoverSchema },
+  'admin.checkout': {
+    params: z.object({ id }),
+    body: z.object({
+      /** The checkout's key: sent again, it gives the same result. */
+      requestId: id,
+      /** One line per method; a mixed payment has several. Empty only for a free order. */
+      payments: z
+        .array(z.object({ method: paymentMethodSchema, amount: z.number().int().min(1) }))
+        .max(PAYMENT_METHODS.length),
+      receiptNo: z.string().trim().min(LIMITS.receiptNo.min).max(LIMITS.receiptNo.max),
+    }),
+    response: handoverSchema,
+  },
+  'admin.correctPayment': {
+    params: z.object({ id }),
+    body: z.object({ method: paymentMethodSchema }),
+    response: handoverSchema,
+  },
+  'client.orderResult': { params: z.object({ id }), response: orderResultSchema },
+  'client.review': {
+    params: z.object({ id }),
+    body: z.object({
+      rating: z.number().int().min(1).max(5),
+      /** Words about the work; empty is the same as none. */
+      text: z.string().trim().max(LIMITS.reviewText.max).optional(),
+    }),
     response: orderSchema,
   },
   'admin.unmappedCars': { response: z.object({ items: z.array(unmappedCarSchema) }) },

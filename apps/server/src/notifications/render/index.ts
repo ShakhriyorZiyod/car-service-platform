@@ -9,6 +9,7 @@ const isWork = (notification: Notification): notification is WorkNotification =>
     'act.confirm_request',
     'extra.approval_request',
     'order.ready',
+    'order.completed',
     'staff.task_assigned',
     'staff.task_rework',
     'staff.report_submitted',

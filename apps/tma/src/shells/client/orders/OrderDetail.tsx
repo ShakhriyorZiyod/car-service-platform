@@ -11,13 +11,23 @@ import { PlateChip, ScreenHeader, Skeleton, StatusChip } from '../../../ui/clien
 import { Notice } from '../../../ui/Notice';
 import { ActSection } from './ActSection';
 import { ExtraApproval } from './ExtraApproval';
+import { ResultSection } from './ResultSection';
 
 /**
  * T6: one order. Its status and steps, the works with prices, the time, and what the client may
  * still do: cancel it with a reason, or ask the workshop to move the time. Which of these is
  * allowed comes from the server.
  */
-export function OrderDetail({ orderId, onBack }: { orderId: string; onBack: () => void }) {
+export function OrderDetail({
+  orderId,
+  onBack,
+  onBook,
+}: {
+  orderId: string;
+  onBack: () => void;
+  /** "Yana bron qilish" under a finished order (design T12). */
+  onBook: () => void;
+}) {
   const t = useT().client;
   const lang = useLang();
   const api = useApi();
@@ -54,7 +64,7 @@ export function OrderDetail({ orderId, onBack }: { orderId: string; onBack: () =
   const chosenReason = reasons.find((reason) => reason.id === reasonId);
 
   return (
-    <section className="screen">
+    <section className={data?.status === 'completed' ? 'screen screen--with-bar' : 'screen'}>
       <ScreenHeader
         title={data ? t.orders.detailTitle(data.number) : t.common.loading}
         onBack={onBack}
@@ -132,6 +142,15 @@ export function OrderDetail({ orderId, onBack }: { orderId: string; onBack: () =
                 </li>
               ))}
             </ul>
+            {data.discount && (
+              <div className="summary__row">
+                <span className="secondary">
+                  {data.discount.reason ?? t.orders.discount}
+                  {data.discount.percent !== null && `, ${data.discount.percent}%`}
+                </span>
+                <span className="num">−{formatMoney(data.discount.amount, lang)}</span>
+              </div>
+            )}
             <div className="summary__row">
               <span>{t.orders.total}</span>
               <span className="num-xl">{formatMoney(data.total, lang)}</span>
@@ -147,6 +166,7 @@ export function OrderDetail({ orderId, onBack }: { orderId: string; onBack: () =
           </div>
 
           <ActSection order={data} />
+          {data.status === 'completed' && <ResultSection order={data} onBook={onBook} />}
 
           <div className="card">
             <h2 className="title">{t.orders.progress}</h2>

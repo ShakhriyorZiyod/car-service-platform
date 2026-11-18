@@ -70,3 +70,31 @@ export async function orderInWork(
   const started = await t.services.reception.startWork(shop.admin, order.id);
   return { client, order: started, itemIds: started.items.map((item) => item.id) };
 }
+
+/**
+ * An order ready for pickup: in work, all its zones in one task, handed in and accepted. The clock
+ * ends at Friday 11:00.
+ */
+export async function orderReady(
+  t: TestContext,
+  db: Db,
+  shop: Workshop,
+  options: { zones?: string[]; telegram?: boolean } = {},
+) {
+  const started = await orderInWork(t, db, shop, options);
+  const tasks = t.services.taskService;
+  const master = await masterOf(db);
+  const task = await tasks.create(shop.admin, started.order.id, {
+    masterId: master.userId,
+    itemIds: started.itemIds,
+    instruction: '',
+  });
+  await tasks.start(master, task.id);
+  for (const kind of ['before', 'after'] as const) {
+    await tasks.putPhoto(master, task.id, { mediaId: newId(), kind, bytes: jpeg(800, 600) });
+  }
+  await tasks.submit(master, task.id, 'Tayyor');
+  t.clock.set(at('2026-10-30 11:00'));
+  await tasks.accept(shop.admin, task.id);
+  return { ...started, master, taskId: task.id };
+}

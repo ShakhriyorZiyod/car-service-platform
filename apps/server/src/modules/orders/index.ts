@@ -38,10 +38,10 @@ export function createOrders(deps: OrdersServiceDeps & Pick<AdminOrdersDeps, 'au
   };
 }
 
-export type { AdminOrdersService, TaskItem } from './app/admin-orders';
+export type { AdminOrdersService, CheckoutState, TaskItem } from './app/admin-orders';
 export { adminOrdersRoutes } from './http/admin-routes';
 export type { ExtrasService } from './app/extras';
-export { extrasBotHandlers } from './bot/handlers';
+export { extrasBotHandlers, reviewBotHandlers } from './bot/handlers';
 export { extrasAdminRoutes, extrasClientRoutes } from './http/extras-routes';
 export type { OrdersService } from './app/orders';
 export { ordersClientRoutes } from './http/routes';

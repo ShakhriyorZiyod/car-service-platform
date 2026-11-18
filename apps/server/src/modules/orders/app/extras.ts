@@ -1,5 +1,5 @@
 import type { AdminOrder, Order } from '@cs/shared';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import type { Tx } from '../../../db/client';
 import { orderItems, orders } from '../../../db/schema';
 import { requirePermission, type ClientActor, type StaffActor } from '../../../platform/actors';
@@ -9,8 +9,10 @@ import type { Outbox } from '../../../platform/outbox';
 import type { StaffDirectory } from '../../../platform/ports';
 import type { AuditService } from '../../audit';
 import type { OffersService } from '../../catalog';
+import { totalsAt } from '../domain/discount';
 import type { AdminOrdersService } from './admin-orders';
 import type { OrdersService } from './orders';
+import { retotal } from './totals';
 
 /**
  * Extra work found while the car is in the shop (docs/PLAN.md, section 9.3): the admin adds it, the
@@ -95,16 +97,8 @@ export function createExtrasService(deps: ExtrasDeps): ExtrasService {
       .returning({ id: orderItems.id });
     if (!decided) throw new AppError('already_decided');
 
-    if (decision === 'approved' && item.price !== null) {
-      await tx
-        .update(orders)
-        .set({
-          subtotal: sql`${orders.subtotal} + ${item.price}`,
-          total: sql`${orders.subtotal} + ${item.price} - ${orders.discountAmount}`,
-          updatedAt: now,
-        })
-        .where(eq(orders.id, orderId));
-    }
+    // Agreed work counts now; a percentage discount grows with it (PLAN 11).
+    if (decision === 'approved') await retotal(tx, orderId, now);
 
     if (via !== 'phone') {
       // The admins hear the client's answer; the admin who wrote it down by phone knows it.
@@ -182,8 +176,8 @@ export function createExtrasService(deps: ExtrasDeps): ExtrasService {
             itemId: item.id,
             itemName: { uz: item.nameUz, ru: item.nameRu },
             price,
-            // What the total would be if they agree.
-            newTotal: order.total + (price ?? 0),
+            // What the total would be if they agree, the discount following the subtotal.
+            newTotal: totalsAt(order, order.subtotal + (price ?? 0)).total,
           },
           `extra:${item.id}:ask`,
         );

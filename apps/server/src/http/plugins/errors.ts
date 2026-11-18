@@ -37,6 +37,9 @@ const APP_ERROR_STATUS: Record<AppErrorCode, number> = {
   photo_required: 422,
   item_unavailable: 409,
   already_decided: 409,
+  unpriced_items: 422,
+  payment_mismatch: 422,
+  discount_over_limit: 422,
 };
 
 export const errorBody = (code: ApiErrorCode, paths?: readonly string[]): ApiError => ({

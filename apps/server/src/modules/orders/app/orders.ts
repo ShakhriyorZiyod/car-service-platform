@@ -7,7 +7,7 @@ import {
 } from '@cs/shared/vocabulary';
 import { and, desc, eq, inArray, isNotNull, lte, notInArray } from 'drizzle-orm';
 import type { DbOrTx } from '../../../db/client';
-import { cancelReasons, orderItems, orders, users } from '../../../db/schema';
+import { cancelReasons, orderItems, orders, reviews, users } from '../../../db/schema';
 import type { Notification } from '../../../notifications/types';
 import { requireVerifiedPhone, type ClientActor } from '../../../platform/actors';
 import type { PlatformDeps } from '../../../platform/deps';
@@ -23,6 +23,7 @@ import { createWorkTime, longestWorkdayMinutes, type WorkshopService } from '../
 import { holdExpired, holdUntil } from '../domain/hold';
 import { canTransition, clientActions } from '../domain/order-status';
 import { buildQuote, serviceTypesOf, type Quote, type QuoteProblem } from '../domain/quote';
+import { reviewStep } from '../domain/review';
 import { createViews, slotView, type OrderRow } from './views';
 
 /**
@@ -66,6 +67,15 @@ export interface OrdersService {
     input: { reasonId: string; note?: string | null | undefined },
   ): Promise<Order>;
   requestReschedule(actor: ClientActor, id: string): Promise<Order>;
+  /**
+   * The client rates finished work, once: one to five stars, and words if they like. Stars given
+   * in the bot may get their words later in the app (docs/PLAN.md, sections 7.8 and 12).
+   */
+  review(
+    actor: ClientActor,
+    id: string,
+    input: { rating: number; text?: string | null | undefined },
+  ): Promise<Order>;
   /**
    * Cancels new orders whose hold ran out without a call (docs/PLAN.md, section 10.4): the box is
    * given back and the client is told, once. Returns how many it cancelled.
@@ -421,6 +431,37 @@ export function createOrdersService(deps: OrdersServiceDeps): OrdersService {
             },
             dedupeKey: `staff.reschedule_requested:${id}:${admin.userId}`,
           });
+        }
+        return ownView(tx, actor.userId, id);
+      });
+    },
+
+    async review(actor, id, input) {
+      if (!Number.isInteger(input.rating) || input.rating < 1 || input.rating > 5) {
+        throw invalidAt('body.rating', 'one to five stars');
+      }
+      const text = input.text?.trim() || null;
+      return db.transaction(async (tx) => {
+        const [locked] = await tx
+          .select()
+          .from(orders)
+          .where(and(eq(orders.id, id), eq(orders.clientId, actor.userId)))
+          .for('update');
+        // Somebody else's order does not exist for them.
+        if (!locked) throw new AppError('not_found');
+        const [existing] = await tx.select().from(reviews).where(eq(reviews.orderId, id));
+        const step = reviewStep(locked.status, existing ?? null, { rating: input.rating, text });
+        if (step === 'invalid_transition' || step === 'already_decided') throw new AppError(step);
+        if (step === 'create') {
+          await tx.insert(reviews).values({
+            orderId: id,
+            clientId: actor.userId,
+            rating: input.rating,
+            text,
+            createdAt: clock.now(),
+          });
+        } else {
+          await tx.update(reviews).set({ text }).where(eq(reviews.orderId, id));
         }
         return ownView(tx, actor.userId, id);
       });

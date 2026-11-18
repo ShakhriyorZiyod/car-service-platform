@@ -44,7 +44,7 @@ export function ExtraApproval({ order, item }: { order: Order; item: Order['item
       </div>
       <p className="secondary">
         {e.newTotal}:{' '}
-        <span className="num">{formatMoney(order.total + (item.price ?? 0), lang)}</span>
+        <span className="num">{formatMoney(item.totalIfApproved ?? order.total, lang)}</span>
       </p>
       {answer.isError && <Notice tone="danger">{errorText(t, answer.error)}</Notice>}
       <div className="approval__buttons">

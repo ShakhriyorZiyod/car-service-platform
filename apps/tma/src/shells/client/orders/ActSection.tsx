@@ -49,7 +49,7 @@ export function ActSection({ order }: { order: Order }) {
           <div>
             <dt className="secondary">{a.mileage}</dt>
             <dd className="num">
-              {act.mileageKm === null ? '—' : `${formatAmount(act.mileageKm)} km`}
+              {act.mileageKm === null ? '—' : `${formatAmount(act.mileageKm)} ${a.km}`}
             </dd>
           </div>
           <div>

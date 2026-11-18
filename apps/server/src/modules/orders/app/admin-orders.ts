@@ -34,10 +34,12 @@ import {
   workMinutesBetween,
   type WorkshopService,
 } from '../../workshop';
+import { checkDiscount, countsTowardTotal, type DiscountInput } from '../domain/discount';
 import { holdAfterNoAnswer, holdUntil as holdFor } from '../domain/hold';
 import { canTransition, type OrderActor } from '../domain/order-status';
 import { buildQuote, serviceTypesOf, type QuoteProblem, type ZoneOffer } from '../domain/quote';
-import { noShowAllowed, staffActions } from '../domain/staff-actions';
+import { handoverActions, noShowAllowed, staffActions } from '../domain/staff-actions';
+import { retotal } from './totals';
 import { createViews, instant, slotView, type OrderRow } from './views';
 
 /**
@@ -93,6 +95,14 @@ export interface ItemEdit {
   comment?: string | null | undefined;
 }
 
+/** What checkout needs to know of the order, read under its lock. */
+export interface CheckoutState {
+  status: OrderStatus;
+  total: number;
+  /** Zones that count and have no price. */
+  unpricedCount: number;
+}
+
 export interface AdminOrdersService {
   list(actor: StaffActor, filter: OrderFilter): Promise<AdminOrder[]>;
   get(actor: StaffActor, id: string): Promise<AdminOrder>;
@@ -112,6 +122,31 @@ export interface AdminOrdersService {
     ip?: string,
   ): Promise<AdminOrder>;
   noShow(actor: StaffActor, id: string, ip?: string): Promise<AdminOrder>;
+  /**
+   * The discount on the whole order, with a reason; `null` takes it off (docs/PLAN.md, section 11).
+   * An admin up to the workshop's limit, the owner up to the subtotal.
+   */
+  setDiscount(
+    actor: StaffActor,
+    id: string,
+    discount: { input: DiscountInput; reason: string } | null,
+    ip?: string,
+  ): Promise<AdminOrder>;
+  /** A price for a zone "to be agreed", once the work began; it is fixed from then on. */
+  priceItem(
+    actor: StaffActor,
+    id: string,
+    itemId: string,
+    price: number,
+    ip?: string,
+  ): Promise<AdminOrder>;
+  /** Locks the order for checkout, inside the caller's transaction, and says where it stands. */
+  checkoutState(tx: Tx, id: string): Promise<CheckoutState>;
+  /**
+   * The car was handed over and paid for: the order becomes "completed" and the client is asked
+   * to rate the work. Inside the caller's transaction, which has checked everything else.
+   */
+  completeInside(tx: Tx, actor: StaffActor, id: string, receiptNo: string): Promise<void>;
   /**
    * The order goes to "in work", inside the caller's transaction (docs/PLAN.md, section 9.1). The
    * reception module has checked the permission and that the client confirmed the act.
@@ -175,6 +210,9 @@ const NO_ACTIONS = {
   canReschedule: false,
   canCancel: false,
   canNoShow: false,
+  canDiscount: false,
+  canPriceItems: false,
+  canCheckout: false,
 } as const;
 
 const kindOf = (actor: StaffActor): Extract<OrderActor, 'admin' | 'owner'> =>
@@ -336,12 +374,19 @@ export function createAdminOrdersService(deps: AdminOrdersDeps): AdminOrdersServ
         cancelReason: reason ? { uz: reason.nameUz, ru: reason.nameRu } : null,
         // Who may only read is shown no buttons: the panel offers what the server says.
         actions: actor.permissions.has('orders.write')
-          ? staffActions({
-              status: row.status,
-              startsAt: new Date(view.startsAt.at),
-              now,
-              by: kindOf(actor),
-            })
+          ? {
+              ...staffActions({
+                status: row.status,
+                startsAt: new Date(view.startsAt.at),
+                now,
+                by: kindOf(actor),
+              }),
+              ...handoverActions({
+                status: row.status,
+                unpricedCount: view.unpricedCount,
+                maySettle: actor.permissions.has('checkout.write'),
+              }),
+            }
           : NO_ACTIONS,
       };
     });
@@ -676,7 +721,6 @@ export function createAdminOrdersService(deps: AdminOrdersDeps): AdminOrdersServ
           const edit = edits.find((candidate) => candidate.serviceId === line.serviceId);
           return { ...line, price: edit?.price === undefined ? line.price : edit.price, edit };
         });
-        const subtotal = lines.reduce((sum, line) => sum + (line.price ?? 0), 0);
         const before = current.map((item) => ({
           serviceId: item.serviceId,
           price: item.price,
@@ -720,17 +764,8 @@ export function createAdminOrdersService(deps: AdminOrdersDeps): AdminOrdersServ
           );
         }
 
-        // A discount never exceeds what there is to discount (PLAN 11).
-        const discount = Math.min(locked.discountAmount, subtotal);
-        await tx
-          .update(orders)
-          .set({
-            subtotal,
-            discountAmount: discount,
-            total: subtotal - discount,
-            updatedAt: clock.now(),
-          })
-          .where(eq(orders.id, id));
+        // The discount follows the new subtotal: a percentage again, an amount at most (PLAN 11).
+        const { subtotal } = await retotal(tx, id, clock.now());
 
         // The box is held for the new length from the same start; if that no longer fits, the
         // whole change fails with slot_taken and nothing is changed.
@@ -853,6 +888,155 @@ export function createAdminOrdersService(deps: AdminOrdersDeps): AdminOrdersServ
         });
         return oneView(tx, actor, id);
       });
+    },
+
+    async setDiscount(actor, id, discount, ip) {
+      requirePermission(actor, 'checkout.write');
+      const { rules } = await workshop.settings.current();
+      return db.transaction(async (tx) => {
+        const now = clock.now();
+        const locked = await lockedOrder(tx, id);
+        const allowed = handoverActions({
+          status: locked.status,
+          unpricedCount: 0,
+          maySettle: true,
+        });
+        if (!allowed.canDiscount) throw new AppError('invalid_transition');
+
+        let next = { amount: 0, percent: null as number | null, reason: null as string | null };
+        if (discount !== null) {
+          const checked = checkDiscount({
+            subtotal: locked.subtotal,
+            discount: discount.input,
+            limitPct: rules.adminDiscountLimitPct,
+            unlimited: actor.permissions.has('discount.unlimited'),
+          });
+          if (!checked.ok) {
+            const path = discount.input.kind === 'percent' ? 'body.percent' : 'body.amount';
+            if (checked.problem === 'over_limit') {
+              throw new AppError('discount_over_limit', 'above the admin limit', { paths: [path] });
+            }
+            throw invalidAt(path, 'more than the subtotal');
+          }
+          next = { ...checked.discount, reason: discount.reason.trim() };
+        }
+        await tx
+          .update(orders)
+          .set({
+            discountAmount: next.amount,
+            discountPercent: next.percent,
+            discountReason: next.reason,
+            discountBy: discount === null ? null : actor.userId,
+            total: locked.subtotal - next.amount,
+            updatedAt: now,
+          })
+          .where(eq(orders.id, id));
+        await audit.record(tx, {
+          actorId: actor.userId,
+          action: 'order.discount',
+          entity: 'order',
+          entityId: id,
+          before: {
+            amount: locked.discountAmount,
+            percent: locked.discountPercent,
+            reason: locked.discountReason,
+          },
+          after: {
+            amount: next.amount,
+            percent: next.percent,
+            reason: next.reason,
+            subtotal: locked.subtotal,
+          },
+          ip: ip ?? null,
+        });
+        return oneView(tx, actor, id);
+      });
+    },
+
+    async priceItem(actor, id, itemId, price, ip) {
+      requirePermission(actor, 'orders.write');
+      return db.transaction(async (tx) => {
+        const now = clock.now();
+        const locked = await lockedOrder(tx, id);
+        const [item] = await tx
+          .select()
+          .from(orderItems)
+          .where(and(eq(orderItems.id, itemId), eq(orderItems.orderId, id)));
+        if (!item) throw new AppError('not_found');
+        // Before the work the zones are edited as a whole; after it only a missing price is set.
+        if (
+          (locked.status !== 'in_work' && locked.status !== 'ready_for_pickup') ||
+          item.price !== null ||
+          item.approval === 'rejected'
+        ) {
+          throw new AppError('invalid_transition');
+        }
+        const [priced] = await tx
+          .update(orderItems)
+          .set({ price })
+          .where(and(eq(orderItems.id, itemId), isNull(orderItems.price)))
+          .returning({ id: orderItems.id });
+        if (!priced) throw new AppError('invalid_transition');
+        const sums = await retotal(tx, id, now);
+        await audit.record(tx, {
+          actorId: actor.userId,
+          action: 'order.item.price',
+          entity: 'order',
+          entityId: id,
+          before: { itemId, price: null, total: locked.total },
+          after: { itemId, price, total: sums.total },
+          ip: ip ?? null,
+        });
+        return oneView(tx, actor, id);
+      });
+    },
+
+    async checkoutState(tx, id) {
+      const locked = await lockedOrder(tx, id);
+      const items = await tx.select().from(orderItems).where(eq(orderItems.orderId, id));
+      return {
+        status: locked.status,
+        total: locked.total,
+        unpricedCount: items.filter((item) => countsTowardTotal(item) && item.price === null)
+          .length,
+      };
+    },
+
+    async completeInside(tx, actor, id, receiptNo) {
+      const now = clock.now();
+      const locked = await lockedOrder(tx, id);
+      if (!canTransition(locked.status, 'completed', kindOf(actor))) {
+        throw new AppError('invalid_transition');
+      }
+      const [updated] = await tx
+        .update(orders)
+        .set({ status: 'completed', completedAt: now, updatedAt: now })
+        .where(and(eq(orders.id, id), eq(orders.status, 'ready_for_pickup')))
+        .returning({ id: orders.id });
+      if (!updated) throw new AppError('invalid_transition');
+      await recordStatus(tx, {
+        entity: 'order',
+        entityId: id,
+        from: 'ready_for_pickup',
+        to: 'completed',
+        actorId: actor.userId,
+        at: now,
+      });
+      const snapshot = locked.carSnapshot as { label: string; plate: string };
+      await tell(
+        tx,
+        locked.clientId,
+        {
+          type: 'order.completed',
+          orderId: id,
+          number: locked.number,
+          car: snapshot.label,
+          plate: snapshot.plate,
+          total: locked.total,
+          receiptNo,
+        },
+        `completed:${id}`,
+      );
     },
 
     async startWorkInside(tx, actor, id) {

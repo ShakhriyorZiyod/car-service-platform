@@ -7,7 +7,7 @@ import { createMessageSender } from './bot/delivery';
 import { createLoginCodeSender } from './bot/login-codes';
 import { startPolling } from './bot/polling';
 import { createServices, INIT_DATA_MAX_AGE_SECONDS } from './composition';
-import { extrasBotHandlers } from './modules/orders';
+import { extrasBotHandlers, reviewBotHandlers } from './modules/orders';
 import { receptionBotHandlers } from './modules/reception';
 import { storageDeps } from './storage';
 import { ConfigError, loadConfig, requireBotRuntime } from './config';
@@ -46,6 +46,7 @@ async function main(): Promise<void> {
     actions: [
       receptionBotHandlers(services.reception, services.identity.tma),
       extrasBotHandlers(services.extras, services.identity.tma),
+      reviewBotHandlers(services.orders, services.identity.tma),
     ],
   });
 

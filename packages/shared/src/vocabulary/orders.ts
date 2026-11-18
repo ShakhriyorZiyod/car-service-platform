@@ -50,3 +50,19 @@ export const ACTIVE_ORDER_STATUSES = [
 /** The filters of the clients list (design A10). */
 export const CLIENT_FILTERS = ['all', 'regular', 'lapsed', 'no_telegram'] as const;
 export type ClientFilter = (typeof CLIENT_FILTERS)[number];
+
+/** How the client paid at handover (docs/PLAN.md, sections 7.12 and 11). Online payment is v2. */
+export const PAYMENT_METHODS = ['cash', 'card_terminal', 'transfer'] as const;
+export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+
+/** Who issued the fiscal receipt: in v1 the admin types the number from the cash register. */
+export const FISCAL_PROVIDERS = ['manual'] as const;
+export type FiscalProvider = (typeof FISCAL_PROVIDERS)[number];
+
+/** v2 adds `pending` and `failed` for a cash register API that answers later. */
+export const FISCAL_STATUSES = ['done'] as const;
+export type FiscalStatus = (typeof FISCAL_STATUSES)[number];
+
+/** A client's rating of finished work: one to five stars. */
+export const RATINGS = [1, 2, 3, 4, 5] as const;
+export type Rating = (typeof RATINGS)[number];

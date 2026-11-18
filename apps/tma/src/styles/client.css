@@ -680,3 +680,120 @@
   border-radius: var(--radius-sm);
   object-fit: cover;
 }
+
+/* T12: the result of a finished order (client PDF, page 13). */
+.result {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.result__task {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.result__pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.result__column {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.result__photos {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.result__photos a {
+  display: block;
+}
+
+.result__photos img,
+.result__empty {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background: var(--surface-muted);
+}
+
+.result__empty {
+  display: grid;
+  place-items: center;
+}
+
+.result__label {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.result__label.is-after {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.result__paid {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.result__receipt {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.result__receipt svg {
+  color: var(--accent-text);
+}
+
+.result__said {
+  margin: 0;
+}
+
+.rating {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.rating__star {
+  display: grid;
+  place-items: center;
+  min-height: 52px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.rating__star.is-on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.rating__star.is-on svg {
+  fill: currentColor;
+}
+
+.rating__star:disabled {
+  cursor: default;
+}
+
+.bar-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}

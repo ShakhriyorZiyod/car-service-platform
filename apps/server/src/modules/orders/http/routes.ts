@@ -15,6 +15,7 @@ export const ordersClientRoutes = (
   | 'client.order'
   | 'client.cancelOrder'
   | 'client.requestReschedule'
+  | 'client.review'
 > => ({
   'client.quote': ({ body }, { actor }) => orders.quote(actor, body),
   'client.availability': ({ query }, { actor }) => orders.availability(actor, query),
@@ -25,4 +26,5 @@ export const ordersClientRoutes = (
   'client.order': ({ params }, { actor }) => orders.get(actor, params.id),
   'client.cancelOrder': ({ params, body }, { actor }) => orders.cancel(actor, params.id, body),
   'client.requestReschedule': ({ params }, { actor }) => orders.requestReschedule(actor, params.id),
+  'client.review': ({ params, body }, { actor }) => orders.review(actor, params.id, body),
 });

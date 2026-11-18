@@ -1,14 +1,7 @@
 import type { ComponentType } from 'react';
 import { createBrowserRouter } from 'react-router';
-import { useT, type Texts } from './i18n';
+import { useT } from './i18n';
 import { AppLayout } from './layout/AppLayout';
-import { ComingSoon } from './ui/ComingSoon';
-
-/** A section that a later stage builds, with the stage of docs/PLAN.md section 18. */
-function Pending({ section, stage }: { section: keyof Texts['nav']; stage: number }) {
-  const t = useT();
-  return <ComingSoon title={t.nav[section]} stage={stage} />;
-}
 
 function NotFound() {
   const t = useT();
@@ -81,7 +74,18 @@ export const router = createBrowserRouter(
             Component: (await import('./features/tasks/TaskPage')).TaskPage,
           })),
         },
-        { path: 'handover', element: <Pending section="handover" stage={6} /> },
+        {
+          path: 'handover',
+          ...screen(async () => ({
+            Component: (await import('./features/handover/HandoverListPage')).HandoverListPage,
+          })),
+        },
+        {
+          path: 'orders/:id/handover',
+          ...screen(async () => ({
+            Component: (await import('./features/handover/HandoverPage')).HandoverPage,
+          })),
+        },
         {
           path: 'clients',
           ...screen(async () => ({

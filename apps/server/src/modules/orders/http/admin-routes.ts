@@ -9,7 +9,6 @@ export const adminOrdersRoutes = (
   schedule: ScheduleService,
 ): Pick<
   AdminRoutes,
-  | 'admin.today'
   | 'admin.cancelReasons'
   | 'admin.orders'
   | 'admin.order'
@@ -19,13 +18,14 @@ export const adminOrdersRoutes = (
   | 'admin.rescheduleOrder'
   | 'admin.cancelOrder'
   | 'admin.noShow'
+  | 'admin.setDiscount'
+  | 'admin.priceItem'
   | 'admin.availability'
   | 'admin.slots'
   | 'admin.schedule'
   | 'admin.createBlock'
   | 'admin.removeBlock'
 > => ({
-  'admin.today': (_input, { actor }) => orders.today(actor),
   'admin.cancelReasons': async (_input, { actor }) => ({
     items: await orders.cancelReasons(actor),
   }),
@@ -41,6 +41,23 @@ export const adminOrdersRoutes = (
   'admin.cancelOrder': ({ params, body }, { actor, ip }) =>
     orders.cancel(actor, params.id, body, ip),
   'admin.noShow': ({ params }, { actor, ip }) => orders.noShow(actor, params.id, ip),
+  'admin.setDiscount': ({ params, body }, { actor, ip }) =>
+    orders.setDiscount(
+      actor,
+      params.id,
+      body.kind === 'none'
+        ? null
+        : {
+            input:
+              body.kind === 'percent'
+                ? { kind: 'percent', percent: body.percent }
+                : { kind: 'amount', amount: body.amount },
+            reason: body.reason,
+          },
+      ip,
+    ),
+  'admin.priceItem': ({ params, body }, { actor, ip }) =>
+    orders.priceItem(actor, params.id, params.itemId, body.price, ip),
   'admin.availability': ({ query }, { actor }) => orders.availability(actor, query),
   'admin.slots': ({ query }, { actor }) => orders.slots(actor, query),
 

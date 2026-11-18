@@ -2,9 +2,11 @@ import { formatDateLong } from '@cs/shared/format';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { call } from '../../api';
+import { useCan } from '../../auth/session';
 import { useLang, useT } from '../../i18n';
 import { genericMessage } from '../../lib/errors';
 import { POLL_MS, TODAY_KEY } from '../../lib/keys';
+import { CashCard } from '../../ui/CashCard';
 import { KpiCard } from '../../ui/KpiCard';
 import { Notice } from '../../ui/Notice';
 import { PlateChip } from '../../ui/PlateChip';
@@ -15,6 +17,7 @@ import './today.css';
 export function TodayPage() {
   const t = useT();
   const lang = useLang();
+  const can = useCan();
   const today = useQuery({
     queryKey: TODAY_KEY,
     queryFn: () => call('admin.today'),
@@ -59,7 +62,11 @@ export function TodayPage() {
               to="/orders"
               label={t.today.kpi.inWork}
               value={data.counters.inWork}
-              note={t.today.kpi.inWorkNote}
+              note={
+                data.reports.length > 0
+                  ? t.today.kpi.inReview(data.reports.length)
+                  : t.today.kpi.inWorkNote
+              }
             />
             <KpiCard
               to="/orders"
@@ -69,47 +76,79 @@ export function TodayPage() {
             />
           </div>
 
-          <section className="card today__table-card">
-            <h2 className="section-title today__table-title">{t.today.arrivalsTitle}</h2>
-            {data.arrivals.length === 0 ? (
-              <p className="muted today__empty">{t.today.arrivalsEmpty}</p>
-            ) : (
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>{t.today.columns.time}</th>
-                    <th>{t.today.columns.order}</th>
-                    <th>{t.today.columns.car}</th>
-                    <th>{t.today.columns.client}</th>
-                    <th>{t.today.columns.status}</th>
-                    <th>{t.today.columns.box}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.arrivals.map((order) => (
-                    <tr key={order.id}>
-                      <td className="num">{order.startsAt.time}</td>
-                      <td>
-                        <Link className="table__link num" to={`/orders/${order.id}`}>
-                          №{order.number}
-                        </Link>
-                      </td>
-                      <td>
-                        <span className="today__car">
-                          {order.car.label} <PlateChip plate={order.car.plate} />
-                        </span>
-                      </td>
-                      <td>{order.client.fullName}</td>
-                      <td>
-                        <StatusChip status={order.status} />
-                      </td>
-                      <td className="muted">{order.boxName ?? t.common.none}</td>
+          <div className="today__grid">
+            <section className="card today__table-card">
+              <h2 className="section-title today__table-title">{t.today.arrivalsTitle}</h2>
+              {data.arrivals.length === 0 ? (
+                <p className="muted today__empty">{t.today.arrivalsEmpty}</p>
+              ) : (
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>{t.today.columns.time}</th>
+                      <th>{t.today.columns.order}</th>
+                      <th>{t.today.columns.car}</th>
+                      <th>{t.today.columns.client}</th>
+                      <th>{t.today.columns.status}</th>
+                      <th>{t.today.columns.box}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </section>
+                  </thead>
+                  <tbody>
+                    {data.arrivals.map((order) => (
+                      <tr key={order.id}>
+                        <td className="num">{order.startsAt.time}</td>
+                        <td>
+                          <Link className="table__link num" to={`/orders/${order.id}`}>
+                            №{order.number}
+                          </Link>
+                        </td>
+                        <td>
+                          <span className="today__car">
+                            {order.car.label} <PlateChip plate={order.car.plate} />
+                          </span>
+                        </td>
+                        <td>{order.client.fullName}</td>
+                        <td>
+                          <StatusChip status={order.status} />
+                        </td>
+                        <td className="muted">{order.boxName ?? t.common.none}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </section>
+            <aside className="today__side">
+              {can('tasks.review') && (
+                <section className="card today__reports">
+                  <h2 className="section-title">{t.today.reportsTitle}</h2>
+                  {data.reports.length === 0 ? (
+                    <p className="muted">{t.today.reportsEmpty}</p>
+                  ) : (
+                    <ul className="today__report-list">
+                      {data.reports.map((report) => (
+                        <li key={report.id}>
+                          <Link className="today__report" to={`/tasks/${report.id}`}>
+                            <span>
+                              <strong>{report.master.fullName}</strong>,{' '}
+                              {t.today.reportOrder(report.orderNumber)}{' '}
+                              {report.items
+                                .map((item) => (lang === 'ru' ? item.nameRu : item.nameUz))
+                                .join(', ')}
+                            </span>
+                            <span className="today__report-time num">
+                              {t.today.minutes(report.waitingMin)}
+                            </span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </section>
+              )}
+              {data.cash && <CashCard cash={data.cash} />}
+            </aside>
+          </div>
         </>
       )}
     </section>
