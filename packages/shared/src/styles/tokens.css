@@ -1,0 +1,80 @@
+/*
+ * Design tokens (docs/DESIGN.md, sections 2–4). Colours were measured from the design PDFs.
+ * Components use only these variables, never raw colours. The Mini App switches themes with
+ * data-theme on <html>; the admin panel is light only in v1.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Base */
+  --bg: #edf1f4;
+  --surface: #ffffff;
+  --surface-muted: #f3f7fa;
+  --border: #d8dbe0;
+  --text: #14212a;
+  --text-muted: #57616a;
+  --ink: #14212a;
+  --on-ink: #ffffff;
+  --accent: #ba471a;
+  --accent-text: #ba471a;
+  --accent-soft: #fbece5;
+  --on-accent: #ffffff;
+  /* The accent on dark surfaces: the logo, links on the active order card. */
+  --accent-on-ink: #e07445;
+  /* A raised tile on a dark surface: the logo square, check marks (T0, U0). */
+  --ink-raised: rgb(255 255 255 / 9%);
+
+  /* Meaning */
+  --info: #2958bc;
+  --info-soft: #e8eefc;
+  --teal: #0e766d;
+  --teal-soft: #e3f3f2;
+  --warning: #9a5a00;
+  --warning-soft: #fbf0dc;
+  --success: #276b32;
+  --success-soft: #e6f2e8;
+  --danger: #b32318;
+  --danger-soft: #fbe9e7;
+
+  /* The licence plate looks like a real one in both themes (section 2.4). */
+  --plate-bg: #ffffff;
+  --plate-ink: #14212a;
+
+  /* Type (section 3) */
+  --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --font-num: 'Barlow Semi Condensed', 'Arial Narrow', var(--font-ui);
+
+  /* Size (section 4) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+  --tap-min: 44px;
+  --button-height: 52px;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #10171d;
+  --surface: #19232c;
+  --surface-muted: #22303b;
+  --border: #2c363f;
+  --text: #e8edf1;
+  --text-muted: #8a939c;
+  --ink: #22303b;
+  --on-ink: #e8edf1;
+  --accent-text: #e07445;
+  --accent-soft: #3a2419;
+
+  /* Only teal-soft was measured in the dark design; the rest are chosen in stage 3 (DESIGN 9). */
+  --teal-soft: #0e3b38;
+}

@@ -1,0 +1,21 @@
+.stage-stub {
+  padding: var(--space-4);
+}
+
+.stage-stub__card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.stage-stub__label {
+  color: var(--accent-text);
+}
+
+.stage-stub__stage {
+  margin: var(--space-2) 0 0;
+  color: var(--accent-text);
+}

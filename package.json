@@ -1,0 +1,41 @@
+{
+  "name": "car-service-platform",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @cs/server",
+    "dev:api": "npm run dev:api -w @cs/server",
+    "dev:tma": "npm run dev -w @cs/tma",
+    "dev:admin": "npm run dev -w @cs/admin",
+    "dev:init-data": "npm run dev:init-data -w @cs/server --",
+    "build": "npm run build -w @cs/server && npm run build -w @cs/tma && npm run build -w @cs/admin",
+    "start": "npm start -w @cs/server",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "npm test --workspaces --if-present",
+    "check:bundle": "npm run check:bundle -w @cs/tma",
+    "check": "npm run typecheck && npm run lint && npm test && npm run build && npm run check:bundle",
+    "db:generate": "npm run db:generate -w @cs/server --",
+    "db:migrate": "npm run db:migrate -w @cs/server",
+    "owner:create": "npm run owner:create -w @cs/server --"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.13.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.1"
+  }
+}
