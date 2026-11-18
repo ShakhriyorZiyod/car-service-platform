@@ -109,4 +109,4 @@ jadvallarini ham oladi (`pg_dump` butun bazani oladi).
    yulduzni bosing (uz va ru), keyin ilovada izoh yozing.
 2. Planshetda (yoki 1024 px oynada) A8 da aralash to'lovni boshidan oxirigacha o'tkazing.
 3. Egasi sifatida to'lov usulini tuzatib, audit jurnalida yozuvni ko'ring.
-4. Ochiq savol: rahbar "Bugun" da kassani ko'rishi kerakmi?
+4. ~~Ochiq savol: rahbar "Bugun" da kassani ko'rishi kerakmi?~~ Javob (2026-11-19): ko'rmaydi, hozirgidek.

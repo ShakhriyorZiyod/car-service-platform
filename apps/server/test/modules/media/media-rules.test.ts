@@ -82,9 +82,25 @@ describe('the signed link to a photo (PLAN 4.9, 15)', () => {
   const id = '01a1ed8b-d12a-7182-b095-fb2a6c1844d7';
   const now = new Date('2026-11-20T10:00:00Z');
 
+  it('lives at least 10 and at most 15 minutes', () => {
+    for (let second = 0; second < 600; second += 7) {
+      const at = new Date(now.getTime() + second * 1000);
+      const left = signMediaLink(secret, id, at).expires - at.getTime() / 1000;
+      expect(left).toBeGreaterThan(10 * 60);
+      expect(left).toBeLessThanOrEqual(MEDIA_LINK_SECONDS);
+    }
+  });
+
+  it('is the same for five minutes, so a screen that refreshes does not load the photo again', () => {
+    const first = signMediaLink(secret, id, now);
+    const later = signMediaLink(secret, id, new Date(now.getTime() + 4 * 60_000 + 59_000));
+    expect(later).toEqual(first);
+    const next = signMediaLink(secret, id, new Date(now.getTime() + 5 * 60_000));
+    expect(next.expires).toBe(first.expires + 5 * 60);
+  });
+
   it('works for the photo it was made for, until it runs out', () => {
     const link = signMediaLink(secret, id, now);
-    expect(link.expires).toBe(Math.floor(now.getTime() / 1000) + MEDIA_LINK_SECONDS);
     expect(isValidMediaLink(secret, id, link, now)).toBe(true);
     const lastSecond = new Date((link.expires - 1) * 1000);
     expect(isValidMediaLink(secret, id, link, lastSecond)).toBe(true);

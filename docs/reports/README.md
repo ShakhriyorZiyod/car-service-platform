@@ -23,4 +23,4 @@ Qoidalar:
 | 4. Arizalarni boshqarish (admin) | [bosqich-4.md](bosqich-4.md) |
 | 5. Qabul va ustalar ishi | [bosqich-5.md](bosqich-5.md) |
 | 6. Topshirish va to'lov | [bosqich-6.md](bosqich-6.md) |
-| 7. Ishga tushirish | — |
+| 7. Ishga tushirish | [bosqich-7.md](bosqich-7.md) |

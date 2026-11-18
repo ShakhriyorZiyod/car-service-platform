@@ -1,4 +1,4 @@
-import { DateTime } from 'luxon';
+import { DateTime, IANAZone } from 'luxon';
 
 /**
  * Time rules (docs/PLAN.md, section 2, rule 8): the database stores instants in UTC; every
@@ -12,7 +12,33 @@ export type LocalDate = string;
 /** A wall-clock time in the workshop's zone: "10:00". */
 export type LocalTime = string;
 
-const inZone = (instant: Date) => DateTime.fromJSDate(instant, { zone: TIMEZONE });
+const QUARTER_HOUR_MS = 15 * 60_000;
+const REMEMBERED_MAX = 50_000;
+
+/**
+ * The workshop's zone, with its offsets remembered. Luxon asks Intl for the offset on every
+ * conversion, and that was about 70% of a Kanban request's time with 300 orders (stage 7 load
+ * test). Every zone's offset changes only on a quarter hour of UTC, so one answer serves the whole
+ * quarter hour; the answers still come from the tz database, so a change of law is followed.
+ */
+class RememberingZone extends IANAZone {
+  private readonly known = new Map<number, number>();
+
+  override offset(ts: number): number {
+    const quarter = Math.floor(ts / QUARTER_HOUR_MS);
+    let offset = this.known.get(quarter);
+    if (offset === undefined) {
+      offset = super.offset(ts);
+      if (this.known.size >= REMEMBERED_MAX) this.known.clear();
+      this.known.set(quarter, offset);
+    }
+    return offset;
+  }
+}
+
+const ZONE = new RememberingZone(TIMEZONE);
+
+const inZone = (instant: Date) => DateTime.fromJSDate(instant, { zone: ZONE });
 
 function ensureValid(value: DateTime, input: string): DateTime<true> {
   if (!value.isValid) throw new RangeError(`not a valid local date or time: ${input}`);
@@ -32,7 +58,7 @@ function parseLocal(date: LocalDate, time: LocalTime = '00:00'): DateTime<true> 
   if (!LOCAL_DATE.test(date) || !LOCAL_TIME.test(time)) {
     throw new RangeError(`not a valid local date or time: ${input}`);
   }
-  return ensureValid(DateTime.fromISO(input, { zone: TIMEZONE }), input);
+  return ensureValid(DateTime.fromISO(input, { zone: ZONE }), input);
 }
 
 /** The workshop's calendar date at this instant. */

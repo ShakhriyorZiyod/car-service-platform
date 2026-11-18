@@ -111,14 +111,21 @@ export function createHttpApp(deps: HttpDeps): FastifyInstance {
   };
   void app.register(fastifyCookie);
   // A floor against floods; the business rules (sign-in pauses, code attempts) do the rest.
-  void app.register(fastifyRateLimit, { max: 120, timeWindow: '1 minute' });
+  // 600 a minute per address: the whole workshop (panel tabs, masters' phones on the Wi-Fi) shares
+  // one address, and its screens refresh every 10–20 seconds (PLAN 22, 2026-11-19).
+  void app.register(fastifyRateLimit, { max: 600, timeWindow: '1 minute' });
 
-  // A photo: the signed link is its own permission, so there is no session or init data here.
-  registerMediaRoute(app, services.media);
+  // Inside a plugin, so that they are added after the rate limit has loaded and fall under it too:
+  // a route added to the root right away would not (found in the stage 7 review).
+  void app.register((scope, _options, done) => {
+    // A photo: the signed link is its own permission, so there is no session or init data here.
+    registerMediaRoute(scope, services.media);
 
-  app.get('/health', async (_request, reply) => {
-    const database = await deps.checkDatabase();
-    return reply.code(database ? 200 : 503).send({ ok: database });
+    scope.get('/health', async (_request, reply) => {
+      const database = await deps.checkDatabase();
+      return reply.code(database ? 200 : 503).send({ ok: database });
+    });
+    done();
   });
 
   // The Mini App: signed init data in `Authorization: tma <init data>`.

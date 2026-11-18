@@ -17,8 +17,17 @@ export interface MediaLink {
   signature: string;
 }
 
+/** Links made within this many seconds of each other are the same. */
+const LINK_STEP_SECONDS = 5 * 60;
+
+/**
+ * The end time is rounded down to a five-minute step, so a screen that refreshes every few seconds
+ * gets the same link and the browser shows the photo from its cache instead of loading it again.
+ * A link therefore works between 10 and 15 minutes, never longer.
+ */
 export function signMediaLink(secret: string, mediaId: string, now: Date): MediaLink {
-  const expires = Math.floor(now.getTime() / 1000) + MEDIA_LINK_SECONDS;
+  const latest = Math.floor(now.getTime() / 1000) + MEDIA_LINK_SECONDS;
+  const expires = Math.floor(latest / LINK_STEP_SECONDS) * LINK_STEP_SECONDS;
   return { expires, signature: sign(secret, mediaId, expires) };
 }
 

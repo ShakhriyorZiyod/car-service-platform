@@ -157,7 +157,7 @@ tekshiriladi, xotiradan taxmin qilinmaydi.
 | Mini App, birinchi ochilish (gzip) | 200 KB, har shell uchun alohida (TZ: 250 KB) | `npm run check:bundle` |
 | Raqam shrifti | ≤ 24 KB woff2 (DESIGN 3; hozir 22.4 KB) | `check:bundle` |
 | Birinchi ekran | 1 ta so'rov (`/api/tma/bootstrap`) | Kod ko'rib chiqishda |
-| API javobi | p95 o'qish ≤ 300 ms, yozish ≤ 800 ms (TZ 15.1) | 7-bosqichda `autocannon` bilan |
+| API javobi | p95 o'qish ≤ 300 ms, yozish ≤ 800 ms (TZ 15.1) | 7-bosqichda yuklama skripti bilan (22-bo'lim; natija `reports/bosqich-7.md`) |
 | Statik fayllar | Xeshli nom, `immutable` kesh, gzip/brotli | nginx sozlamasi |
 
 ---
@@ -962,7 +962,7 @@ Yo'llar `packages/shared/src/routes`, sxemalar `contract` da. Guruhlar va autent
 | `GET, POST, PATCH /api/admin/staff`, `PUT .../:id/password` | Xodimlar |
 | `GET /api/admin/audit?cursor` | Audit jurnali |
 
-Ro'yxatlar `cursor` bilan sahifalanadi. Cheklovlar: hamma `/api` ga IP bo'yicha daqiqasiga 120 so'rov
+Ro'yxatlar `cursor` bilan sahifalanadi. Cheklovlar: hamma `/api` ga IP bo'yicha daqiqasiga 600 so'rov (2026-11-19 gacha 120 edi, 22-bo'lim)
 (`@fastify/rate-limit`, oqimdan himoya). Kirishga biznes-qoida: bir odamga 15 daqiqada 10 ta noto'g'ri
 parol, 2-qadam kodiga 5 urinish. TZ'dagi "Mini App mijoziga daqiqasiga 60" alohida qilinmadi (22-bo'lim).
 
@@ -1060,8 +1060,8 @@ Docker yo'q, barbershop_bot bilan bir xil yondashuv:
 | 3 | Garaj va bron (mijoz) | Qabul qilindi | [bosqich-3.md](reports/bosqich-3.md) |
 | 4 | Arizalarni boshqarish (admin) | Qabul qilindi | [bosqich-4.md](reports/bosqich-4.md) |
 | 5 | Qabul va ustalar ishi | Qabul qilindi | [bosqich-5.md](reports/bosqich-5.md) |
-| 6 | Topshirish va to'lov | Qabulga tayyor | [bosqich-6.md](reports/bosqich-6.md) |
-| 7 | Ishga tushirish | — | — |
+| 6 | Topshirish va to'lov | Qabul qilindi | [bosqich-6.md](reports/bosqich-6.md) |
+| 7 | Ishga tushirish | Kamchilik bilan: repo qismi tayyor, production server kutilmoqda | [bosqich-7.md](reports/bosqich-7.md) |
 
 ### Bosqich 0 — Poydevor
 
@@ -1394,13 +1394,19 @@ Yangilari tepada.
 
 | Sana | Qaror | Sabab |
 |---|---|---|
+| 2026-11-19 | API cheklovi IP bo'yicha daqiqasiga 120 dan 600 ga ko'tarildi (foydalanuvchi qarori) | Ustaxonada hamma (panel oynalari, Wi-Fi'dagi ustalar telefonlari) bitta IP'dan chiqadi va ekranlar har 10–20 soniyada yangilanadi: 120 ga yaqinlashib, xodimlar 429 olishi mumkin edi. Oqimdan himoya qoladi; kirish va 2-qadam kodi o'z biznes-qoidasi bilan cheklangan |
+| 2026-11-19 | `/media` va `/health` ham IP bo'yicha cheklanadi: ular rate-limit plugini yuklangandan keyin ro'yxatdan o'tadi. Fotolarning o'z hisoblagichi bor (daqiqasiga 600), API'niki bilan bo'linmaydi | Xavfsizlik ko'rigida topildi: root'ga darhol qo'shilgan route plugin hook'iga tushmagan, ya'ni cheklovsiz edi. Ustaxonada hamma bitta IP'dan chiqadi va bitta ekran o'nlab foto ochadi: fotolar API hisobini yemasin |
+| 2026-11-19 | Foto havolasining tugash vaqti 5 daqiqalik qadamga pastga yaxlitlanadi: havola 10–15 daqiqa amal qiladi va 5 daqiqa davomida bir xil bo'ladi | Har 10 soniyada yangilanadigan ekranlar (A8, ariza, dalolatnoma) har safar yangi havola olib, fotolarni qayta yuklardi; brauzer keshi (`max-age=600`) ishlamasdi. 15 daqiqadan uzoq amal qilmaydi (TZ 15.2) |
+| 2026-11-19 | `lib/time` dagi Toshkent mintaqasi siljishni chorak soatlik bo'lak bo'yicha eslab qoladi (`RememberingZone`, luxon `IANAZone` ustida) | Yuklama o'lchovida Kanban so'rovi vaqtining ~70% i luxon'ning `Intl` orqali siljish hisobiga ketgan. Siljish tzdata'dan olinaveradi; real mintaqalarda u faqat UTC chorak soatlarida o'zgaradi |
+| 2026-11-19 | Tezlik `autocannon` emas, o'z skripti bilan o'lchandi (har so'rov boshqa `X-Forwarded-For` bilan) | Bitta manzildan daqiqasiga 120 so'rov cheklovi `autocannon` o'lchovini 429 hisobiga aylantirardi; skript 10 va 1 parallel so'rovda p50/p95/p99 beradi |
+| 2026-11-19 | Production yo'llari: kod `/opt/car-service`, Node 24 `/opt/node-24`, sozlama `/etc/car-service.env`, fotolar `/var/lib/car-service/uploads`, zaxira `/var/backups/car-service/{daily,monthly}`; zaxira kunlik 30 kun, oylik (oyning birinchisi, qattiq havola) ~1 yil, `BACKUP_REMOTE` bo'lsa `rsync` | PLAN 17. Fotolarni nginx emas, API beradi (imzolangan havola), shuning uchun papka faqat `carservice` ga ochiq (`0750`) |
 | 2026-11-18 | Chegirma `orders` modulida (`orders/domain/discount.ts`, `admin.setDiscount`), `payments` da emas | Chegirma ustunlari `orders` jadvalida, unga faqat `orders` yozadi (4.4); bandlar o'zgarganda qayta hisob ham `orders` da. `payments` faqat checkout, to'lovlar va chek |
 | 2026-11-18 | Bandlar o'zgarganda (bandlarni tahrirlash, qo'shimcha ishga rozilik, narx qo'yish) `subtotal` bandlardan qayta yig'iladi, chegirma foiz bo'lsa foizdan, summa bo'lsa `min(summa, subtotal)`; admin limiti qayta tekshirilmaydi | 11-bo'lim formulasi. Avval qo'shimcha ishga rozilikda foizli chegirma o'smasdi (topildi, test bilan) |
 | 2026-11-18 | Ish boshlangach (`in_work`, `ready_for_pickup`) narxi yo'q bandga bir marta narx qo'yiladi (`PUT .../items/:itemId/price`, `orders.write`, audit); narxi bor band o'zgarmaydi | "Boshqa" zona doim "kelishiladi", bandlarni tahrirlash esa `in_work` gacha: usiz bunday ariza hech qachon checkout'dan o'tmasdi (`unpriced_items`) |
 | 2026-11-18 | Checkout: avval arizani qulflaydi, keyin `requestId` bo'yicha chekni qidiradi (bor bo'lsa o'sha natija, boshqa arizaniki bo'lsa `validation`); to'lov qatorlarida bitta usul bir marta, summa > 0; jami 0 bo'lsa to'lovsiz o'tadi | Ikki parallel checkout'dan bittasi o'tadi, bir xil `requestId` bitta natija (testlar bilan). 100% chegirmali ariza ham yopiladi |
 | 2026-11-18 | Baho: yulduz (1–5) bir marta; botda faqat yulduz, izoh keyin ilovada o'sha yulduz bilan bir marta qo'shiladi; boshqa har qanday ikkinchi javob `already_decided` | 18-bo'lim: "mijoz botda baho beradi va ilovada izoh yozadi"; bahoni o'zgartirib bo'lmaydi |
 | 2026-11-18 | `order.completed` dagi 5 ta baho tugmasi bitta qatorda (`rate:<n>:<orderId>`) | Beshta qator xabarni juda uzaytiradi; `RenderedMessage.actionsInRow` |
-| 2026-11-18 | "Bugun" (`admin.today`) `dashboard` modulida: `orders.today` + tekshiruvdagi hisobotlar (`tasks.review` huquqi bo'lsa) + bugungi kassa (`checkout.write` bo'lsa, aks holda `null`) | 13-bo'lim; rahbar kassani ko'rmaydi (pul bilan ishlamaydi). Kassa to'lov vaqti (`received_at`) bo'yicha Toshkent kunida |
+| 2026-11-18 | "Bugun" (`admin.today`) `dashboard` modulida: `orders.today` + tekshiruvdagi hisobotlar (`tasks.review` huquqi bo'lsa) + bugungi kassa (`checkout.write` bo'lsa, aks holda `null`) | 13-bo'lim; rahbar kassani ko'rmaydi (pul bilan ishlamaydi; foydalanuvchi 2026-11-19 da tasdiqladi). Kassa to'lov vaqti (`received_at`) bo'yicha Toshkent kunida |
 | 2026-11-18 | Qo'shimcha ish kartasidagi "yangi jami" serverdan (`items[].totalIfApproved`, chegirma bilan) | Ilova avval `total + narx` ni o'zi hisoblardi, chegirmali arizada noto'g'ri edi (2-bo'lim, 13-qoida) |
 | 2026-11-18 | Fiskal chek `FiscalProvider` porti (`payments/app/fiscal.ts`), v1 `manual`: admin chek raqamini yozadi (1–64 belgi, bo'shliqlar kesiladi) | 11-bo'lim; v2 kassa API shu portni amalga oshiradi |
 | 2026-11-18 | Foto xom baytlar bilan `PUT` qilinadi (`application/octet-stream`), `mediaId` klientda yaratiladi; tur (JPEG, PNG, WebP) va o'lcham baytlardan aniqlanadi, ≤ 3 MB, bitta urinishda ≤ 20 ta. Telefon rasmni ≈ 2 Mp gacha kichraytiradi | Multipart kutubxonasi kerak emas; takror yuborish bitta yozuv qoldiradi (TZ 16.4). Tur klient aytganidan emas, baytlardan olinadi (15-bo'lim) |

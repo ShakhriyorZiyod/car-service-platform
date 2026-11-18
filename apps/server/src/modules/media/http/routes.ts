@@ -10,8 +10,15 @@ const query = z.object({ exp: z.coerce.number().int(), sig: z.string().min(1).ma
  * the server signed and that has not run out. A wrong or old link is a plain 404, so it does not
  * tell a guess from a missing photo.
  */
+/**
+ * Photos have a counter of their own, apart from the API's 600 a minute: one screen opens a dozen
+ * at once, and the whole workshop reaches the server from a single address (PLAN 22).
+ */
+const PHOTOS_PER_MINUTE = 600;
+
 export function registerMediaRoute(app: FastifyInstance, media: MediaService): void {
-  app.get('/media/:id', async (request, reply) => {
+  const config = { rateLimit: { max: PHOTOS_PER_MINUTE, timeWindow: '1 minute' } };
+  app.get('/media/:id', { config }, async (request, reply) => {
     const path = params.safeParse(request.params);
     const link = query.safeParse(request.query);
     const file =
@@ -25,7 +32,8 @@ export function registerMediaRoute(app: FastifyInstance, media: MediaService): v
         // Shown inline and never run: whatever the bytes are, the browser may not guess a type.
         .header('x-content-type-options', 'nosniff')
         .header('content-security-policy', "default-src 'none'")
-        // The link ends in 15 minutes; the person's own browser may keep the picture until then.
+        // A link lives 10 to 15 minutes and stays the same for five (domain/signed-url.ts): the
+        // person's own browser keeps the picture, so a refreshing screen does not load it again.
         .header('cache-control', 'private, max-age=600')
         .send(file.bytes)
     );

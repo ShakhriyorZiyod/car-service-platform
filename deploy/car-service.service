@@ -1,0 +1,39 @@
+# /etc/systemd/system/car-service.service
+# One instance only: the bot uses long polling, and a second one gets 409 and exits (PLAN 17).
+[Unit]
+Description=car-service (Telegram bot, HTTP API and background jobs)
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=carservice
+Group=carservice
+WorkingDirectory=/opt/car-service/apps/server
+EnvironmentFile=/etc/car-service.env
+Environment=NODE_ENV=production
+# Node.js 24 lives in its own directory (docs/DEPLOY.md, step 1); change the path if yours differs.
+ExecStart=/opt/node-24/bin/node --enable-source-maps dist/main.js
+Restart=always
+RestartSec=5
+# Long enough to finish the bot's updates, the outbox round and the database work in hand.
+TimeoutStopSec=30
+MemoryMax=768M
+
+# Creates /var/lib/car-service for the photos; everything else on the disk stays read-only.
+# Logs go to journald: journalctl -u car-service -f
+StateDirectory=car-service
+StateDirectoryMode=0750
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target

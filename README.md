@@ -53,6 +53,9 @@ npm run seed:demo        # faqat dev: ish vaqti, 4 boks, narxlar, demo xodimlar 
 Egasi panelga kirganda 2-qadam kodi Telegram botga keladi. Buning uchun egasi botni ochib, shu telefon
 raqamini Mini App orqali ulashgan bo'lishi kerak.
 
+Serverga o'rnatish, yangilash, zaxira va tiklash: [`docs/DEPLOY.md`](docs/DEPLOY.md). Egasi va
+administrator uchun yo'riqnoma: [`docs/EGA_UCHUN.md`](docs/EGA_UCHUN.md).
+
 ## Ishlab chiqish
 
 Telegram'siz (bot tokeni kerak emas):

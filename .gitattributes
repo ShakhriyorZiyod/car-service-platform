@@ -3,6 +3,8 @@
 *.sh text eol=lf
 *.service text eol=lf
 *.conf text eol=lf
+# Copied to /etc and read by bash (`. /etc/car-service.env`).
+deploy/env.example text eol=lf
 # Design and requirement sources.
 *.pdf binary
 *.woff2 binary
