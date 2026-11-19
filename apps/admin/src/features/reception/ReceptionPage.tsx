@@ -21,6 +21,7 @@ import { ORDERS_KEY, SCHEDULE_KEY, TODAY_KEY, actKey, orderKey } from '../../lib
 import { newPhotoId } from '../../lib/photo';
 import { BodySchema } from '../../ui/BodySchema';
 import { Button } from '../../ui/Button';
+import { ConfirmDialog } from '../../ui/ConfirmDialog';
 import { Field } from '../../ui/Field';
 import { Notice } from '../../ui/Notice';
 import { PhotoTile } from '../../ui/PhotoTile';
@@ -162,13 +163,14 @@ function ActForm({ orderId, loaded }: { orderId: string; loaded: AdminAct }) {
     },
     onError: setError,
   });
+  const [confirmingVerbal, setConfirmingVerbal] = useState(false);
   const verbal = useMutation({
     mutationFn: () => call('admin.confirmActVerbal', { params: { id: orderId } }),
     onSuccess: async (next) => {
       setError(null);
+      setConfirmingVerbal(false);
       await refresh(next);
     },
-    onError: setError,
   });
   const start = useMutation({
     mutationFn: () => call('admin.startWork', { params: { id: orderId } }),
@@ -472,9 +474,8 @@ function ActForm({ orderId, loaded }: { orderId: string; loaded: AdminAct }) {
           {writable && (
             <Button
               variant="secondary"
-              busy={verbal.isPending}
               disabled={dirty || !state.canConfirmVerbal}
-              onClick={() => verbal.mutate()}
+              onClick={() => setConfirmingVerbal(true)}
             >
               {t.reception.verbal}
             </Button>
@@ -495,6 +496,21 @@ function ActForm({ orderId, loaded }: { orderId: string; loaded: AdminAct }) {
           )}
         </div>
       </div>
+      {confirmingVerbal && (
+        <ConfirmDialog
+          title={t.confirm.verbalTitle}
+          confirmLabel={t.confirm.verbalSubmit}
+          pending={verbal.isPending}
+          error={verbal.error}
+          onConfirm={() => verbal.mutate()}
+          onClose={() => {
+            setConfirmingVerbal(false);
+            verbal.reset();
+          }}
+        >
+          <p>{t.confirm.verbalText}</p>
+        </ConfirmDialog>
+      )}
     </>
   );
 }

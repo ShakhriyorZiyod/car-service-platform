@@ -17,6 +17,7 @@ import {
   orderKey,
 } from '../../lib/keys';
 import { Button } from '../../ui/Button';
+import { ConfirmDialog } from '../../ui/ConfirmDialog';
 import { Notice } from '../../ui/Notice';
 import { TaskChip } from '../../ui/TaskChip';
 import { AddExtraDialog } from './AddExtraDialog';
@@ -156,6 +157,12 @@ function ExtrasCard({ order }: { order: AdminOrder }) {
   const refresh = useRefreshOrder(order.id);
   const [adding, setAdding] = useState(false);
   const extras = order.items.filter((item) => item.kind === 'extra');
+  const [deciding, setDeciding] = useState<{
+    itemId: string;
+    decision: 'approved' | 'rejected';
+    name: string;
+    price: number | null;
+  } | null>(null);
 
   const decide = useMutation({
     mutationFn: (input: { itemId: string; decision: 'approved' | 'rejected' }) =>
@@ -163,6 +170,7 @@ function ExtrasCard({ order }: { order: AdminOrder }) {
         params: { id: order.id, itemId: input.itemId },
         body: { decision: input.decision },
       }),
+    onSuccess: () => setDeciding(null),
     onSettled: () => refresh(),
   });
   return (
@@ -191,16 +199,28 @@ function ExtrasCard({ order }: { order: AdminOrder }) {
               <span className="order__decide">
                 <Button
                   variant="secondary"
-                  busy={decide.isPending}
-                  onClick={() => decide.mutate({ itemId: item.id, decision: 'approved' })}
+                  onClick={() =>
+                    setDeciding({
+                      itemId: item.id,
+                      decision: 'approved',
+                      name: lang === 'ru' ? item.nameRu : item.nameUz,
+                      price: item.price,
+                    })
+                  }
                 >
                   {t.work.extras.approve}
                 </Button>
                 <Button
                   variant="secondary"
                   className="btn--danger"
-                  busy={decide.isPending}
-                  onClick={() => decide.mutate({ itemId: item.id, decision: 'rejected' })}
+                  onClick={() =>
+                    setDeciding({
+                      itemId: item.id,
+                      decision: 'rejected',
+                      name: lang === 'ru' ? item.nameRu : item.nameUz,
+                      price: item.price,
+                    })
+                  }
                 >
                   {t.work.extras.reject}
                 </Button>
@@ -209,7 +229,27 @@ function ExtrasCard({ order }: { order: AdminOrder }) {
           </li>
         ))}
       </ul>
-      {decide.isError && <Notice tone="danger">{apiMessage(decide.error, t)}</Notice>}
+      {deciding && (
+        <ConfirmDialog
+          title={t.confirm.extraTitle[deciding.decision]}
+          confirmLabel={t.confirm.extraSubmit[deciding.decision]}
+          danger={deciding.decision === 'rejected'}
+          pending={decide.isPending}
+          error={decide.error}
+          onConfirm={() => decide.mutate({ itemId: deciding.itemId, decision: deciding.decision })}
+          onClose={() => {
+            setDeciding(null);
+            decide.reset();
+          }}
+        >
+          <p>
+            {t.confirm.extraText(
+              deciding.name,
+              deciding.price === null ? t.order.toAgree : formatMoney(deciding.price, lang),
+            )}
+          </p>
+        </ConfirmDialog>
+      )}
       {adding && <AddExtraDialog order={order} onClose={() => setAdding(false)} />}
     </section>
   );

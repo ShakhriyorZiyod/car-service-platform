@@ -10,6 +10,7 @@ import { useLang, useT } from '../../i18n';
 import { apiMessage } from '../../lib/errors';
 import { ORDERS_KEY, POLL_MS, TODAY_KEY, handoverKey, orderKey } from '../../lib/keys';
 import { Button } from '../../ui/Button';
+import { ConfirmDialog } from '../../ui/ConfirmDialog';
 import { Notice } from '../../ui/Notice';
 import { PhotoStrip } from '../../ui/PhotoViewer';
 import { PlateChip } from '../../ui/PlateChip';
@@ -135,7 +136,7 @@ function WorkCard({ data }: { data: Handover }) {
               <td className="table__num num">
                 {item.price === null ? (
                   order.actions.canPriceItems ? (
-                    <PriceInput orderId={order.id} itemId={item.id} />
+                    <PriceInput orderId={order.id} itemId={item.id} name={nameOf(item)} />
                   ) : (
                     t.handover.toAgree
                   )
@@ -169,14 +170,19 @@ function WorkCard({ data }: { data: Handover }) {
 }
 
 /** A price for a zone "to be agreed": fixed once saved (PLAN 22). */
-function PriceInput({ orderId, itemId }: { orderId: string; itemId: string }) {
+function PriceInput({ orderId, itemId, name }: { orderId: string; itemId: string; name: string }) {
   const t = useT();
+  const lang = useLang();
   const refresh = useRefresh(orderId);
   const [value, setValue] = useState('');
+  const [confirming, setConfirming] = useState(false);
   const save = useMutation({
     mutationFn: (price: number) =>
       call('admin.priceItem', { params: { id: orderId, itemId }, body: { price } }),
-    onSuccess: () => refresh(),
+    onSuccess: async () => {
+      setConfirming(false);
+      await refresh();
+    },
   });
   const price = Number(value.replace(/\s/g, ''));
   const valid = value.trim() !== '' && Number.isSafeInteger(price) && price >= 0;
@@ -190,15 +196,24 @@ function PriceInput({ orderId, itemId }: { orderId: string; itemId: string }) {
         value={value}
         onChange={(event) => setValue(event.target.value)}
       />
-      <Button
-        variant="secondary"
-        disabled={!valid}
-        busy={save.isPending}
-        onClick={() => save.mutate(price)}
-      >
+      <Button variant="secondary" disabled={!valid} onClick={() => setConfirming(true)}>
         {t.handover.savePrice}
       </Button>
-      {save.isError && <span className="field__error">{apiMessage(save.error, t)}</span>}
+      {confirming && (
+        <ConfirmDialog
+          title={t.confirm.priceTitle}
+          confirmLabel={t.confirm.priceSubmit}
+          pending={save.isPending}
+          error={save.error}
+          onConfirm={() => save.mutate(price)}
+          onClose={() => {
+            setConfirming(false);
+            save.reset();
+          }}
+        >
+          <p>{t.confirm.priceText(name, formatMoney(price, lang))}</p>
+        </ConfirmDialog>
+      )}
     </span>
   );
 }
@@ -443,10 +458,20 @@ function PaidCard({ data }: { data: Handover }) {
   const t = useT();
   const lang = useLang();
   const refresh = useRefresh(data.order.id);
+  // The new method waits here until the owner confirms it; the list keeps showing the old one.
+  const [changing, setChanging] = useState<{
+    id: string;
+    from: PaymentMethod;
+    to: PaymentMethod;
+    amount: number;
+  } | null>(null);
   const correct = useMutation({
     mutationFn: (input: { id: string; method: PaymentMethod }) =>
       call('admin.correctPayment', { params: { id: input.id }, body: { method: input.method } }),
-    onSuccess: (updated) => refresh(updated),
+    onSuccess: async (updated) => {
+      setChanging(null);
+      await refresh(updated);
+    },
   });
   return (
     <section className="card handover__card">
@@ -463,9 +488,11 @@ function PaidCard({ data }: { data: Handover }) {
                     value={payment.method}
                     disabled={correct.isPending}
                     onChange={(event) =>
-                      correct.mutate({
+                      setChanging({
                         id: payment.id,
-                        method: event.target.value as PaymentMethod,
+                        from: payment.method,
+                        to: event.target.value as PaymentMethod,
+                        amount: payment.amount,
                       })
                     }
                   >
@@ -489,7 +516,27 @@ function PaidCard({ data }: { data: Handover }) {
         </tbody>
       </table>
       {data.canCorrectPayments && <p className="field__hint">{t.handover.correctHint}</p>}
-      {correct.isError && <Notice tone="danger">{apiMessage(correct.error, t)}</Notice>}
+      {changing && (
+        <ConfirmDialog
+          title={t.confirm.methodTitle}
+          confirmLabel={t.confirm.methodSubmit}
+          pending={correct.isPending}
+          error={correct.error}
+          onConfirm={() => correct.mutate({ id: changing.id, method: changing.to })}
+          onClose={() => {
+            setChanging(null);
+            correct.reset();
+          }}
+        >
+          <p>
+            {t.confirm.methodText(
+              t.paymentMethod[changing.from],
+              t.paymentMethod[changing.to],
+              formatMoney(changing.amount, lang),
+            )}
+          </p>
+        </ConfirmDialog>
+      )}
       {data.receipt && (
         <p className="handover__receipt">
           <Receipt size={16} aria-hidden="true" />

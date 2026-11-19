@@ -13,6 +13,28 @@ export const uz = {
   },
   notFound: 'Sahifa topilmadi.',
   signOut: 'Chiqish',
+  confirm: {
+    priceTitle: 'Narxni saqlaysizmi?',
+    priceText: (name: string, price: string) =>
+      `${name}: ${price}. Saqlangandan keyin bu narxni o‘zgartirib bo‘lmaydi.`,
+    priceSubmit: 'Saqlash',
+    extraTitle: { approved: 'Mijoz rozi bo‘ldimi?', rejected: 'Mijoz rad etdimi?' },
+    extraText: (name: string, price: string) =>
+      `${name} (${price}). Javob “telefon orqali” deb yoziladi va uni o‘zgartirib bo‘lmaydi.`,
+    extraSubmit: { approved: 'Ha, rozi bo‘ldi', rejected: 'Ha, rad etdi' },
+    methodTitle: 'To‘lov usulini o‘zgartirasizmi?',
+    methodText: (from: string, to: string, amount: string) =>
+      `${from} → ${to}, ${amount}. Summa o‘zgarmaydi, o‘zgarish audit jurnaliga yoziladi.`,
+    methodSubmit: 'O‘zgartirish',
+    verbalTitle: 'Mijoz og‘zaki tasdiqladimi?',
+    verbalText:
+      'Dalolatnoma mijoz nomidan tasdiqlanadi va unga botda tasdiqlash so‘rovi kelmaydi. Buni qaytarib bo‘lmaydi.',
+    verbalSubmit: 'Ha, tasdiqladi',
+  },
+  signOutConfirm: {
+    title: 'Paneldan chiqasizmi?',
+    text: 'Qayta kirish uchun login va parol kerak bo‘ladi (egasi va rahbarga yana Telegram kodi).',
+  },
   theme: { label: 'Mavzu', auto: 'Avto (kompyuter mavzusi)', light: 'Och', dark: 'Qorong‘i' },
   errors: {
     network: 'Internet yo‘q yoki server javob bermayapti.',

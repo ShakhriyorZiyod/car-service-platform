@@ -4,10 +4,11 @@ import { LogOut, Monitor, Moon, Search, Sun } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { call } from '../api';
-import { useCan, useMe, useSetMe } from '../auth/session';
+import { ME_KEY, useCan, useMe, useSetMe } from '../auth/session';
 import { useLang, useT } from '../i18n';
 import { chooseTheme, THEME_CHOICES, useThemeChoice } from '../lib/theme';
 import { Button } from '../ui/Button';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
 
 const THEME_ICONS = { auto: Monitor, light: Sun, dark: Moon } as const;
 
@@ -28,6 +29,7 @@ export function Topbar() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [text, setText] = useState('');
+  const [confirmingExit, setConfirmingExit] = useState(false);
   const can = useCan();
   const theme = useThemeChoice();
 
@@ -44,9 +46,12 @@ export function Topbar() {
   });
   const signOut = useMutation({
     mutationFn: () => call('auth.logout'),
-    onSettled: () => {
-      queryClient.clear();
+    // Only once the server has ended the session. The sign-in screen comes first: `me` becomes
+    // null in the very query the panel watches. Clearing the whole cache before that removed
+    // this query from under the panel, which then never saw the change and stayed open.
+    onSuccess: () => {
       setMe(null);
+      queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== ME_KEY[0] });
     },
   });
 
@@ -112,12 +117,26 @@ export function Topbar() {
         <Button
           variant="ghost"
           icon={<LogOut size={16} aria-hidden="true" />}
-          busy={signOut.isPending}
-          onClick={() => signOut.mutate()}
+          onClick={() => setConfirmingExit(true)}
         >
           {t.signOut}
         </Button>
       </div>
+      {confirmingExit && (
+        <ConfirmDialog
+          title={t.signOutConfirm.title}
+          confirmLabel={t.signOut}
+          pending={signOut.isPending}
+          error={signOut.error}
+          onConfirm={() => signOut.mutate()}
+          onClose={() => {
+            setConfirmingExit(false);
+            signOut.reset();
+          }}
+        >
+          <p>{t.signOutConfirm.text}</p>
+        </ConfirmDialog>
+      )}
     </header>
   );
 }

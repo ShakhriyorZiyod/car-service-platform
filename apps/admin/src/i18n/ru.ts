@@ -15,6 +15,27 @@ export const ru: Dictionary<typeof uz> = {
   },
   notFound: 'Страница не найдена.',
   signOut: 'Выйти',
+  confirm: {
+    priceTitle: 'Сохранить цену?',
+    priceText: (name, price) => `${name}: ${price}. После сохранения эту цену изменить нельзя.`,
+    priceSubmit: 'Сохранить',
+    extraTitle: { approved: 'Клиент согласился?', rejected: 'Клиент отказался?' },
+    extraText: (name, price) =>
+      `${name} (${price}). Ответ запишется как «по телефону», изменить его будет нельзя.`,
+    extraSubmit: { approved: 'Да, согласился', rejected: 'Да, отказался' },
+    methodTitle: 'Изменить способ оплаты?',
+    methodText: (from, to, amount) =>
+      `${from} → ${to}, ${amount}. Сумма не меняется, изменение пишется в журнал аудита.`,
+    methodSubmit: 'Изменить',
+    verbalTitle: 'Клиент подтвердил устно?',
+    verbalText:
+      'Акт будет подтверждён от имени клиента, запрос в боте ему не придёт. Отменить это нельзя.',
+    verbalSubmit: 'Да, подтвердил',
+  },
+  signOutConfirm: {
+    title: 'Выйти из панели?',
+    text: 'Чтобы войти снова, понадобятся логин и пароль (владельцу и руководителю — ещё код в Telegram).',
+  },
   theme: { label: 'Тема', auto: 'Авто (как на компьютере)', light: 'Светлая', dark: 'Тёмная' },
   errors: {
     network: 'Нет интернета или сервер не отвечает.',
