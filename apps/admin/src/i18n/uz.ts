@@ -13,6 +13,7 @@ export const uz = {
   },
   notFound: 'Sahifa topilmadi.',
   signOut: 'Chiqish',
+  theme: { label: 'Mavzu', auto: 'Avto (kompyuter mavzusi)', light: 'Och', dark: 'Qorong‘i' },
   errors: {
     network: 'Internet yo‘q yoki server javob bermayapti.',
     generic: 'Xatolik yuz berdi. Qayta urinib ko‘ring.',
@@ -565,6 +566,7 @@ export const uz = {
       phoneVerified: 'Telegram tasdiqlagan raqam',
       phoneUnverified: 'Raqam tasdiqlanmagan',
       telegram: 'Telegram ulangan',
+      telegramId: (id: number) => `Telegram ID: ${id}`,
       noTelegram: 'Telegram ulanmagan',
       note: 'Ichki izoh',
       noteHint: 'Faqat xodimlar ko‘radi. Jurnalga matni yozilmaydi.',

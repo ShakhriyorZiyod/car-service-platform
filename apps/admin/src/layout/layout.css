@@ -114,6 +114,13 @@
   cursor: pointer;
 }
 
+.topbar__theme {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  padding: 0;
+}
+
 .topbar__lang.is-active {
   border-color: var(--ink);
   background: var(--ink);

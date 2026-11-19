@@ -1,7 +1,8 @@
 /*
  * Design tokens (docs/DESIGN.md, sections 2–4). Colours were measured from the design PDFs.
- * Components use only these variables, never raw colours. The Mini App switches themes with
- * data-theme on <html>; the admin panel is light only in v1.
+ * Components use only these variables, never raw colours. Both the Mini App and the admin panel
+ * switch themes with data-theme on <html> (each has an Auto / Light / Dark switch). The *-soft
+ * backgrounds stay light in the dark theme: text on them takes the paired colour, never --text.
  */
 
 :root {

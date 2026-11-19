@@ -20,6 +20,9 @@ import {
 
 export type Theme = 'light' | 'dark';
 
+/** What the person chose in their profile: follow Telegram, or always light or dark. */
+export type ThemeChoice = 'auto' | Theme;
+
 export interface Launch {
   /** Signed init data for the API; absent in a plain browser. */
   initData: string | undefined;
@@ -36,6 +39,70 @@ let insideTelegram = false;
  */
 function applyTheme(theme: Theme): void {
   document.documentElement.dataset.theme = theme;
+}
+
+/** Where the choice is kept: Telegram's CloudStorage, and a copy here for the very first paint. */
+const THEME_KEY = 'theme';
+const isThemeChoice = (value: unknown): value is ThemeChoice =>
+  value === 'auto' || value === 'light' || value === 'dark';
+
+/** The mode Telegram (or, outside it, the system) uses now: what "auto" follows. */
+let autoTheme: Theme = 'light';
+let themeChoice: ThemeChoice = 'auto';
+const themeListeners = new Set<() => void>();
+
+function rememberedTheme(): ThemeChoice {
+  try {
+    const value = localStorage.getItem(THEME_KEY);
+    return isThemeChoice(value) ? value : 'auto';
+  } catch {
+    return 'auto';
+  }
+}
+
+function rememberTheme(choice: ThemeChoice): void {
+  try {
+    if (choice === 'auto') localStorage.removeItem(THEME_KEY);
+    else localStorage.setItem(THEME_KEY, choice);
+  } catch {
+    // Storage may be off: the choice still holds until the app closes.
+  }
+}
+
+/** Paints the page and Telegram's frame in the mode the choice gives. */
+function renderTheme(): void {
+  applyTheme(themeChoice === 'auto' ? autoTheme : themeChoice);
+  if (insideTelegram) paintTelegramFrame();
+  for (const listener of themeListeners) listener();
+}
+
+export const themeChoiceNow = (): ThemeChoice => themeChoice;
+
+/** For the profile's switch (useSyncExternalStore); returns the way to stop listening. */
+export function onThemeChoice(listener: () => void): () => void {
+  themeListeners.add(listener);
+  return () => themeListeners.delete(listener);
+}
+
+/** The person picked a mode: shown at once, kept in Telegram's CloudStorage and here. */
+export function chooseTheme(choice: ThemeChoice): void {
+  themeChoice = choice;
+  rememberTheme(choice);
+  renderTheme();
+  void writeStored(THEME_KEY, choice === 'auto' ? null : choice);
+}
+
+/**
+ * The choice may have been made on another device: CloudStorage has the last word. It answers a
+ * moment after start, so the first paint uses the copy kept here.
+ */
+function loadStoredTheme(): void {
+  void readStored(THEME_KEY).then((stored) => {
+    if (!isThemeChoice(stored) || stored === themeChoice) return;
+    themeChoice = stored;
+    rememberTheme(stored);
+    renderTheme();
+  });
 }
 
 const token = (name: string): string =>
@@ -68,17 +135,24 @@ function paintTelegramFrame(): void {
  * branch from production builds.
  */
 function launchOutsideTelegram(): Launch {
+  themeChoice = rememberedTheme();
   if (import.meta.env.DEV) {
     const params = new URLSearchParams(location.search);
     const requested = params.get('theme');
-    const prefersDark = matchMedia('(prefers-color-scheme: dark)').matches;
-    applyTheme(requested === 'dark' || (requested !== 'light' && prefersDark) ? 'dark' : 'light');
+    const system = matchMedia('(prefers-color-scheme: dark)');
+    const follow = () => {
+      autoTheme =
+        requested === 'dark' || (requested !== 'light' && system.matches) ? 'dark' : 'light';
+      renderTheme();
+    };
+    follow();
+    system.addEventListener('change', follow);
     return {
       initData: import.meta.env.VITE_DEV_INIT_DATA as string | undefined,
       languageCode: params.get('lang') ?? undefined,
     };
   }
-  applyTheme('light');
+  renderTheme();
   return { initData: undefined, languageCode: undefined };
 }
 
@@ -91,18 +165,19 @@ export function launch(): Launch {
   optional(() => themeParams.mount.ifAvailable());
   optional(() => miniApp.mount.ifAvailable());
 
-  // The mode comes from Telegram's theme, not from miniApp.isDark: that one reads the app's
-  // background, which paintTelegramFrame sets to our own colour, so it would never change again.
-  applyTheme('light');
-  paintTelegramFrame();
+  // "Auto" follows Telegram's theme, not miniApp.isDark: that one reads the app's background,
+  // which paintTelegramFrame sets to our own colour, so it would never change again.
+  themeChoice = rememberedTheme();
+  renderTheme();
   optional(() => {
     const follow = () => {
-      applyTheme(themeParams.isDark() ? 'dark' : 'light');
-      paintTelegramFrame();
+      autoTheme = themeParams.isDark() ? 'dark' : 'light';
+      renderTheme();
     };
     follow();
     themeParams.isDark.sub(follow);
   });
+  loadStoredTheme();
 
   optional(() => {
     const mounting = viewport.mount.ifAvailable();

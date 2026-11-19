@@ -2,6 +2,7 @@ import type { Dictionary } from '@cs/shared/i18n';
 import type { uz } from './uz';
 
 export const ru: Dictionary<typeof uz> = {
+  theme: { label: 'Тема', auto: 'Авто', light: 'Светлая', dark: 'Тёмная' },
   stage: (n) => `Этап ${n}`,
   notInTelegram: {
     title: 'Откройте приложение через Telegram',

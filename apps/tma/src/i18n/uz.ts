@@ -4,6 +4,7 @@
  */
 export const uz = {
   stage: (n: number) => `${n}-bosqich`,
+  theme: { label: 'Mavzu', auto: 'Avto', light: 'Och', dark: 'Qorong‘i' },
   notInTelegram: {
     title: 'Ilovani Telegram orqali oching',
     text: 'Botdagi «Ilovani ochish» tugmasini bosing.',

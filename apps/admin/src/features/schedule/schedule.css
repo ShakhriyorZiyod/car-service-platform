@@ -120,11 +120,16 @@
   white-space: nowrap;
 }
 
+/*
+ * A *-soft background stays light in the dark theme too, so the text on it takes the paired colour,
+ * never --text (which turns light there).
+ */
 /* New: the slot is held, waiting for the call (dashed border). */
 .slot-card--new {
   border-style: dashed;
   border-color: var(--info);
   background: var(--info-soft);
+  color: var(--info);
 }
 
 .slot-card--confirmed {
@@ -135,11 +140,13 @@
 .slot-card--in_work {
   border-color: var(--warning);
   background: var(--warning-soft);
+  color: var(--warning);
 }
 
 .slot-card--ready_for_pickup {
   border-color: var(--success);
   background: var(--success-soft);
+  color: var(--success);
 }
 
 .slot-card--completed {
@@ -226,4 +233,12 @@
 
 .legend__swatch--block {
   background: repeating-linear-gradient(135deg, var(--surface-muted) 0 3px, var(--border) 3px 4px);
+}
+
+/* Grey on a light card would fade in the dark theme: the second line takes the card's colour. */
+.slot-card--new .muted,
+.slot-card--in_work .muted,
+.slot-card--ready_for_pickup .muted {
+  color: inherit;
+  opacity: 0.8;
 }

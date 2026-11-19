@@ -1,12 +1,15 @@
 import { LANG_NAMES, LANGS, ROLE_LABELS } from '@cs/shared/i18n';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { LogOut, Search } from 'lucide-react';
+import { LogOut, Monitor, Moon, Search, Sun } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { call } from '../api';
 import { useCan, useMe, useSetMe } from '../auth/session';
 import { useLang, useT } from '../i18n';
+import { chooseTheme, THEME_CHOICES, useThemeChoice } from '../lib/theme';
 import { Button } from '../ui/Button';
+
+const THEME_ICONS = { auto: Monitor, light: Sun, dark: Moon } as const;
 
 const initialsOf = (name: string) =>
   name
@@ -26,6 +29,7 @@ export function Topbar() {
   const navigate = useNavigate();
   const [text, setText] = useState('');
   const can = useCan();
+  const theme = useThemeChoice();
 
   // The search finds orders: by number, the client's name or phone, or the plate.
   const search = (event: FormEvent) => {
@@ -60,6 +64,29 @@ export function Topbar() {
         />
       </form>
       <div className="topbar__user">
+        <div className="topbar__langs" role="radiogroup" aria-label={t.theme.label}>
+          {THEME_CHOICES.map((value) => {
+            const Icon = THEME_ICONS[value];
+            return (
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={value === theme}
+                aria-label={t.theme[value]}
+                title={t.theme[value]}
+                className={
+                  value === theme
+                    ? 'topbar__lang topbar__theme is-active'
+                    : 'topbar__lang topbar__theme'
+                }
+                onClick={() => chooseTheme(value)}
+              >
+                <Icon size={14} aria-hidden="true" />
+              </button>
+            );
+          })}
+        </div>
         <div className="topbar__langs">
           {LANGS.map((value) => (
             <button

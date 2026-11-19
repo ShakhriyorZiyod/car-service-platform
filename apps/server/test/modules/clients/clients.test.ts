@@ -339,12 +339,14 @@ describe('erasing personal data (TZ 15.3, PLAN 15)', () => {
       status: 'completed',
     });
     await clients().update(shop.admin, client.userId, { internalNote: 'Qiyin mijoz' });
+    expect((await clients().get(shop.admin, client.userId)).telegramId).toBe(client.telegramId);
 
     const card = await clients().anonymize(shop.owner, client.userId);
     expect(card).toMatchObject({
       fullName: 'Anonim',
       phone: null,
       hasTelegram: false,
+      telegramId: null,
       isAnonymized: true,
       internalNote: null,
       cars: [],

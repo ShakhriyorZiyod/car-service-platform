@@ -642,6 +642,8 @@ export type ClientSummary = z.infer<typeof clientSummarySchema>;
 export const clientCardSchema = clientSummarySchema.extend({
   /** The number was verified by Telegram, so the account is linked to it. */
   phoneVerified: z.boolean(),
+  /** The person's Telegram account id; null without Telegram or once the data is erased. */
+  telegramId: z.number().int().nullable(),
   internalNote: z.string().nullable(),
   cars: z.array(carSchema),
   orders: z.array(adminOrderSchema),

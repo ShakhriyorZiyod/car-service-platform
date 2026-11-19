@@ -15,6 +15,7 @@ export const ru: Dictionary<typeof uz> = {
   },
   notFound: 'Страница не найдена.',
   signOut: 'Выйти',
+  theme: { label: 'Тема', auto: 'Авто (как на компьютере)', light: 'Светлая', dark: 'Тёмная' },
   errors: {
     network: 'Нет интернета или сервер не отвечает.',
     generic: 'Произошла ошибка. Попробуйте ещё раз.',
@@ -567,6 +568,7 @@ export const ru: Dictionary<typeof uz> = {
       phoneVerified: 'Номер подтверждён Telegram',
       phoneUnverified: 'Номер не подтверждён',
       telegram: 'Telegram подключён',
+      telegramId: (id) => `Telegram ID: ${id}`,
       noTelegram: 'Telegram не подключён',
       note: 'Внутренняя заметка',
       noteHint: 'Видят только сотрудники. В журнал текст не пишется.',

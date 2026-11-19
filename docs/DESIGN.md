@@ -191,7 +191,14 @@ yonma-yon turadi (PLAN 22-bo'lim).
 
 **Mavzu.** Mijoz va usta ilovasi Telegram'ning `colorScheme` qiymatiga qarab och yoki qorong'i
 tokenlarni qo'llaydi (`data-theme`). Dizaynning o'z palitrasi ishlatiladi, `--tg-theme-*` emas: dizayn
-ikkala mavzu uchun aniq ranglarni bergan.
+ikkala mavzu uchun aniq ranglarni bergan. Mijoz va usta profilida **"Mavzu: Avto / Och / Qorong'i"**
+almashtirgichi bor (`ui/ThemeSwitch.tsx`): "Avto" Telegram'ga ergashadi, boshqasi uni bekor qiladi.
+Tanlov Telegram CloudStorage'da (qurilmalar orasida bir xil) va birinchi chizish uchun localStorage'da
+saqlanadi (PLAN 22, 2026-11-19).
+
+**`*-soft` fonidagi matn.** `--info-soft`, `--warning-soft`, `--success-soft`, `--danger-soft` qorong'i
+mavzuda ham och qoladi (9-bo'lim, 2-savol). Shuning uchun ular ustidagi matn doim juft rang bilan
+yoziladi (`--info`, `--warning` ...), hech qachon `--text` bilan emas: `--text` qorong'ida och bo'ladi.
 
 **Ikonkalar.** Dizayndagi ikonkalar chiziqli, Lucide uslubida. Shuning uchun `lucide-react` ishlatiladi:
 bundle'ga faqat import qilingan ikonkalar tushadi.
@@ -200,8 +207,9 @@ bundle'ga faqat import qilingan ikonkalar tushadi.
 
 ## 6. Komponentlar: admin panel (`apps/admin/src/ui`)
 
-Admin panelning v1 dagi mavzusi faqat och. Tokenlar TMA bilan bir xil nomlarda, keyin qorong'i mavzu
-faqat tokenlar orqali qo'shiladi.
+Admin panel och va qorong'i mavzuda ishlaydi: tokenlar TMA bilan bir xil (`data-theme`), yangi rang
+yo'q. Yuqori panelda "Avto / Och / Qorong'i" ikonkalari (`lib/theme.ts`): "Avto" kompyuter mavzusiga
+(`prefers-color-scheme`) ergashadi, tanlov shu brauzerning localStorage'ida (PLAN 22, 2026-11-19).
 
 | Komponent | Ko'rinishi | Dizayndagi joyi |
 |---|---|---|
@@ -300,6 +308,9 @@ Har biri PLAN 1.2 va 22-bo'limdagi qarorlardan kelib chiqadi.
 | T9 | Xizmat va do'kon buyurtmalari aralash | Faqat xizmat arizalari | Do'kon v2 da |
 | T12 | Bajarilgan ishlar dalolatnomasi PDF, fiskal chek fayli | PDF yo'q; fiskal chek raqami matn sifatida | PDF va kassa API v2 da |
 | T13 | "Filial" qatori | Yo'q | Bitta ustaxona |
+| T13, usta profili | Mavzu tanlovi yo'q | "Mavzu: Avto / Och / Qorong'i" | Foydalanuvchi so'rovi (PLAN 22, 2026-11-19) |
+| Hamma admin ekranlari | Faqat och | Och va qorong'i, Topbar'da almashtirgich | Foydalanuvchi so'rovi (PLAN 22, 2026-11-19) |
+| A10 (mijoz kartasi) | Telegram ID yo'q | "Telegram ID: …" chipi (anonimlashtirilganda yo'q) | Foydalanuvchi so'rovi (PLAN 22, 2026-11-19) |
 | T14 | PDF ilova | Qisqa xulosa va "Tasdiqlayman" tugmasi | Imzo va PDF v2 da |
 | U0 | Telefon va PIN | Yo'q, Telegram orqali kiriladi | Usta ilovasi Mini App |
 | U1, TabBar | Vazifalar, Ko'rsatkichlarim, Profil | Vazifalar, Profil | Ko'rsatkichlar v2 da |

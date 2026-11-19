@@ -146,6 +146,9 @@ function CardView({ card }: { card: ClientCard }) {
                 <span className="chip">
                   {card.hasTelegram ? t.clients.card.telegram : t.clients.card.noTelegram}
                 </span>
+                {card.telegramId !== null && (
+                  <span className="chip num">{t.clients.card.telegramId(card.telegramId)}</span>
+                )}
               </p>
               {save.isError && <Notice tone="danger">{apiMessage(save.error, t)}</Notice>}
               {canWrite && (

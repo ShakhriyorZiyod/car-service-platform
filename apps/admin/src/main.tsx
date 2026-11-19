@@ -13,12 +13,15 @@ import { LoginPage } from './auth/LoginPage';
 import { ME_KEY, MeProvider, useMeQuery } from './auth/session';
 import { I18nProvider, useT } from './i18n';
 import { genericMessage } from './lib/errors';
+import { startTheme } from './lib/theme';
 import { router } from './router';
 import { Button } from './ui/Button';
 import { Notice } from './ui/Notice';
 
 const container = document.getElementById('root');
 if (!container) throw new Error('#root element is missing');
+
+startTheme();
 
 /** A 401 from any call means the session is over: asking `auth.me` again shows the sign-in page. */
 const onError = (error: unknown) => {

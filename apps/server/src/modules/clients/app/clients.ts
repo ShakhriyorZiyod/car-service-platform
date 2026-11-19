@@ -125,13 +125,18 @@ export function createClientsService(deps: ClientsServiceDeps): ClientsService {
     const [row] = await summaries(eq(users.id, id), 1);
     if (!row) throw new AppError('not_found');
     const [extra] = await db
-      .select({ phoneVerified: users.phoneVerified, internalNote: users.internalNote })
+      .select({
+        phoneVerified: users.phoneVerified,
+        internalNote: users.internalNote,
+        telegramId: users.telegramId,
+      })
       .from(users)
       .where(eq(users.id, id));
     return {
       ...toSummary(row),
       phoneVerified: extra?.phoneVerified ?? false,
       internalNote: extra?.internalNote ?? null,
+      telegramId: extra?.telegramId ?? null,
       cars: await garage.listFor(id),
       orders: await orders.forClient(actor, id, CARD_ORDERS),
     };
@@ -244,6 +249,7 @@ export function createClientsService(deps: ClientsServiceDeps): ClientsService {
         ...toSummary(row),
         phoneVerified: false,
         internalNote: null,
+        telegramId: null,
         cars: [],
         orders: await orders.forClient(actor, id, CARD_ORDERS),
       };

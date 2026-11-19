@@ -9,6 +9,7 @@ import { useBack } from '../../lib/back';
 import { useOnline } from '../../lib/online';
 import { BottomBar } from '../../ui/client-parts';
 import { Segmented } from '../../ui/Segmented';
+import { ThemeSwitch } from '../../ui/ThemeSwitch';
 import { QueueProvider } from '../../lib/photo-queue/QueueProvider';
 import { QueueBanner } from '../../ui/QueueBanner';
 import { TaskScreen } from './task/TaskScreen';
@@ -104,6 +105,7 @@ function ProfileScreen({ bootstrap }: { bootstrap: Bootstrap }) {
           onChange={(lang) => void api.call('tma.updateMe', { body: { lang } }).then(setBootstrap)}
         />
       </div>
+      <ThemeSwitch />
     </section>
   );
 }

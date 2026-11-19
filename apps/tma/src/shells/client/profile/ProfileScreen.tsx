@@ -9,6 +9,7 @@ import { errorText } from '../../../lib/client-data';
 import { Button } from '../../../ui/Button';
 import { Notice } from '../../../ui/Notice';
 import { Segmented } from '../../../ui/Segmented';
+import { ThemeSwitch } from '../../../ui/ThemeSwitch';
 
 /** T13: the profile: language, name, reminders and the phone the workshop calls. */
 export function ProfileScreen({ bootstrap }: { bootstrap: Bootstrap }) {
@@ -42,6 +43,7 @@ export function ProfileScreen({ bootstrap }: { bootstrap: Bootstrap }) {
           options={LANGS.map((lang) => ({ value: lang, label: LANG_NAMES[lang] }))}
         />
       </div>
+      <ThemeSwitch />
 
       <label className="field">
         <span className="field__label">{t.profile.name}</span>

@@ -85,7 +85,8 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--info-soft);
-  color: var(--text);
+  /* The paired colour: --info-soft stays light in the dark theme, --text would not show on it. */
+  color: var(--info);
   text-decoration: none;
 }
 
