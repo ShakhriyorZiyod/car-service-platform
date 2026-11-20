@@ -800,7 +800,8 @@ export const uz = {
     discountLimit: (percent: number) => `Sizning limitingiz ${percent}%. Ko‘prog‘ini egasi beradi.`,
     discountUnlimited: 'Egasi uchun chegara yo‘q.',
     discountInvalid: {
-      percent: 'Foiz 0 dan katta va 100 gacha, verguldan keyin ko‘pi bilan 2 raqam (masalan, 12,5).',
+      percent:
+        'Foiz 0 dan katta va 100 gacha, verguldan keyin ko‘pi bilan 2 raqam (masalan, 12,5).',
       amount: 'Summa butun so‘mda, faqat raqamlar.',
     },
     receiptNo: 'Fiskal chek raqami',

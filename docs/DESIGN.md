@@ -213,8 +213,9 @@ yo'q. Yuqori panelda "Avto / Och / Qorong'i" ikonkalari (`lib/theme.ts`): "Avto"
 
 Tor ekranda (≤ 900 px: telefon, Telegram oynasi, tik planshet) panel o'sha komponentlar bilan ishlaydi
 (PLAN 22, 2026-11-20): `Sidebar` chapdan chiqadigan panel bo'ladi (yuqori paneldagi ☰, ✕, fon yoki
-boshqa sahifaga o'tish yopadi); `Topbar` ikki qatorga tushadi, ≤ 640 px da qidiruv alohida qatorda,
-ism, rol va avatar yashiriladi, "Chiqish" faqat ikonka. Ikki ustunli sahifalar bitta ustunga tushadi
+boshqa sahifaga o'tish yopadi), uning pastida foydalanuvchi (avatar, ism, rol) va "Avto / Och / Qorong'i"
+hamda til tugmalari. `Topbar` bitta qator: ☰, qidiruv, ism (≤ 640 px da yashiriladi) va "Chiqish"
+(≤ 640 px da faqat ikonka). Ikki ustunli sahifalar bitta ustunga tushadi
 (o'ng ustun pastga). `DataTable`, `ScheduleGrid` va `PriceMatrix` sahifani kengaytirmaydi, o'z
 qutisi ichida yonga suriladi. Dialog ekran kengligida. Tugma, filtr va menyu bandlari ≥ 44 px.
 
