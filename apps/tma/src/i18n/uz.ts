@@ -49,8 +49,9 @@ export const uz = {
     staff: {
       greeting: (name: string) => `Salom, ${name}`,
       youAre: (roles: string) => `Siz ${roles} sifatida ro‘yxatdasiz.`,
-      panelHint: 'Ish paneli kompyuter yoki planshet brauzerida ochiladi.',
+      panelHint: 'Ish paneli yangi oynada ochiladi.',
       openPanel: 'Panelni ochish',
+      opening: 'Panel ochilmoqda…',
       noPanel: 'Panel manzili hali sozlanmagan. Egasiga murojaat qiling.',
     },
   },

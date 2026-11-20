@@ -238,13 +238,19 @@ export function openExternal(url: string): void {
 }
 
 /**
- * The web panel for the staff. In Telegram's own apps (phone, desktop) it opens in this same
- * window, on the same origin; in Telegram Web and in a browser, in a new tab: a frame inside
- * web.telegram.org gets no session cookie (SameSite=Strict).
+ * Telegram's own apps (phone, desktop) can show the web panel in this same window, on the same
+ * origin. Telegram Web cannot: a frame inside web.telegram.org gets no session cookie
+ * (SameSite=Strict), so there and in a browser the panel needs a new tab.
+ */
+export const panelOpensHere = (): boolean => insideTelegram && !webClient;
+
+/**
+ * The web panel for the staff: in this window where it can be (it takes this page's place, so
+ * "back" on the panel's first page closes Telegram's window), otherwise in a new tab.
  */
 export function openPanel(url: string): void {
-  if (insideTelegram && !webClient) {
-    window.location.assign(url);
+  if (panelOpensHere()) {
+    window.location.replace(url);
     return;
   }
   openExternal(url);

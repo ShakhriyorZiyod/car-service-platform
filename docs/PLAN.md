@@ -302,8 +302,10 @@ event bus, mikroservislar. Bitta jarayon va bitta baza uchun ular foyda bermaydi
    lekin garaj va bron telefon so'raydi.
 6. Usta avval oddiy foydalanuvchi bo'lib kiradi. U telefonini ulashganda raqam egasi qo'shib qo'ygan
    xodim yozuviga mos keladi va hisoblar bog'lanadi (7.2-bo'lim). Keyingi `bootstrap` `master` qaytaradi.
-7. `staff` shell'i rolni ko'rsatadi va admin panel havolasini beradi (`PUBLIC_URL/admin/`). Bot
-   xabarlari xodimga shu chatga keladi.
+7. `staff` shell'i Telegram ilovasida (telefon, kompyuter) admin panelni (`PUBLIC_URL/admin/`)
+   darhol shu oynada ochadi: sessiya bo'lsa "Bugun", bo'lmasa kirish. Telegram Web'da rolni
+   ko'rsatadi va panelni yangi oynada ochadigan tugmani beradi (22-bo'lim, 2026-11-20). Bot xabarlari
+   xodimga shu chatga keladi.
 8. Xodimning o'z mashinasini bron qilishi (rolni almashtirish) v2 da.
 
 ### 4.8 Fon ishlari: outbox va rejalashtiruvchi
@@ -1394,6 +1396,7 @@ Yangilari tepada.
 
 | Sana | Qaror | Sabab |
 |---|---|---|
+| 2026-11-20 | Xodim (ega, admin, rahbar) Mini App'ni Telegram ilovasida ochsa, "Panelni ochish" oynasi ko'rsatilmaydi: panel darhol shu oynada ochiladi (`location.replace`, orqada Mini App sahifasi qolmaydi). Sessiya (30 kunlik cookie) bo'lsa "Bugun", bo'lmasa kirish. Telegram Web'da avvalgidek tugmali ekran, panel yangi oynada | Foydalanuvchi: bu oynada boshqa hech narsa yo'q, ortiqcha qadam. Telegram Web'da yangi oynani tugmasiz ochib bo'lmaydi va ramka ichida cookie yo'q |
 | 2026-11-20 | Brauzer yorlig'ida belgi (favicon): menyudagi logotip (to'q kvadratda qalqon), `public/favicon.svg` panelda ham, Mini App'da ham. Tor ekrandagi kirish sahifasida logotip forma tepasida, tillar bilan bir qatorda | Foydalanuvchi: brauzerda logo ko'rinmaydi. Avval `data:,` (bo'sh belgi) edi; telefonda logotipli brend paneli yashirilgan edi |
 | 2026-11-20 | Telegram ichida "orqaga" (telefonning tizim tugmasi ham) ilovani yopmaydi, oldingi joyga qaytaradi: Telegram'ning BackButton'i qaytadigan joy bo'lgan har ekranda ko'rsatiladi. Mini App: mijozda "Bosh" dan boshqa bo'lim → "Bosh", ustada profil → vazifalar, boshqa tab → "Bugun". Panel (`layout/TelegramBack.tsx`, `lib/telegram.ts`): ochiq menyu → yopiladi, aks holda oldingi sahifa, bot havolasidan ochilgan sahifa → "Bugun". Ilova faqat "Bosh" / "Bugun" da yopiladi | Foydalanuvchi: telefonda "orqaga" bosilganda ilova yopilib qolardi. Telegram tizim tugmasini sahifaga faqat BackButton ko'rinib turganda beradi, aks holda oynani yopadi; sahifaning o'z tarixiga qaramaydi |
 | 2026-11-20 | Qidiruvda davlat raqami saqlashdagidek o'qiladi: kirillcha o'xshash harflar lotinga, bo'shliq va tire olib tashlanadi (`compactPlate`, `@cs/shared/format`; arizalar va mijozlar qidiruvi). Panel chegirmani server qoidasi bilan tekshiradi (foiz 0–100, verguldan keyin ≤ 2 raqam; summa butun so'm) va noto'g'ri qiymatda sababini ko'rsatadi | Tekshiruvda topildi: "01-123-АВС" (rus klaviaturasi) saqlashda qabul qilinardi, qidiruvda topilmasdi; "12,345 %" panelda qabul qilinib, serverda umumiy xato bilan rad etilardi |
