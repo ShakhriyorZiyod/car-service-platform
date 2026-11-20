@@ -100,6 +100,13 @@ safar to'liq qaytariladi. O'lchov noutbukda; production serverda qayta o'lchash 
 | `rsync` bilan tashqi nusxa | **Bajarilmadi** (konteynerda `rsync` yo'q) |
 | `systemctl stop/start` bilan tiklash | **Bajarilmadi** (`SERVICE=` bo'sh, systemd yo'q) |
 
+**Keyingi o'zgarish (2026-11-20):** yuqoridagi sinov eski formatda (fotolar har kecha `tar.gz`)
+o'tgan edi. Bu format diskni fotolar hajmining 30 baravari bilan to'ldirardi, shuning uchun fotolar
+zaxirasi qattiq havolali papkalarga o'tkazildi (PLAN 22). Yangi format Docker'da 14 ta tekshiruv bilan
+qayta sinaldi (birinchi va ikkinchi kecha, havolalar, eski nusxalarni o'chirish, chorak sinovi, joyida
+tiklash, buzilgan dump), nusxalash qismi esa serverning o'zida (coreutils 8.32) ham sinaldi. Butun test
+to'plami PostgreSQL 14 da ham o'tdi (1264).
+
 ### Bajarilmagan (PLAN qabul ro'yxati)
 
 | Tekshiruv | Sabab |

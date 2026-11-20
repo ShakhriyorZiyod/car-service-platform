@@ -13,12 +13,14 @@ WorkingDirectory=/opt/car-service/apps/server
 EnvironmentFile=/etc/car-service.env
 Environment=NODE_ENV=production
 # Node.js 24 lives in its own directory (docs/DEPLOY.md, step 1); change the path if yours differs.
-ExecStart=/opt/node-24/bin/node --enable-source-maps dist/main.js
+# The heap is capped: the server may be shared with other projects, and 256 MB is far above
+# what one workshop needs.
+ExecStart=/opt/node-24/bin/node --enable-source-maps --max-old-space-size=256 dist/main.js
 Restart=always
 RestartSec=5
 # Long enough to finish the bot's updates, the outbox round and the database work in hand.
 TimeoutStopSec=30
-MemoryMax=768M
+MemoryMax=512M
 
 # Creates /var/lib/car-service for the photos; everything else on the disk stays read-only.
 # Logs go to journald: journalctl -u car-service -f

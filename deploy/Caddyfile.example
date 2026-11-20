@@ -1,0 +1,69 @@
+# car-service — Mini App (/), panel (/admin/), API (/api) and photos (/media) on one HTTPS origin
+# (PLAN 17). For a server that already runs Caddy: append this block to /etc/caddy/Caddyfile,
+# replace the domain, then
+#   sudo caddy validate --config /etc/caddy/Caddyfile && sudo systemctl reload caddy
+# Caddy gets the certificate by itself. The backend listens on 127.0.0.1:3300 (HTTP_PORT in
+# /etc/car-service.env); /health is not exposed, deploy.sh asks the backend directly.
+# On a server without Caddy, use nginx.example.conf instead.
+autoservice.shaxriyorbek.uz {
+	encode zstd gzip
+
+	# A photo is at most 3 MB (PLAN 4.9); a little more, so that the app gives the error, not Caddy.
+	request_body {
+		max_size 4MB
+	}
+
+	# Every response. No X-Frame-Options here: Telegram Web shows the Mini App in an iframe.
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		Referrer-Policy same-origin
+		-Server
+	}
+
+	# The API and the photo links. Caddy passes the browser's Host on unchanged, which the API's
+	# Origin check needs (PLAN 15). The client's address is written anew: a forged
+	# X-Forwarded-For cannot get round the per-address limit (the API trusts only 127.0.0.1).
+	handle /api/* {
+		reverse_proxy 127.0.0.1:3300 {
+			header_up X-Forwarded-For {remote_host}
+		}
+	}
+	handle /media/* {
+		reverse_proxy 127.0.0.1:3300 {
+			header_up X-Forwarded-For {remote_host}
+		}
+	}
+
+	# `/admin` without the slash is the panel too: the menu's "Bugun" links there.
+	redir /admin /admin/{?query} 301
+
+	# The panel (npm run build: apps/admin/dist). Never shown inside another site.
+	handle_path /admin/* {
+		root * /opt/car-service/apps/admin/dist
+		@hashed path /assets/*
+		header @hashed Cache-Control "public, max-age=31536000, immutable"
+		@page not path /assets/*
+		header @page Cache-Control "no-cache"
+		header {
+			Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+			X-Frame-Options DENY
+		}
+		try_files {path} /index.html
+		file_server
+	}
+
+	# The Mini App (apps/tma/dist). File names under /assets/ carry a hash of their content.
+	handle {
+		root * /opt/car-service/apps/tma/dist
+		@hashed path /assets/*
+		header @hashed Cache-Control "public, max-age=31536000, immutable"
+		@page not path /assets/*
+		header @page Cache-Control "no-cache"
+		try_files {path} /index.html
+		file_server
+	}
+
+	# No access log, like the other sites here: a query string can hold a client's name or phone
+	# from the search box. Failures are in `journalctl -u car-service`.
+}

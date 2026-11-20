@@ -7,6 +7,8 @@
 #   CHECK_DATABASE_URL=postgres://.../carservice_restore_check deploy/restore.sh <file.dump>
 #     the quarterly test: restores into that separate, empty database and counts the rows of the
 #     main tables. The service, its database and its photos are not touched.
+#
+# The photos of the same timestamp (the folder next to the dump) come back with it, if they exist.
 set -euo pipefail
 
 ENV_FILE="${ENV_FILE:-/etc/car-service.env}"
@@ -18,7 +20,7 @@ if [ ! -f "$db_file" ]; then
   echo "Usage: $0 <carservice-....dump>" >&2
   exit 1
 fi
-uploads_file="${db_file%.dump}.uploads.tar.gz"
+uploads_copy="${db_file%.dump}.uploads"
 
 set -a
 # shellcheck disable=SC1090
@@ -27,7 +29,6 @@ set +a
 
 # A damaged file must be found out before anything has been touched.
 pg_restore --list "$db_file" >/dev/null
-[ -f "$uploads_file" ] && gzip --test "$uploads_file"
 
 if [ -n "${CHECK_DATABASE_URL:-}" ]; then
   if [ "$CHECK_DATABASE_URL" = "$DATABASE_URL" ]; then
@@ -42,15 +43,15 @@ if [ -n "${CHECK_DATABASE_URL:-}" ]; then
     union all select 'users ' || count(*) from users
     union all select 'media ' || count(*) from media
     union all select 'migrations ' || count(*) from drizzle.__drizzle_migrations"
-  if [ -f "$uploads_file" ]; then
-    echo "photos in the archive: $(tar -tzf "$uploads_file" | grep -c -v '/$')"
+  if [ -d "$uploads_copy" ]; then
+    echo "photos in the copy: $(find "$uploads_copy" -type f | wc -l)"
   fi
   echo "$(date -Is) restore check passed: $db_file"
   exit 0
 fi
 
 echo "This replaces the working database with: $db_file"
-[ -f "$uploads_file" ] && echo "and the photos with: $uploads_file"
+[ -d "$uploads_copy" ] && echo "and the photos with: $uploads_copy"
 if [ "${ASSUME_YES:-}" != "1" ]; then
   read -r -p "Type yes to go on: " answer
   [ "$answer" = "yes" ] || { echo "Nothing was changed."; exit 1; }
@@ -66,12 +67,13 @@ fi
 pg_restore --clean --if-exists --no-owner --single-transaction --exit-on-error \
   --dbname="$DATABASE_URL" "$db_file"
 
-if [ -f "$uploads_file" ] && [ -n "${UPLOADS_DIR:-}" ]; then
-  # Unpacked beside the old photos first, and swapped in only once that has worked.
+if [ -d "$uploads_copy" ] && [ -n "${UPLOADS_DIR:-}" ]; then
+  # A real copy (not links), put beside the old photos first and swapped in only once complete,
+  # so that the backup stays as it was whatever happens to the working folder later.
   fresh="$UPLOADS_DIR.restoring"
   rm -rf "$fresh"
   mkdir -p "$fresh"
-  tar -xzf "$uploads_file" -C "$fresh"
+  cp -a "$uploads_copy/." "$fresh/"
   rm -rf "$UPLOADS_DIR"
   mv "$fresh" "$UPLOADS_DIR"
 fi

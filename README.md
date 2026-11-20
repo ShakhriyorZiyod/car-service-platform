@@ -22,7 +22,7 @@ chegaralarini ESLint majburlaydi (PLAN, 4.3-bo'lim).
 
 ## O'rnatish
 
-Talablar: Node.js 24+ va PostgreSQL 16+.
+Talablar: Node.js 24+ va PostgreSQL 14+ (testlar 14 va 18 da o'tadi).
 
 ```bash
 npm ci

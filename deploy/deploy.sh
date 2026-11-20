@@ -21,10 +21,10 @@ main() {
 
   git pull --ff-only
   # Before the environment is loaded: with NODE_ENV=production npm would skip the build tools,
-  # and the migrations run with tsx.
-  npm ci
+  # and the migrations run with tsx. At a low priority: the server may serve other sites too.
+  nice -n 10 npm ci
   # Anything that fails up to here leaves the running service as it was.
-  npm run build
+  nice -n 10 npm run build
   npm run check:bundle
 
   set -a

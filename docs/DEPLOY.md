@@ -23,7 +23,11 @@ Hosting O'zbekistonda tavsiya qilinadi (shaxsiy ma'lumotlar, PLAN 21-bo'lim, 5-s
 
 ## Birinchi o'rnatish
 
-**1. Dasturlar.** PostgreSQL 16+, nginx, certbot, git, rsync. Node.js 24 o'z papkasiga:
+Serverda allaqachon Caddy va PostgreSQL ishlayotgan bo'lsa (umumiy server), avval pastdagi
+**"Caddy'li umumiy server"** bo'limini o'qing: 1- va 7-qadamlar boshqacha.
+
+**1. Dasturlar.** PostgreSQL 14+ (14 va 18 da sinalgan), nginx, certbot, git; tashqi zaxira uchun
+rsync. Node.js 24 o'z papkasiga:
 
 ```bash
 sudo apt install -y postgresql nginx certbot python3-certbot-nginx git rsync curl
@@ -85,7 +89,7 @@ sudo cp deploy/car-service.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now car-service
 journalctl -u car-service -n 30          # "bot started" va "http server listening"
-curl http://127.0.0.1:3000/health        # {"ok":true}
+curl http://127.0.0.1:3300/health        # {"ok":true} (HTTP_PORT)
 ```
 
 **7. nginx va HTTPS.** Avval sertifikat, chunki sozlama unga ishora qiladi:
@@ -139,15 +143,24 @@ tushiring. Migratsiya ham orqaga qaytishi kerak bo'lsa — zaxiradan tiklash (pa
 
 ## Zaxira
 
-Har kecha 03:00 da baza (`pg_dump`, custom format) va fotolar papkasi, bir xil vaqt belgisi bilan:
-`carservice-<vaqt>.dump` va `carservice-<vaqt>.uploads.tar.gz`.
+Har kecha 03:00 da baza va fotolar, bir xil vaqt belgisi bilan:
+
+- `carservice-<vaqt>.dump` — baza (`pg_dump`, custom format);
+- `carservice-<vaqt>.uploads/` — o'sha paytdagi fotolar papkasi.
+
+Fotolar yozilgandan keyin hech qachon o'zgarmaydi (nomi tasodifiy). Shuning uchun har kechaning
+nusxasi oldingi kechaning nusxasiga **qattiq havola** (hard link) qilib olinadi va diskda faqat yangi
+fotolar joy egallaydi: 1 GB fotoning 30 kunlik zaxirasi taxminan 1 GB, 30 GB emas.
 
 - `daily/` — 30 kun saqlanadi;
-- `monthly/` — har oyning birinchi zaxirasi, bir yil (qattiq havola, joy egallamaydi);
-- yozilayotgan fayl `.part` nomida, tugagach va `pg_restore --list` / `gzip --test` dan o'tgach nomlanadi;
-- `BACKUP_REMOTE` (`/etc/car-service.env`) to'ldirilsa, butun papka `rsync` bilan boshqa joyga ko'chiriladi
-  (masalan, `backup@boshqa-server:/srv/car-service-backups/`; SSH kaliti `carservice` foydalanuvchisida).
-  O'chirilgan fayllar u yerda o'chirilmaydi: tashqi nusxa o'z joyida alohida tozalanadi.
+- `monthly/` — har oyning birinchi zaxirasi, bir yil (qattiq havola);
+- eski nusxalar fayl vaqti bo'yicha emas, **nomidagi sana** bo'yicha o'chiriladi;
+- yozilayotgan nusxa `.part` nomida turadi. Dump `pg_restore --list` dan o'tgach, fotolar esa soni
+  manbadagidan kam emasligi tekshirilgach nomlanadi;
+- `BACKUP_REMOTE` (`/etc/car-service.env`) to'ldirilsa, butun papka `rsync -aH` bilan (havolalar
+  saqlanadi) boshqa joyga ko'chiriladi (masalan, `backup@boshqa-server:/srv/car-service-backups/`; SSH
+  kaliti `carservice` foydalanuvchisida, `rsync` o'rnatilgan bo'lishi kerak). O'chirilgan nusxalar u yerda
+  o'chirilmaydi: tashqi nusxa o'z joyida alohida tozalanadi.
 
 **Muhim:** `BACKUP_REMOTE` bo'sh bo'lsa, zaxira faqat shu serverda turadi va server bilan birga yo'qoladi.
 
@@ -159,7 +172,8 @@ sudo -u carservice bash /opt/car-service/deploy/restore.sh /var/backups/car-serv
 ```
 
 `yes` deb tasdiqlashni so'raydi, xizmatni to'xtatadi, bazani **bitta tranzaksiyada** almashtiradi (xato
-bo'lsa baza o'zgarmay qoladi), fotolarni yonida ochib keyin almashtiradi va xizmatni yoqadi.
+bo'lsa baza o'zgarmay qoladi), o'sha vaqtdagi fotolarni yonidagi papkaga ko'chiradi (havola emas, haqiqiy
+nusxa: zaxira o'zgarmaydi), keyin almashtiradi va xizmatni yoqadi.
 
 **Har chorakda tiklash sinovi** (PLAN 17). Ishlayotgan bazaga tegmaydi:
 
@@ -172,6 +186,30 @@ sudo -u postgres psql -c "DROP DATABASE carservice_restore_check;"
 
 Natijada arizalar, to'lovlar, foydalanuvchilar, fotolar va migratsiyalar soni chiqadi; ularni panel bilan
 solishtiring.
+
+## Caddy'li umumiy server
+
+`autoservice.shaxriyorbek.uz` serveri (Eskiz, Ubuntu 22.04) shunday: unda boshqa loyihalar, Caddy
+(80/443) va PostgreSQL 14 allaqachon ishlaydi, tizimdagi Node 22. Yuqoridagi tartibdan farqi:
+
+- **Tizimga tegilmaydi.** nginx va certbot o'rnatilmaydi; `apt` bilan faqat yo'q narsa (`rsync` —
+  tashqi zaxira kerak bo'lsa). Node 24 `/opt/node-24` da (1-qadam), tizimdagi Node 22 qoladi.
+- **Baza** mavjud PostgreSQL 14 da, alohida rol va baza bilan (3-qadam o'zgarmaydi).
+- **Port.** 3000 band: `HTTP_PORT=3300` (`deploy/env.example` da shunday). Bo'sh portni `ss -ltn` bilan
+  tekshiring.
+- **7-qadam o'rniga Caddy.** `deploy/Caddyfile.example` blokini `/etc/caddy/Caddyfile` oxiriga qo'shing
+  (boshqa saytlarning bloklariga tegmang), so'ng:
+
+  ```bash
+  sudo caddy validate --config /etc/caddy/Caddyfile && sudo systemctl reload caddy
+  ```
+
+  Sertifikatni Caddy o'zi oladi. Access log yozilmaydi (boshqa saytlardagidek): so'rov parametrlarida
+  mijoz ismi yoki telefoni bo'lishi mumkin. `reload` boshqa saytlarni to'xtatmaydi.
+- **Xotira.** Server boshqa loyihalar bilan umumiy: backend heap'i 256 MB bilan, butun xizmat
+  `MemoryMax=512M` bilan cheklangan (`deploy/car-service.service`); `deploy.sh` build'ni `nice` bilan,
+  past ustuvorlikda bajaradi. Kamida 2 GB RAM kerak (1 GB'da build va boshqa loyihalar xotirani
+  bo'lisha olmaydi).
 
 ## Foydali buyruqlar
 
