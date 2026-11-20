@@ -2,7 +2,7 @@ import type { Bootstrap } from '@cs/shared';
 import { ROLE_LABELS } from '@cs/shared/i18n';
 import { ExternalLink, Monitor } from 'lucide-react';
 import { useLang, useT } from '../../i18n';
-import { openExternal } from '../../telegram';
+import { openPanel } from '../../telegram';
 import { Button } from '../../ui/Button';
 import { FullScreenMessage } from '../../ui/FullScreenMessage';
 import { Notice } from '../../ui/Notice';
@@ -28,7 +28,7 @@ export default function StaffShell({ bootstrap }: { bootstrap: Bootstrap }) {
         panel ? (
           <Button
             icon={<ExternalLink size={20} aria-hidden="true" />}
-            onClick={() => openExternal(panel)}
+            onClick={() => openPanel(panel)}
           >
             {t.openPanel}
           </Button>

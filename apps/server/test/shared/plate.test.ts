@@ -1,5 +1,16 @@
-import { formatPlate, normalizePlate, PLATE_REGIONS } from '@cs/shared/format';
+import { compactPlate, formatPlate, normalizePlate, PLATE_REGIONS } from '@cs/shared/format';
 import { describe, expect, it } from 'vitest';
+
+describe('compactPlate: a typed plate or a part of it, in the stored form, for search', () => {
+  it.each([
+    ['01 a 777', '01A777'],
+    ['01-А-777-ВА', '01A777BA'],
+    ['  777 ва ', '777BA'],
+    ['01123ABC', '01123ABC'],
+  ])('%j → %s', (input, expected) => {
+    expect(compactPlate(input)).toBe(expected);
+  });
+});
 
 describe('normalizePlate: Uzbek plates, stored compact and upper-case', () => {
   it.each([

@@ -1,4 +1,5 @@
 import type { AdminOrder, Availability, Slots, Today } from '@cs/shared';
+import { compactPlate } from '@cs/shared/format';
 import {
   ACTIVE_ORDER_STATUSES,
   type BodyClass,
@@ -492,7 +493,7 @@ export function createAdminOrdersService(deps: AdminOrdersDeps): AdminOrdersServ
       if (filter.q) {
         const text = likeEscape(filter.q);
         const digits = filter.q.replace(/\D/g, '');
-        const plate = likeEscape(filter.q.replace(/\s+/g, '').toUpperCase());
+        const plate = likeEscape(compactPlate(filter.q));
         const number = /^\d{1,9}$/.test(filter.q.trim()) ? Number(filter.q.trim()) : null;
         conditions.push(
           or(

@@ -142,7 +142,7 @@ o'zgarmaydi (mijoz PDF, 16-sahifa). Kiritish maydonida o'ngda "UZ" bayroqchasi b
 | TMA yon chekkasi | 16 px |
 | Admin sahifa chekkasi | 24 px; chap menyu kengligi 220 px |
 | Radius | `sm` 8 (chip, kichik input), `md` 12 (tugma, input, slot), `lg` 16 (karta), `pill` 999 (filtr chipi) |
-| Bosiladigan maydon | Mijoz ≥ 44 px, asosiy tugma 52 px; usta ≥ 56 px (TZ 48 px dan katta, dizayn bo'yicha); admin ≥ 36 px, planshet ekranlarida (qabul) ≥ 44 px |
+| Bosiladigan maydon | Mijoz ≥ 44 px, asosiy tugma 52 px; usta ≥ 56 px (TZ 48 px dan katta, dizayn bo'yicha); admin ≥ 36 px, tor ekranda (≤ 900 px: planshet, telefon, Telegram) ≥ 44 px |
 | Chegara | 1 px `--border`; tanlangan 2 px `--accent` |
 | Soya | Yo'q |
 
@@ -210,6 +210,13 @@ bundle'ga faqat import qilingan ikonkalar tushadi.
 Admin panel och va qorong'i mavzuda ishlaydi: tokenlar TMA bilan bir xil (`data-theme`), yangi rang
 yo'q. Yuqori panelda "Avto / Och / Qorong'i" ikonkalari (`lib/theme.ts`): "Avto" kompyuter mavzusiga
 (`prefers-color-scheme`) ergashadi, tanlov shu brauzerning localStorage'ida (PLAN 22, 2026-11-19).
+
+Tor ekranda (≤ 900 px: telefon, Telegram oynasi, tik planshet) panel o'sha komponentlar bilan ishlaydi
+(PLAN 22, 2026-11-20): `Sidebar` chapdan chiqadigan panel bo'ladi (yuqori paneldagi ☰, ✕, fon yoki
+boshqa sahifaga o'tish yopadi); `Topbar` ikki qatorga tushadi, ≤ 640 px da qidiruv alohida qatorda,
+ism, rol va avatar yashiriladi, "Chiqish" faqat ikonka. Ikki ustunli sahifalar bitta ustunga tushadi
+(o'ng ustun pastga). `DataTable`, `ScheduleGrid` va `PriceMatrix` sahifani kengaytirmaydi, o'z
+qutisi ichida yonga suriladi. Dialog ekran kengligida. Tugma, filtr va menyu bandlari ≥ 44 px.
 
 | Komponent | Ko'rinishi | Dizayndagi joyi |
 |---|---|---|

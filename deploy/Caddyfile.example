@@ -41,27 +41,35 @@ autoservice.shaxriyorbek.uz {
 	# The panel (npm run build: apps/admin/dist). Never shown inside another site.
 	handle_path /admin/* {
 		root * /opt/car-service/apps/admin/dist
-		@hashed path /assets/*
-		header @hashed Cache-Control "public, max-age=31536000, immutable"
-		@page not path /assets/*
-		header @page Cache-Control "no-cache"
 		header {
 			Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 			X-Frame-Options DENY
 		}
-		try_files {path} /index.html
-		file_server
+		# A missing asset is a 404, never the page: an old tab asking for a chunk of the previous
+		# version must not get index.html cached for a year as JavaScript.
+		handle /assets/* {
+			header Cache-Control "public, max-age=31536000, immutable"
+			file_server
+		}
+		handle {
+			header Cache-Control "no-cache"
+			try_files {path} /index.html
+			file_server
+		}
 	}
 
 	# The Mini App (apps/tma/dist). File names under /assets/ carry a hash of their content.
 	handle {
 		root * /opt/car-service/apps/tma/dist
-		@hashed path /assets/*
-		header @hashed Cache-Control "public, max-age=31536000, immutable"
-		@page not path /assets/*
-		header @page Cache-Control "no-cache"
-		try_files {path} /index.html
-		file_server
+		handle /assets/* {
+			header Cache-Control "public, max-age=31536000, immutable"
+			file_server
+		}
+		handle {
+			header Cache-Control "no-cache"
+			try_files {path} /index.html
+			file_server
+		}
 	}
 
 	# No access log, like the other sites here: a query string can hold a client's name or phone

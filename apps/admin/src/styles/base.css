@@ -12,7 +12,6 @@ body {
 }
 
 body {
-  min-width: 1024px;
   background: var(--bg);
   color: var(--text);
   font: 400 14px/20px var(--font-ui);

@@ -143,3 +143,23 @@
   font-size: 12px;
   line-height: 18px;
 }
+
+/* A narrow screen: the form first and alone; the dark brand panel is only decoration. */
+@media (max-width: 900px) {
+  .login {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .login__brand {
+    display: none;
+  }
+
+  .login__main {
+    place-items: start center;
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .login__lang {
+    min-height: 44px;
+  }
+}

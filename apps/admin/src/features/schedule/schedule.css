@@ -242,3 +242,27 @@
   color: inherit;
   opacity: 0.8;
 }
+
+/* A narrow screen: the day keeps readable hours and scrolls sideways inside its card. */
+@media (max-width: 900px) {
+  .schedule {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .schedule__nav {
+    flex-wrap: wrap;
+  }
+
+  .schedule__date {
+    min-width: 0;
+  }
+
+  .grid {
+    overflow-x: auto;
+  }
+
+  .grid__row {
+    min-width: 720px;
+    grid-template-columns: 96px 1fr;
+  }
+}

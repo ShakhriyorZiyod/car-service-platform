@@ -363,13 +363,15 @@ function DiscountForm({ data }: { data: Handover }) {
   );
   const [reason, setReason] = useState(order.discount?.reason ?? '');
 
-  const number = Number(value.replace(/\s/g, '').replace(',', '.'));
-  const valid =
-    value.trim() !== '' &&
-    Number.isFinite(number) &&
+  // The same form the server takes: a percentage with at most two decimals (12,5 or 12.25), or
+  // whole so‘m. Spaces between the digits are allowed ("50 000").
+  const compact = value.replace(/\s/g, '').replace(',', '.');
+  const number = Number(compact);
+  const wellFormed =
+    (kind === 'percent' ? /^\d+(\.\d{1,2})?$/ : /^\d+$/).test(compact) &&
     number > 0 &&
-    (kind === 'percent' ? number <= 100 : Number.isSafeInteger(number)) &&
-    reason.trim() !== '';
+    (kind === 'percent' ? number <= 100 : Number.isSafeInteger(number));
+  const valid = wellFormed && reason.trim() !== '';
 
   const apply = useMutation({
     mutationFn: () =>
@@ -426,6 +428,9 @@ function DiscountForm({ data }: { data: Handover }) {
           onChange={(event) => setReason(event.target.value)}
         />
       </div>
+      {compact !== '' && !wellFormed && (
+        <span className="field__error">{t.handover.discountInvalid[kind]}</span>
+      )}
       <span className="field__hint">
         {data.discountUnlimited
           ? t.handover.discountUnlimited

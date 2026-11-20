@@ -38,7 +38,13 @@ export function createMessageSender(
       const button = message.button;
       if (button) {
         if (button.target === 'panel') {
-          if (urls.admin) keyboard.url(button.text, urls.admin);
+          // Inside Telegram, on the order's own page; staff messages go to private chats, where
+          // web_app buttons are allowed. Telegram Web opens it in a frame, where the panel only
+          // offers a new tab (apps/admin/src/main.tsx).
+          if (urls.admin) {
+            const page = button.orderId ? `${urls.admin}orders/${button.orderId}` : urls.admin;
+            keyboard.webApp(button.text, page);
+          }
         } else if (urls.miniApp) {
           const query =
             button.target === 'task' ? `?task=${button.taskId}` : `?order=${button.orderId}`;

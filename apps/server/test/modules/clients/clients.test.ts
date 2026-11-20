@@ -4,7 +4,7 @@ import { auditLog, cars, orderItems, orders, outbox, users } from '../../../src/
 import { newId } from '../../../src/lib/ids';
 import type { TmaActor } from '../../../src/platform/actors';
 import { useTestDatabase } from '../../helpers/db';
-import { insertStaff, staffActorOf, uniquePhone } from '../../helpers/factories';
+import { insertStaff, staffActorOf, typedInCyrillic, uniquePhone } from '../../helpers/factories';
 import { createTestServices, type TestContext } from '../../helpers/services';
 import { at, makeClient, setupWorkshop, type Workshop } from '../../helpers/workshop-setup';
 
@@ -261,6 +261,8 @@ describe('the list and its filters (design A10, PLAN 18)', () => {
     expect(await ids({ q: 'ALIYEVA' })).toEqual([dilnoza.client.userId]);
     expect(await ids({ q: dilnoza.client.phone!.slice(-6) })).toEqual([dilnoza.client.userId]);
     expect(await ids({ q: aziz.car.plate.toLowerCase() })).toEqual([aziz.client.userId]);
+    // As a Russian keyboard types it, and with dashes: "01-123-АВС" (Cyrillic letters).
+    expect(await ids({ q: typedInCyrillic(aziz.car.plate) })).toEqual([aziz.client.userId]);
     expect(await ids({ q: '%' })).toEqual([]);
   });
 

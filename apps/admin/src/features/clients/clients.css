@@ -122,3 +122,18 @@
   display: grid;
   flex: 1;
 }
+
+@media (max-width: 900px) {
+  .clients,
+  .client {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .client__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .clients__search {
+    flex: 1 1 100%;
+  }
+}

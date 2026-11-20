@@ -13,6 +13,7 @@ import { LoginPage } from './auth/LoginPage';
 import { ME_KEY, MeProvider, useMeQuery } from './auth/session';
 import { I18nProvider, useT } from './i18n';
 import { genericMessage } from './lib/errors';
+import { inFrame, startTelegram } from './lib/telegram';
 import { startTheme } from './lib/theme';
 import { router } from './router';
 import { Button } from './ui/Button';
@@ -21,6 +22,7 @@ import { Notice } from './ui/Notice';
 const container = document.getElementById('root');
 if (!container) throw new Error('#root element is missing');
 
+startTelegram();
 startTheme();
 
 /** A 401 from any call means the session is over: asking `auth.me` again shows the sign-in page. */
@@ -69,6 +71,25 @@ function Panel() {
   );
 }
 
+/**
+ * Telegram Web opens a bot's panel button inside its own page. A framed panel gets no session
+ * cookie, so instead of a sign-in that cannot stick it offers the same page in a new tab.
+ */
+function FramedNotice() {
+  const t = useT();
+  return (
+    <main className="layout__page framed">
+      <h1 className="section-title">{t.framed.title}</h1>
+      <p className="muted">{t.framed.text}</p>
+      <p>
+        <a className="btn btn--primary" href={location.href} target="_blank" rel="noopener">
+          {t.framed.open}
+        </a>
+      </p>
+    </main>
+  );
+}
+
 function LoadError({ error, onRetry }: { error: Error; onRetry: () => void }) {
   const t = useT();
   return (
@@ -85,8 +106,14 @@ function LoadError({ error, onRetry }: { error: Error; onRetry: () => void }) {
 
 createRoot(container).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <Panel />
-    </QueryClientProvider>
+    {inFrame() ? (
+      <I18nProvider lang={initialLang}>
+        <FramedNotice />
+      </I18nProvider>
+    ) : (
+      <QueryClientProvider client={queryClient}>
+        <Panel />
+      </QueryClientProvider>
+    )}
   </StrictMode>,
 );

@@ -32,6 +32,9 @@ export interface Launch {
 
 /** The SDK was initialized; false in a plain browser. */
 let insideTelegram = false;
+/** Telegram Web (web.telegram.org) shows the app in a frame of its own page, not in a webview. */
+let webClient = false;
+const WEB_PLATFORMS: readonly string[] = ['web', 'weba', 'webk'];
 
 /**
  * The design has its own palette for both themes (docs/DESIGN.md, section 5), so only the mode is
@@ -197,7 +200,9 @@ export function launch(): Launch {
 
   let languageCode: string | undefined;
   optional(() => {
-    languageCode = retrieveLaunchParams().tgWebAppData?.user?.language_code;
+    const params = retrieveLaunchParams();
+    languageCode = params.tgWebAppData?.user?.language_code;
+    webClient = WEB_PLATFORMS.includes(params.tgWebAppPlatform);
   });
   return { initData: retrieveRawInitData(), languageCode };
 }
@@ -230,6 +235,19 @@ export async function requestPhone(): Promise<string | null> {
 export function openExternal(url: string): void {
   const opened = insideTelegram ? openLink.ifAvailable(url) : { ok: false as const };
   if (!opened.ok) window.open(url, '_blank', 'noopener');
+}
+
+/**
+ * The web panel for the staff. In Telegram's own apps (phone, desktop) it opens in this same
+ * window, on the same origin; in Telegram Web and in a browser, in a new tab: a frame inside
+ * web.telegram.org gets no session cookie (SameSite=Strict).
+ */
+export function openPanel(url: string): void {
+  if (insideTelegram && !webClient) {
+    window.location.assign(url);
+    return;
+  }
+  openExternal(url);
 }
 
 /** True inside Telegram, where the native back button exists; elsewhere the page draws its own. */

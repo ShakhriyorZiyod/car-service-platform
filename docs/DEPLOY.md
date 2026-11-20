@@ -211,6 +211,33 @@ solishtiring.
   past ustuvorlikda bajaradi. Kamida 2 GB RAM kerak (1 GB'da build va boshqa loyihalar xotirani
   bo'lisha olmaydi).
 
+### Hozirgi production (2026-11-20)
+
+`https://autoservice.shaxriyorbek.uz`, server `138.249.7.81` (SSH porti 2222). RAM 1 GB va boshqa
+loyihalar bilan umumiy bo'lgani uchun o'rnatish yuqoridagi tartibdan farq qiladi:
+
+- **Build serverda qilinmaydi.** `npm run build` ishlab chiquvchining kompyuterida bajariladi,
+  `apps/server/dist`, `apps/tma/dist`, `apps/admin/dist` arxivlanib serverga yuklanadi va
+  `/opt/car-service` ichida (`carservice` egaligida) ochiladi. Serverda faqat backend paketlari:
+  `npm ci --omit=dev --workspace=@cs/server` (Node 24, `nice` bilan).
+- **Migratsiya va `seed:reference`** kompyuterdan SSH tunnel orqali:
+  `ssh -N -L 15432:127.0.0.1:5432 -p 2222 <user>@138.249.7.81`, so'ng
+  `DATABASE_URL=postgres://carservice:<parol>@127.0.0.1:15432/carservice npm run db:migrate`.
+  Parol `/etc/car-service.env` da.
+- **Bu serverda `deploy/deploy.sh` ishga tushirilmaydi:** u build'ni serverda qiladi va bo'sh RAM
+  (≈150 MB) bilan boshqa saytlarni bo'g'ib qo'yadi. Yangilash tartibi: kompyuterda `npm run check` →
+  build → zaxira (`sudo -u carservice bash /opt/car-service/deploy/backup.sh`) → serverda `git pull`
+  (`carservice` nomidan) → dist arxivini yuklab ochish → `npm ci --omit=dev --workspace=@cs/server` →
+  tunnel orqali migratsiya → `sudo systemctl restart car-service` → `curl 127.0.0.1:3300/health`.
+- **qanchaga** xizmatlari (`qanchaga-api`, `qanchaga-tgbot`, `qanchaga-web`) RAM bo'shatish uchun
+  to'xtatilgan va avtomatik ishga tushishi o'chirilgan (egasi roziligi bilan). Qaytarish:
+  `sudo systemctl enable --now qanchaga-api qanchaga-tgbot qanchaga-web` (RAM yetishiga ishonch hosil
+  qiling).
+- Caddy: `/etc/caddy/Caddyfile` oxirida `# >>> car-service` va `# <<< car-service` belgilari orasida;
+  o'zgartirishdan oldingi nusxalar `/etc/caddy/Caddyfile.bak-*`.
+- Tungi zaxira: `/etc/cron.d/car-service`; `carservice` xizmatni qayta ishga tushira oladi
+  (`/etc/sudoers.d/car-service`). Backend ≈ 85 MB RAM ishlatadi.
+
 ## Foydali buyruqlar
 
 ```bash

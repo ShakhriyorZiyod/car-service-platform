@@ -162,3 +162,13 @@
 .defects__fields .photo-tile {
   max-width: 200px;
 }
+
+@media (max-width: 900px) {
+  .reception__body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .reception__sides {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

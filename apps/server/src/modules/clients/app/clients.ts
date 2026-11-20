@@ -1,4 +1,5 @@
 import type { Car, ClientCard, ClientSummary } from '@cs/shared';
+import { compactPlate } from '@cs/shared/format';
 import type { ClientFilter } from '@cs/shared/vocabulary';
 import { and, desc, eq, lt, or, sql, type SQL } from 'drizzle-orm';
 import { users } from '../../../db/schema';
@@ -158,7 +159,7 @@ export function createClientsService(deps: ClientsServiceDeps): ClientsService {
       if (query.q) {
         const text = likeEscape(query.q);
         const digits = query.q.replace(/\D/g, '');
-        const plate = likeEscape(query.q.replace(/\s+/g, '').toUpperCase());
+        const plate = likeEscape(compactPlate(query.q));
         conditions.push(
           or(
             sql`${users.fullName} ilike ${`%${text}%`}`,

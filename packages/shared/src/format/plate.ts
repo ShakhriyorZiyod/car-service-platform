@@ -48,12 +48,20 @@ const CYRILLIC_LOOKALIKES: Readonly<Record<string, string>> = {
   Х: 'X',
 };
 
-/** "01 a 777 ba", "01-А-777-ВА" → "01A777BA"; null when it is not a valid Uzbek plate. */
-export function normalizePlate(input: string): string | null {
-  const compact = [...input.trim().toUpperCase()]
+/**
+ * A plate or a part of one, in the stored form: upper-case Latin letters, no spaces or dashes.
+ * "01-а 777" → "01A777". Searching compares this with the stored plates.
+ */
+export function compactPlate(input: string): string {
+  return [...input.trim().toUpperCase()]
     .map((char) => CYRILLIC_LOOKALIKES[char] ?? char)
     .join('')
     .replace(/[\s-]/g, '');
+}
+
+/** "01 a 777 ba", "01-А-777-ВА" → "01A777BA"; null when it is not a valid Uzbek plate. */
+export function normalizePlate(input: string): string | null {
+  const compact = compactPlate(input);
   const match = PERSONAL.exec(compact) ?? LEGAL.exec(compact);
   if (!match?.[1] || !REGIONS.has(match[1])) return null;
   return compact;

@@ -15,6 +15,7 @@ export const ru: Dictionary<typeof uz> = {
   },
   notFound: 'Страница не найдена.',
   signOut: 'Выйти',
+  menu: { open: 'Открыть меню', close: 'Закрыть меню' },
   confirm: {
     priceTitle: 'Сохранить цену?',
     priceText: (name, price) => `${name}: ${price}. После сохранения эту цену изменить нельзя.`,
@@ -31,6 +32,11 @@ export const ru: Dictionary<typeof uz> = {
     verbalText:
       'Акт будет подтверждён от имени клиента, запрос в боте ему не придёт. Отменить это нельзя.',
     verbalSubmit: 'Да, подтвердил',
+  },
+  framed: {
+    title: 'Откройте панель в новом окне',
+    text: 'Внутри Telegram Web войти в панель нельзя. Откройте её в новой вкладке браузера.',
+    open: 'Открыть в новом окне',
   },
   signOutConfirm: {
     title: 'Выйти из панели?',
@@ -798,6 +804,10 @@ export const ru: Dictionary<typeof uz> = {
     discountRemove: 'Убрать скидку',
     discountLimit: (percent) => `Ваш лимит ${percent}%. Больше даёт владелец.`,
     discountUnlimited: 'Для владельца ограничения нет.',
+    discountInvalid: {
+      percent: 'Процент больше 0 и не больше 100, после запятой не больше 2 цифр (например, 12,5).',
+      amount: 'Сумма в целых сумах, только цифры.',
+    },
     receiptNo: 'Номер фискального чека',
     receiptHint: 'Пробейте чек на онлайн-ККМ или в виртуальной кассе и впишите его номер сюда.',
     submit: 'Принять оплату и завершить',

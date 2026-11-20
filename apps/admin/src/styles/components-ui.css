@@ -791,3 +791,35 @@ a.btn {
 .cash__row--total dd {
   font-size: 22px;
 }
+
+/*
+ * A narrow screen (a phone, Telegram): a wide table scrolls sideways inside the box that holds it
+ * instead of pushing the whole page wider (the table itself stays a table, full width when it
+ * fits); the dialog takes the full width.
+ */
+@media (max-width: 900px) {
+  .layout__page :has(> .table, > .audit__table) {
+    overflow-x: auto;
+  }
+
+  .table th,
+  .table td {
+    white-space: nowrap;
+  }
+
+  .dialog__close {
+    width: 44px;
+    height: 44px;
+  }
+
+  .call-actions--compact .call-btn,
+  .photo-tile__retake {
+    min-height: 44px;
+  }
+
+  .dialog,
+  .dialog--wide {
+    width: calc(100vw - var(--space-4));
+    max-height: calc(100dvh - var(--space-4));
+  }
+}

@@ -135,3 +135,11 @@
 .checks--list {
   grid-template-columns: 1fr;
 }
+
+/* A narrow screen (a phone, Telegram): one column, the side cards under the main ones. */
+@media (max-width: 900px) {
+  .order__grid,
+  .edit-items__row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

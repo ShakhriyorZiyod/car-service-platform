@@ -71,3 +71,25 @@ export async function insertStaff(db: Db, roles: readonly Role[], overrides: Use
 export function staffActorOf(user: { id: string }, roles: readonly Role[]): StaffActor {
   return { kind: 'staff', userId: user.id, roles, permissions: new Set(permissionsOf(roles)) };
 }
+
+const LATIN_TO_CYRILLIC: Readonly<Record<string, string>> = {
+  A: 'А',
+  B: 'В',
+  C: 'С',
+  E: 'Е',
+  H: 'Н',
+  K: 'К',
+  M: 'М',
+  O: 'О',
+  P: 'Р',
+  T: 'Т',
+  X: 'Х',
+  Y: 'У',
+};
+
+/** A stored plate ("01123ABC") as a Russian keyboard types it, with dashes: "01-123-АВС". */
+export const typedInCyrillic = (plate: string): string =>
+  [...plate]
+    .map((char) => LATIN_TO_CYRILLIC[char] ?? char)
+    .join('')
+    .replace(/^(\d{2})(\d{3}|\D)/, '$1-$2-');

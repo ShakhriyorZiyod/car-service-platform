@@ -14,7 +14,7 @@ import {
 import { newId } from '../../../src/lib/ids';
 import type { NewOrder } from '../../../src/modules/orders/app/orders';
 import { useTestDatabase } from '../../helpers/db';
-import { insertStaff, staffActorOf } from '../../helpers/factories';
+import { insertStaff, staffActorOf, typedInCyrillic } from '../../helpers/factories';
 import { createTestServices, type TestContext } from '../../helpers/services';
 import { at, makeClient, setupWorkshop, type Workshop } from '../../helpers/workshop-setup';
 
@@ -703,6 +703,8 @@ describe('the list and "Today" (design A1, A6)', () => {
     expect(await find('dilno')).toEqual([d.id]);
     expect(await find('AZIZ')).toEqual([a.id]);
     expect(await find(aziz.car.plate.slice(0, 5).toLowerCase())).toEqual([a.id]);
+    // As a Russian keyboard types it, and with dashes: "01-123-АВС" (Cyrillic letters).
+    expect(await find(typedInCyrillic(aziz.car.plate))).toEqual([a.id]);
     expect(await find(aziz.client.phone!.slice(-6))).toEqual([a.id]);
     expect(await find('yo‘q odam')).toEqual([]);
     // "%" typed by a person is not a wildcard.

@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { paintTelegramFrame } from './telegram';
 
 /**
  * The panel's light or dark mode (docs/DESIGN.md, section 6): "auto" follows the computer's own
@@ -20,6 +21,7 @@ const system = matchMedia('(prefers-color-scheme: dark)');
 function apply(): void {
   const dark = choice === 'dark' || (choice === 'auto' && system.matches);
   document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  paintTelegramFrame();
   for (const listener of listeners) listener();
 }
 

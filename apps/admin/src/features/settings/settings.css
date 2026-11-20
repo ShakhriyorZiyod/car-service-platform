@@ -588,3 +588,48 @@
   padding: var(--space-2) var(--space-3);
   border-top: 1px solid var(--border);
 }
+
+/* A narrow screen: list above the form, one column; the price matrix scrolls in its own box. */
+@media (max-width: 900px) {
+  .settings {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .settings__tab {
+    min-height: 44px;
+  }
+
+  .staff,
+  .staff__roles,
+  .workshop__rules,
+  .models__legend {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .matrix {
+    overflow-x: auto;
+  }
+
+  .matrix__minutes {
+    height: 40px;
+  }
+
+  .hours__table,
+  .hours__table tbody,
+  .hours__table tr,
+  .hours__table th,
+  .hours__table td {
+    display: block;
+    width: auto;
+  }
+
+  .hours__table td {
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .hours__holidays li,
+  .hours__add {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

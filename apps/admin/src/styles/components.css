@@ -322,3 +322,17 @@ select.field__input {
   color: var(--text-muted);
   border-style: dashed;
 }
+
+@media (max-width: 900px) {
+  .split,
+  .form-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* A finger, not a mouse: every button at least 44 px tall (docs/DESIGN.md, section 6). */
+  .btn,
+  .btn--ghost,
+  .pill {
+    min-height: 44px;
+  }
+}

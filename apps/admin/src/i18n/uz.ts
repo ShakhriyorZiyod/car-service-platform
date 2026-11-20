@@ -13,6 +13,7 @@ export const uz = {
   },
   notFound: 'Sahifa topilmadi.',
   signOut: 'Chiqish',
+  menu: { open: 'Menyuni ochish', close: 'Menyuni yopish' },
   confirm: {
     priceTitle: 'Narxni saqlaysizmi?',
     priceText: (name: string, price: string) =>
@@ -30,6 +31,11 @@ export const uz = {
     verbalText:
       'Dalolatnoma mijoz nomidan tasdiqlanadi va unga botda tasdiqlash so‘rovi kelmaydi. Buni qaytarib bo‘lmaydi.',
     verbalSubmit: 'Ha, tasdiqladi',
+  },
+  framed: {
+    title: 'Panelni yangi oynada oching',
+    text: 'Telegram Web ichida panelga kirib bo‘lmaydi. Uni brauzerning yangi oynasida oching.',
+    open: 'Yangi oynada ochish',
   },
   signOutConfirm: {
     title: 'Paneldan chiqasizmi?',
@@ -793,6 +799,10 @@ export const uz = {
     discountRemove: 'Chegirmani olib tashlash',
     discountLimit: (percent: number) => `Sizning limitingiz ${percent}%. Ko‘prog‘ini egasi beradi.`,
     discountUnlimited: 'Egasi uchun chegara yo‘q.',
+    discountInvalid: {
+      percent: 'Foiz 0 dan katta va 100 gacha, verguldan keyin ko‘pi bilan 2 raqam (masalan, 12,5).',
+      amount: 'Summa butun so‘mda, faqat raqamlar.',
+    },
     receiptNo: 'Fiskal chek raqami',
     receiptHint:
       'Chekni onlayn-KKM yoki virtual kassada chiqaring va uning raqamini shu yerga yozing.',

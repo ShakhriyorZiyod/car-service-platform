@@ -157,3 +157,162 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* On a wide screen the mode, language and name sit in the top bar as its own items. */
+.topbar__prefs,
+.topbar__me {
+  display: contents;
+}
+
+/* The menu's own copy of them, for a narrow screen. */
+.sidebar__me {
+  display: none;
+}
+
+/* The menu button and the drawer's close button exist for narrow screens only. */
+.topbar__menu,
+.sidebar__close {
+  display: none;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+}
+
+.topbar__menu:hover,
+.sidebar__close:hover {
+  background: var(--surface-muted);
+}
+
+/*
+ * A phone or a narrow window, Telegram's own window too (docs/DESIGN.md, section 6): the menu slides
+ * in over the page and also holds the mode, the language and who is signed in; the top bar keeps one
+ * row (menu, search, name, sign-out); the page loses its wide margins.
+ */
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 40;
+    width: min(300px, 85vw);
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+  }
+
+  .sidebar.is-open {
+    transform: none;
+  }
+
+  .sidebar__backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    background: color-mix(in srgb, var(--ink) 55%, transparent);
+  }
+
+  .sidebar__close {
+    display: inline-grid;
+    margin-left: auto;
+  }
+
+  .sidebar__item {
+    min-height: 44px;
+  }
+
+  .sidebar__me {
+    display: grid;
+    gap: var(--space-3);
+    margin-top: auto;
+    padding: var(--space-4) var(--space-2) 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .sidebar__who {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: 0;
+  }
+
+  .sidebar__prefs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .topbar__prefs {
+    display: none;
+  }
+
+  .topbar__menu {
+    display: inline-grid;
+  }
+
+  .topbar {
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .topbar__search {
+    flex: 1 1 auto;
+    height: 44px;
+  }
+
+  .topbar__search input {
+    align-self: stretch;
+  }
+
+  .topbar__user {
+    gap: var(--space-2);
+  }
+
+  .topbar__langs {
+    margin-right: 0;
+  }
+
+  .topbar__lang {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .topbar__theme {
+    width: 44px;
+  }
+
+  .topbar__exit {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .layout__page {
+    padding: var(--space-4);
+  }
+}
+
+/* A phone: the name is in the menu; sign-out is its icon alone. */
+@media (max-width: 640px) {
+  .topbar__me,
+  .topbar__exit-text {
+    display: none;
+  }
+
+  .topbar__exit {
+    padding: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar {
+    transition: none;
+  }
+}

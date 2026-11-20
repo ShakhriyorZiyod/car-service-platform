@@ -1,37 +1,26 @@
-import { LANG_NAMES, LANGS, ROLE_LABELS } from '@cs/shared/i18n';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { LogOut, Monitor, Moon, Search, Sun } from 'lucide-react';
+import { LogOut, Menu, Search } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { call } from '../api';
-import { ME_KEY, useCan, useMe, useSetMe } from '../auth/session';
-import { useLang, useT } from '../i18n';
-import { chooseTheme, THEME_CHOICES, useThemeChoice } from '../lib/theme';
+import { ME_KEY, useCan, useSetMe } from '../auth/session';
+import { useT } from '../i18n';
 import { Button } from '../ui/Button';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
+import { Preferences, Who } from './Preferences';
 
-const THEME_ICONS = { auto: Monitor, light: Sun, dark: Moon } as const;
-
-const initialsOf = (name: string) =>
-  name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .join('');
-
-/** Search (stage 4); who is signed in, their language and signing out. */
-export function Topbar() {
+/**
+ * Search (stage 4); who is signed in, their mode and language, and signing out. On a narrow screen
+ * the mode, the language and the name move into the menu (layout.css): one row stays here.
+ */
+export function Topbar({ onMenu }: { onMenu: () => void }) {
   const t = useT();
-  const lang = useLang();
-  const me = useMe();
   const setMe = useSetMe();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [text, setText] = useState('');
   const [confirmingExit, setConfirmingExit] = useState(false);
   const can = useCan();
-  const theme = useThemeChoice();
 
   // The search finds orders: by number, the client's name or phone, or the plate.
   const search = (event: FormEvent) => {
@@ -40,10 +29,6 @@ export function Topbar() {
     void navigate(q ? `/orders?q=${encodeURIComponent(q)}` : '/orders');
   };
 
-  const changeLang = useMutation({
-    mutationFn: (next: (typeof LANGS)[number]) => call('auth.updateMe', { body: { lang: next } }),
-    onSuccess: setMe,
-  });
   const signOut = useMutation({
     mutationFn: () => call('auth.logout'),
     // Only once the server has ended the session. The sign-in screen comes first: `me` becomes
@@ -57,6 +42,15 @@ export function Topbar() {
 
   return (
     <header className="topbar">
+      <button
+        type="button"
+        className="topbar__menu"
+        aria-label={t.menu.open}
+        title={t.menu.open}
+        onClick={onMenu}
+      >
+        <Menu size={20} aria-hidden="true" />
+      </button>
       <form className="topbar__search" role="search" onSubmit={search}>
         <Search size={16} aria-hidden="true" />
         <input
@@ -69,57 +63,17 @@ export function Topbar() {
         />
       </form>
       <div className="topbar__user">
-        <div className="topbar__langs" role="radiogroup" aria-label={t.theme.label}>
-          {THEME_CHOICES.map((value) => {
-            const Icon = THEME_ICONS[value];
-            return (
-              <button
-                key={value}
-                type="button"
-                role="radio"
-                aria-checked={value === theme}
-                aria-label={t.theme[value]}
-                title={t.theme[value]}
-                className={
-                  value === theme
-                    ? 'topbar__lang topbar__theme is-active'
-                    : 'topbar__lang topbar__theme'
-                }
-                onClick={() => chooseTheme(value)}
-              >
-                <Icon size={14} aria-hidden="true" />
-              </button>
-            );
-          })}
-        </div>
-        <div className="topbar__langs">
-          {LANGS.map((value) => (
-            <button
-              key={value}
-              type="button"
-              className={value === lang ? 'topbar__lang is-active' : 'topbar__lang'}
-              disabled={changeLang.isPending}
-              onClick={() => value !== lang && changeLang.mutate(value)}
-            >
-              {LANG_NAMES[value]}
-            </button>
-          ))}
-        </div>
-        <span className="avatar" aria-hidden="true">
-          {initialsOf(me.fullName)}
-        </span>
-        <span className="topbar__who">
-          <span className="topbar__name">{me.fullName}</span>
-          <span className="muted">
-            {me.roles.map((role) => ROLE_LABELS[lang][role]).join(', ')}
-          </span>
-        </span>
+        <Preferences className="topbar__prefs" />
+        <Who className="topbar__me" />
         <Button
           variant="ghost"
+          className="topbar__exit"
           icon={<LogOut size={16} aria-hidden="true" />}
+          aria-label={t.signOut}
+          title={t.signOut}
           onClick={() => setConfirmingExit(true)}
         >
-          {t.signOut}
+          <span className="topbar__exit-text">{t.signOut}</span>
         </Button>
       </div>
       {confirmingExit && (
