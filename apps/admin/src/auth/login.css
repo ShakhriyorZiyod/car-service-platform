@@ -20,6 +20,18 @@
   gap: var(--space-3);
 }
 
+/* The mark above the form, for a narrow screen only (the media query below). */
+.login__logo--compact {
+  display: none;
+}
+
+.login__logo--compact .login__logo-mark {
+  width: 36px;
+  height: 36px;
+  /* On the light form, not the dark brand panel: the menu's own dark square. */
+  background: var(--ink);
+}
+
 .login__logo-mark {
   display: grid;
   place-items: center;
@@ -152,6 +164,20 @@
 
   .login__brand {
     display: none;
+  }
+
+  /* The mark and the language buttons share the first row. */
+  .login__logo--compact {
+    display: flex;
+    grid-row: 1;
+    grid-column: 1;
+    align-self: center;
+  }
+
+  .login__langs {
+    grid-row: 1;
+    grid-column: 1;
+    align-self: center;
   }
 
   .login__main {

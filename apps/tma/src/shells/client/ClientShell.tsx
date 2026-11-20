@@ -40,8 +40,11 @@ export default function ClientShell({ bootstrap }: { bootstrap: Bootstrap }) {
   const online = useOnline();
 
   const close = useCallback(() => setFlow(null), []);
-  // The booking handles its own steps; every other screen on top of the tabs goes back to them.
-  useBack(flow && flow.kind !== 'booking' ? close : null);
+  const toHome = useCallback(() => setTab('home'), []);
+  // The booking handles its own steps; every other screen on top of the tabs goes back to them,
+  // and another tab goes back to "Bosh". Telegram closes the app on "back" only when its button is
+  // hidden, which is on "Bosh" alone (Android's system "back" included).
+  useBack(flow ? (flow.kind !== 'booking' ? close : null) : tab !== 'home' ? toHome : null);
 
   if (flow?.kind === 'booking') {
     return (

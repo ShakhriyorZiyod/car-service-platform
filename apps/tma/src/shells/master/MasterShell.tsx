@@ -36,7 +36,11 @@ function Master({ bootstrap }: { bootstrap: Bootstrap }) {
   const [tab, setTab] = useState<MasterTaskTab>('today');
   const [taskId, setTaskId] = useState<string | null>(linkedTask);
   const close = useCallback(() => setTaskId(null), []);
-  useBack(taskId ? close : null);
+  const toTasks = useCallback(() => setScreen('tasks'), []);
+  const toToday = useCallback(() => setTab('today'), []);
+  // "Back": the task to the list, the profile to the tasks, another tab to "Bugun"; only there does
+  // Telegram close the app.
+  useBack(taskId ? close : screen === 'profile' ? toTasks : tab !== 'today' ? toToday : null);
 
   if (taskId) {
     return (

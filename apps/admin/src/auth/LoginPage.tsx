@@ -115,6 +115,13 @@ export function LoginPage({
 
       <main className="login__main">
         <div className="login__panel">
+          {/* A narrow screen hides the brand panel; the mark stays above the form. */}
+          <div className="login__logo login__logo--compact">
+            <span className="login__logo-mark" aria-hidden="true">
+              <Shield size={18} strokeWidth={2.2} />
+            </span>
+            <span className="section-title">{t.brand}</span>
+          </div>
           <div className="login__langs">
             {LANGS.map((value) => (
               <button

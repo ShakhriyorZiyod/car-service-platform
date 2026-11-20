@@ -10,6 +10,15 @@ interface WebviewProxy {
   postEvent(eventType: string, eventData: string): void;
 }
 
+type Receive = (eventType: string, eventData?: unknown) => void;
+
+/** The places Telegram's apps call with an event (Android and iOS, desktop, older desktop). */
+interface EventSinks {
+  Telegram?: { WebView?: { receiveEvent?: Receive } };
+  TelegramGameProxy?: { receiveEvent?: Receive };
+  TelegramGameProxy_receiveEvent?: Receive;
+}
+
 /** Telegram's apps (Android, iOS, desktop) put this object into the page they show. */
 const proxy = (): WebviewProxy | undefined =>
   (window as unknown as { TelegramWebviewProxy?: WebviewProxy }).TelegramWebviewProxy;
@@ -37,9 +46,44 @@ function post(eventType: string, eventData: object = {}): void {
   }
 }
 
+const listeners = new Map<string, Set<() => void>>();
+
+const receive: Receive = (eventType) => {
+  for (const listener of listeners.get(eventType) ?? []) listener();
+};
+
+/** Telegram tells the page about its buttons by calling these; the Mini App's SDK does the same. */
+function listenToTelegram(): void {
+  const sinks = window as unknown as EventSinks;
+  sinks.Telegram ??= {};
+  sinks.Telegram.WebView ??= {};
+  sinks.Telegram.WebView.receiveEvent = receive;
+  sinks.TelegramGameProxy ??= {};
+  sinks.TelegramGameProxy.receiveEvent = receive;
+  sinks.TelegramGameProxy_receiveEvent = receive;
+}
+
+/**
+ * Telegram's back button (the arrow in its header; on Android the system "back" too). While it is
+ * hidden, "back" closes the whole window, so the panel shows it whenever there is somewhere to go
+ * back to. Returns the way to stop listening. A no-op outside Telegram's app.
+ */
+export function onTelegramBack(listener: () => void): () => void {
+  if (!inTelegramApp()) return () => undefined;
+  const set = listeners.get('back_button_pressed') ?? new Set();
+  listeners.set('back_button_pressed', set);
+  set.add(listener);
+  return () => set.delete(listener);
+}
+
+export function showTelegramBack(visible: boolean): void {
+  if (inTelegramApp()) post('web_app_setup_back_button', { is_visible: visible });
+}
+
 /** Once at start: the panel is ready, takes the whole height and is not closed by a swipe down. */
 export function startTelegram(): void {
   if (!inTelegramApp()) return;
+  listenToTelegram();
   post('web_app_ready');
   post('web_app_expand');
   // Scrolling a long list or the board must not close the window.

@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router';
 import './layout.css';
 import { NewOrderWatcher } from './NewOrderWatcher';
 import { Sidebar } from './Sidebar';
+import { TelegramBack } from './TelegramBack';
 import { Topbar } from './Topbar';
 
 export function AppLayout() {
@@ -15,6 +16,7 @@ export function AppLayout() {
   return (
     <div className="layout">
       <NewOrderWatcher />
+      <TelegramBack menuOpen={menuOpen} closeMenu={() => setOpenOn(null)} />
       <Sidebar open={menuOpen} onClose={() => setOpenOn(null)} />
       <div className="layout__main">
         <Topbar onMenu={() => setOpenOn(pathname)} />
