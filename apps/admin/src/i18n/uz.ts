@@ -373,7 +373,7 @@ export const uz = {
       newOrdersNote: 'qo‘ng‘iroq kutmoqda',
       unanswered: (n: number) => `${n} tasi kech`,
       arrivals: 'Bugun kelishadi',
-      arrivalsNote: 'tasdiqlangan va yangi',
+      arrivalsNote: 'bekor qilingan va kelmaganlardan tashqari',
       inWork: 'Ishda',
       inWorkNote: 'mashina',
       ready: 'Topshirishga tayyor',

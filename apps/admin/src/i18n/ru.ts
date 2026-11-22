@@ -374,7 +374,7 @@ export const ru: Dictionary<typeof uz> = {
       newOrdersNote: 'ждут звонка',
       unanswered: (n: number) => `${n} с опозданием`,
       arrivals: 'Приедут сегодня',
-      arrivalsNote: 'подтверждённые и новые',
+      arrivalsNote: 'кроме отменённых и неявок',
       inWork: 'В работе',
       inWorkNote: 'машин',
       ready: 'Готово к выдаче',

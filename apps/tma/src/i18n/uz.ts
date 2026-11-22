@@ -208,8 +208,12 @@ export const uz = {
       titleConfirm: 'Dastlabki chek',
       car: 'Mashina',
       noCars: 'Avval garajga mashina qo‘shing.',
-      zonesHint: 'Narx mashinangiz sinfi bo‘yicha ko‘rsatilgan.',
+      zonesHint: 'Kerakli zonalarni belgilang: bir nechtasini tanlash mumkin.',
       notOffered: 'Bu sinf uchun mavjud emas',
+      coveredBy: (name: string) => `“${name}” ichiga kiradi`,
+      noOffersTitle: 'Bu mashina uchun xizmatlar hali qo‘shilmagan',
+      noOffersText:
+        'Ustaxona narxlarni hali kiritmagan. Keyinroq qayta urinib ko‘ring yoki ustaxonaga qo‘ng‘iroq qiling.',
       total: 'Jami',
       agreedNote: (n: number) => `${n} ta ish narxi kelishiladi`,
       duration: 'Ish vaqti',

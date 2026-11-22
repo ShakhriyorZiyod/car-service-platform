@@ -256,6 +256,20 @@
   background: var(--accent-soft);
 }
 
+/* How many zones are picked under this kind of work. */
+.chip-choice__count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  margin-left: var(--space-2);
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 12px;
+}
+
 .class-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

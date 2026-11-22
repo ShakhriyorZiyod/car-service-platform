@@ -1,10 +1,16 @@
 import type { Slot } from '@cs/shared';
-import { formatDateLong, formatDuration, formatMoney, weekdayShort } from '@cs/shared/format';
+import {
+  formatDateLong,
+  formatDuration,
+  formatMoney,
+  formatPhone,
+  weekdayShort,
+} from '@cs/shared/format';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Check, Plus } from 'lucide-react';
+import { Check, Plus, Wrench } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ApiRequestError } from '../../../api';
-import { useApi } from '../../../bootstrap';
+import { useApi, useBootstrap } from '../../../bootstrap';
 import { useLang, useT } from '../../../i18n';
 import { useBack } from '../../../lib/back';
 import { clearBookingDraft, loadBookingDraft, saveBookingDraft } from '../../../lib/draft';
@@ -42,6 +48,7 @@ export function BookingFlow({
   const t = useT().client;
   const lang = useLang();
   const api = useApi();
+  const bootstrap = useBootstrap();
   const queryClient = useQueryClient();
   const cars = useCars();
   const catalog = useCatalog();
@@ -59,20 +66,32 @@ export function BookingFlow({
   const car = cars.data?.items.find(
     (candidate) => candidate.id === (carId ?? cars.data.items[0]?.id),
   );
-  const types = useMemo(() => catalog.data?.serviceTypes ?? [], [catalog.data]);
+  const bodyClass = car?.bodyClass;
+  // Only what the price list offers for this car's class: a zone without a cell cannot be booked,
+  // and a kind of work with no such zone is left out (an empty price list shows a notice instead).
+  const types = (catalog.data?.serviceTypes ?? []).flatMap((kind) => {
+    const zones = kind.zones.filter((zone) =>
+      zone.prices.some((price) => price.bodyClass === bodyClass),
+    );
+    return zones.length > 0 ? [{ ...kind, zones }] : [];
+  });
   const type = types.find((candidate) => candidate.id === typeId) ?? types[0];
 
   // An unfinished choice comes back when the client returns (a draft in Telegram's CloudStorage).
-  // It is applied once, and only the zones that still exist for the car are kept.
-  const draftLoaded = useRef(false);
+  // It is applied once, only if the client has not started choosing while it was being read, and
+  // nothing is written back until it has been read (writing first would delete it).
+  const draftStarted = useRef(false);
+  const touched = useRef(false);
+  const [draftRead, setDraftRead] = useState(false);
   useEffect(() => {
-    if (draftLoaded.current || !cars.data || !catalog.data) return;
-    draftLoaded.current = true;
+    if (draftStarted.current || !cars.data || !catalog.data) return;
+    draftStarted.current = true;
     const known = new Set(
       catalog.data.serviceTypes.flatMap((kind) => kind.zones.map((zone) => zone.id)),
     );
     void loadBookingDraft().then((draft) => {
-      if (!draft) return;
+      setDraftRead(true);
+      if (!draft || touched.current) return;
       const ids = draft.serviceIds.filter((id) => known.has(id));
       if (ids.length === 0) return;
       if (draft.carId && cars.data.items.some((candidate) => candidate.id === draft.carId)) {
@@ -83,9 +102,9 @@ export function BookingFlow({
     });
   }, [cars.data, catalog.data]);
   useEffect(() => {
-    if (!draftLoaded.current) return;
+    if (!draftRead) return;
     void saveBookingDraft({ carId: carId ?? null, typeId, serviceIds: selected });
-  }, [carId, typeId, selected]);
+  }, [draftRead, carId, typeId, selected]);
 
   const back = useCallback(
     () => (step === 'services' ? onExit() : setStep(step === 'confirm' ? 'time' : 'services')),
@@ -150,12 +169,18 @@ export function BookingFlow({
 
   /** Choosing a zone drops the zones it covers; the server checks the combination again. */
   const zoneById = useMemo(
-    () => new Map(types.flatMap((candidate) => candidate.zones.map((zone) => [zone.id, zone]))),
-    [types],
+    () =>
+      new Map(
+        (catalog.data?.serviceTypes ?? []).flatMap((candidate) =>
+          candidate.zones.map((zone) => [zone.id, zone]),
+        ),
+      ),
+    [catalog.data],
   );
-  const blocked = (zoneId: string) =>
-    selected.some((id) => zoneById.get(id)?.excludes.includes(zoneId));
+  const coveringZone = (zoneId: string) =>
+    selected.map((id) => zoneById.get(id)).find((picked) => picked?.excludes.includes(zoneId));
   const toggle = (zoneId: string) => {
+    touched.current = true;
     const zone = zoneById.get(zoneId);
     setSelected((previous) =>
       previous.includes(zoneId)
@@ -181,7 +206,49 @@ export function BookingFlow({
       </PhoneGate>
     );
   }
-  if (!car || !type) return <Notice tone="danger">{t.errors.generic}</Notice>;
+  if (!car) return <Notice tone="danger">{t.errors.generic}</Notice>;
+
+  const carChips = (
+    <div className="chips">
+      {cars.data?.items.map((candidate) => (
+        <button
+          key={candidate.id}
+          type="button"
+          className={candidate.id === car.id ? 'chip-choice is-selected' : 'chip-choice'}
+          onClick={() => {
+            touched.current = true;
+            setCarId(candidate.id);
+            setSelected([]);
+          }}
+        >
+          {candidate.brand ? `${candidate.brand} ${candidate.model}` : candidate.model}
+        </button>
+      ))}
+    </div>
+  );
+
+  if (!type) {
+    // Nothing in the price list for this class yet (the owner has not filled it in).
+    const phone = bootstrap.data?.workshop.phone ?? null;
+    return (
+      <PhoneGate>
+        <section className="screen">
+          <ScreenHeader title={t.booking.titleServices} onBack={onExit} />
+          {(cars.data?.items.length ?? 0) > 1 && carChips}
+          <EmptyState
+            icon={<Wrench size={28} />}
+            title={t.booking.noOffersTitle}
+            text={`${t.booking.noOffersText}${phone ? ` ${formatPhone(phone)}` : ''}`}
+            action={
+              <Button variant="secondary" onClick={onExit}>
+                {t.booking.toHome}
+              </Button>
+            }
+          />
+        </section>
+      </PhoneGate>
+    );
+  }
 
   const stepNumber = step === 'services' ? 1 : step === 'time' ? 2 : 3;
   const titles = {
@@ -216,23 +283,7 @@ export function BookingFlow({
 
         {step === 'services' && (
           <>
-            {cars.data && cars.data.items.length > 1 && (
-              <div className="chips">
-                {cars.data.items.map((candidate) => (
-                  <button
-                    key={candidate.id}
-                    type="button"
-                    className={candidate.id === car.id ? 'chip-choice is-selected' : 'chip-choice'}
-                    onClick={() => {
-                      setCarId(candidate.id);
-                      setSelected([]);
-                    }}
-                  >
-                    {candidate.brand ? `${candidate.brand} ${candidate.model}` : candidate.model}
-                  </button>
-                ))}
-              </div>
-            )}
+            {cars.data && cars.data.items.length > 1 && carChips}
             <div className="card booking-car">
               <span>{car.brand ? `${car.brand} ${car.model}` : car.model}</span>
               <PlateChip plate={car.plate} />
@@ -242,23 +293,31 @@ export function BookingFlow({
             </p>
 
             <div className="chips">
-              {types.map((candidate) => (
-                <button
-                  key={candidate.id}
-                  type="button"
-                  className={candidate.id === type.id ? 'chip-choice is-selected' : 'chip-choice'}
-                  onClick={() => setTypeId(candidate.id)}
-                >
-                  {pick(lang, { uz: candidate.nameUz, ru: candidate.nameRu })}
-                </button>
-              ))}
+              {types.map((candidate) => {
+                // Zones picked under another kind of work stay picked: the count shows where.
+                const count = candidate.zones.filter((zone) => selected.includes(zone.id)).length;
+                return (
+                  <button
+                    key={candidate.id}
+                    type="button"
+                    className={candidate.id === type.id ? 'chip-choice is-selected' : 'chip-choice'}
+                    onClick={() => setTypeId(candidate.id)}
+                  >
+                    {pick(lang, { uz: candidate.nameUz, ru: candidate.nameRu })}
+                    {count > 0 && <span className="chip-choice__count num">{count}</span>}
+                  </button>
+                );
+              })}
             </div>
 
+            {quote.isError && <Notice tone="danger">{errorText(t, quote.error)}</Notice>}
             <ul className="list">
               {type.zones.map((zone) => {
                 const cell = zone.prices.find((price) => price.bodyClass === car.bodyClass);
                 const isOn = selected.includes(zone.id);
-                const disabled = !cell || (!isOn && blocked(zone.id));
+                // A picked zone that covers this one ("whole body" covers the panels).
+                const cover = isOn ? undefined : coveringZone(zone.id);
+                const disabled = !cell || cover !== undefined;
                 return (
                   <li key={zone.id}>
                     <button
@@ -274,7 +333,13 @@ export function BookingFlow({
                       <span className="zone-row__text">
                         <span>{pick(lang, { uz: zone.nameUz, ru: zone.nameRu })}</span>
                         <span className="secondary">
-                          {cell ? formatDuration(cell.durationMin, lang) : t.booking.notOffered}
+                          {cover
+                            ? t.booking.coveredBy(
+                                pick(lang, { uz: cover.nameUz, ru: cover.nameRu }),
+                              )
+                            : cell
+                              ? formatDuration(cell.durationMin, lang)
+                              : t.booking.notOffered}
                         </span>
                       </span>
                       <span className="num zone-row__price">

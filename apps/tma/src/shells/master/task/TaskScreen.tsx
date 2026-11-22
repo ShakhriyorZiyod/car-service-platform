@@ -147,7 +147,7 @@ export function TaskScreen({ taskId, onBack }: { taskId: string; onBack: () => v
           {(working || before.sent.length + before.waiting.length > 0) && (
             <PhotoSection
               title={t.before}
-              hint={t.recommend(3)}
+              hint={t.recommend(before.sent.length + before.waiting.length)}
               sent={before.sent}
               waiting={before.waiting}
               editable={working}
@@ -159,7 +159,7 @@ export function TaskScreen({ taskId, onBack }: { taskId: string; onBack: () => v
           {(working || after.sent.length + after.waiting.length > 0) && (
             <PhotoSection
               title={t.after}
-              hint={t.recommend(3)}
+              hint={t.recommend(after.sent.length + after.waiting.length)}
               sent={after.sent}
               waiting={after.waiting}
               editable={working}
