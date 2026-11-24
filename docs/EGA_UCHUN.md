@@ -114,6 +114,30 @@ mashinalar, arizalar, ichki izoh (mijoz ko'rmaydi). "Telegramsiz" belgisi — bo
 **Ma'lumotlarni o'chirish**ni bosadi: ism, telefon, Telegram bog'lanishi, izoh va davlat raqamlari
 o'chadi, arizalar va to'lovlar qoladi. Buni qaytarib bo'lmaydi.
 
+## Ombor
+
+**Avval (egasi):** Sozlamalar → **Mahsulotlar**: toifalar, keyin mahsulot kartasi — nomi (ikki tilda), artikul,
+shtrix-kod, toifa, birlik, qadoq, chakana narx (do'konda sotiladigan tovar uchun), minimal qoldiq, fotolar
+(5 tagacha). Do'konda sotiladigan tovar donada hisoblanadi: har qadoq ("0,5 l", "1 l") — alohida mahsulot.
+Yetkazib beruvchilar **Ombor → Yetkazib beruvchilar**da.
+
+**Qoldiq qo'lda o'zgartirilmaydi.** U faqat hujjat orqali o'zgaradi. Hujjat avval qoralama bo'ladi va
+**o'tkazilganda** qoldiqni o'zgartiradi. O'tkazilgan hujjatni o'zgartirib bo'lmaydi: xato bo'lsa, teskari
+hujjat yozing (ortiqcha kirim bo'lsa — hisobdan chiqarish yoki inventarizatsiya).
+
+- **Kirim qilish** — tovar keldi: yetkazib beruvchi, nakladnoy raqami va sanasi, surati; mahsulotni
+  qidiring yoki skaner bilan o'qiting (Enter bilan qo'shiladi), miqdor va kirim narxi. O'ng tomonda
+  "O'tkazilgandan keyin" qoldiq qanday bo'lishini ko'rsatadi. O'rtacha tannarx o'zi qayta hisoblanadi.
+- **Hisobdan chiqarish** — brak, muddati o'tgan, ichki ehtiyoj yoki boshqa sabab (majburiy). Buyurtma
+  uchun rezervdagi tovarni chiqarib bo'lmaydi.
+- **Inventarizatsiya** — sanalgan miqdorni yozing; farq o'zi harakat bo'ladi, hisobdagi miqdor hujjatda
+  qoladi.
+
+**Qoldiqlar** ro'yxatida "Kam qoldi" va "Tugagan" belgilari, **Minimumdan past** filtri bor. Minimumdan past
+tovarlar "Bugun" sahifasida ko'rinadi, adminlar va egasiga botga kuniga bir marta xabar keladi.
+**Harakatlar jurnali** — kim, qachon, qaysi hujjat bilan nima qildi. Kirim narxi va tannarxni faqat
+rahbar va egasi ko'radi.
+
 ## Muammo bo'lsa
 
 - **Panel saqlamayapti, "huquqingiz yo'q"** — sizning rolingizga bu amal berilmagan (jadvalga qarang).

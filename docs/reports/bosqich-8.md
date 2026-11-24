@@ -93,7 +93,6 @@ Headless Chrome, `_test` baza, `seed:demo` bilan.
   xabarini kim oladi, olib ketish muddati, tovar IKPU kodlari).
 - Mahsulot fotosining tartibini o'zgartirib bo'lmaydi: birinchi yuklangani muqova. Do'konda kerak bo'lsa
   9-bosqichda qo'shiladi.
-- `docs/EGA_UCHUN.md` ga ombor bo'limi yozilmadi.
 
 ## 8. Keyingi bosqichga ta'sir
 
