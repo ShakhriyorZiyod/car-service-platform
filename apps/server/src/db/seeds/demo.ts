@@ -13,9 +13,10 @@ import {
   DESIGN_PPF,
   type PriceAndMinutes,
 } from './demo-data';
+import { DEMO_INVOICE, DEMO_PRODUCTS, DEMO_SUPPLIER } from './demo-stock-data';
 
 /**
- * `npm run seed:demo` (docs/PLAN.md, section 18, stage 2): a workshop to click through, in
+ * `npm run seed:demo` (docs/PLAN.md, section 18, stages 2 and 8): a workshop to click through, in
  * development only. It goes through the same use cases as the panel, so the demo data obeys the
  * same rules, and it fills only what is still empty, so running it again adds nothing.
  *
@@ -28,6 +29,10 @@ export interface DemoSeedReport {
   boxes: number;
   pricedTypes: string[];
   staff: string[];
+  /** Stage 8: the warehouse. */
+  products: number;
+  /** The number of the posted demo receipt; null when the warehouse was not empty. */
+  receipt: number | null;
 }
 
 /** A price to the nearest five thousand so‘m: scaled numbers should still look like prices. */
@@ -51,13 +56,15 @@ function cellFor(
 }
 
 export async function seedDemo(services: Services, owner: StaffActor): Promise<DemoSeedReport> {
-  const { workshop, catalog, identity } = services;
+  const { workshop, catalog, identity, stock } = services;
   const report: DemoSeedReport = {
     hours: false,
     holidays: 0,
     boxes: 0,
     pricedTypes: [],
     staff: [],
+    products: 0,
+    receipt: null,
   };
 
   const types = await catalog.services.listTypes(owner);
@@ -118,6 +125,49 @@ export async function seedDemo(services: Services, owner: StaffActor): Promise<D
       ...(member.login && { login: member.login, password: DEMO_PASSWORD }),
     });
     report.staff.push(member.fullName);
+  }
+
+  if ((await stock.products.list(owner)).length === 0) {
+    const categories = await stock.products.categories(owner);
+    const categoryOf = new Map(categories.map((category) => [category.nameUz, category.id]));
+    const supplier = await stock.products.createSupplier(owner, DEMO_SUPPLIER);
+    const lines = [];
+    for (const item of DEMO_PRODUCTS) {
+      const categoryId = categoryOf.get(item.category);
+      if (!categoryId) {
+        throw new Error(`the demo product ${item.sku} needs the category "${item.category}"`);
+      }
+      const product = await stock.products.create(owner, {
+        sku: item.sku,
+        barcode: null,
+        nameUz: item.nameUz,
+        nameRu: item.nameRu,
+        descriptionUz: null,
+        descriptionRu: null,
+        categoryId,
+        brand: null,
+        unit: item.unit,
+        pack: item.pack ?? null,
+        isForSale: item.isForSale,
+        isConsumable: item.isConsumable,
+        sellPrice: item.sellPrice ?? null,
+        minQty: item.minQty,
+      });
+      report.products += 1;
+      if (item.received > 0) {
+        lines.push({ productId: product.id, qty: item.received, unitCost: item.unitCost });
+      }
+    }
+    const receipt = await stock.documents.create(owner, {
+      kind: 'receipt',
+      supplierId: supplier.id,
+      ...DEMO_INVOICE,
+      reason: null,
+      note: null,
+      lines,
+    });
+    await stock.documents.post(owner, receipt.id);
+    report.receipt = receipt.number;
   }
 
   return report;

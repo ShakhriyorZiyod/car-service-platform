@@ -42,7 +42,9 @@ export function createMessageSender(
           // web_app buttons are allowed. Telegram Web opens it in a frame, where the panel only
           // offers a new tab (apps/admin/src/main.tsx).
           if (urls.admin) {
-            const page = button.orderId ? `${urls.admin}orders/${button.orderId}` : urls.admin;
+            const page = button.orderId
+              ? `${urls.admin}orders/${button.orderId}`
+              : `${urls.admin}${button.path ?? ''}`;
             keyboard.webApp(button.text, page);
           }
         } else if (urls.miniApp) {

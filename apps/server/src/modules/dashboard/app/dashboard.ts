@@ -4,6 +4,7 @@ import { requirePermission, type StaffActor } from '../../../platform/actors';
 import type { PlatformDeps } from '../../../platform/deps';
 import type { AdminOrdersService } from '../../orders';
 import type { PaymentsService } from '../../payments';
+import type { LevelsService } from '../../stock';
 import type { TasksService } from '../../tasks';
 
 /**
@@ -16,6 +17,7 @@ export interface DashboardDeps extends Pick<PlatformDeps, 'clock'> {
   orders: Pick<AdminOrdersService, 'today'>;
   tasks: Pick<TasksService, 'list'>;
   payments: Pick<PaymentsService, 'cashOf'>;
+  stock: Pick<LevelsService, 'lowFor'>;
 }
 
 export interface DashboardService {
@@ -23,7 +25,7 @@ export interface DashboardService {
 }
 
 export function createDashboardService(deps: DashboardDeps): DashboardService {
-  const { clock, orders, tasks, payments } = deps;
+  const { clock, orders, tasks, payments, stock } = deps;
   return {
     async today(actor) {
       requirePermission(actor, 'today.read');
@@ -36,6 +38,7 @@ export function createDashboardService(deps: DashboardDeps): DashboardService {
       const cash = actor.permissions.has('checkout.write')
         ? await payments.cashOf(localDateOf(now))
         : null;
+      const lowStock = await stock.lowFor(actor);
       return {
         ...today,
         reports: reports.map((task) => ({
@@ -45,6 +48,7 @@ export function createDashboardService(deps: DashboardDeps): DashboardService {
             : 0,
         })),
         cash,
+        lowStock,
       };
     },
   };

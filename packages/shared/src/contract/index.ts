@@ -21,14 +21,21 @@ import {
   CALL_OUTCOMES,
   CLIENT_FILTERS,
   LIMITS,
+  MANUAL_DOCUMENT_KINDS,
   MAX_CONTACT_LENGTH,
   ORDER_SOURCES,
   PAYMENT_METHODS,
   PERMISSIONS,
+  PRODUCT_UNITS,
   ROLES,
   RULE_LIMITS,
   SERVICE_GROUPS,
   SHELLS,
+  STOCK_DOCUMENT_KINDS,
+  STOCK_DOCUMENT_STATUSES,
+  STOCK_FILTERS,
+  STOCK_STATES,
+  WRITE_OFF_REASONS,
 } from '../vocabulary';
 
 /**
@@ -858,6 +865,231 @@ export type AdminTask = z.infer<typeof adminTaskSchema>;
 export const adminTaskListSchema = z.object({ items: z.array(adminTaskSummarySchema) });
 
 // ---------------------------------------------------------------------------------------------
+// Stage 8: the warehouse (docs/PLAN.md, sections 7.14 and 9.6)
+
+/** A quantity in the product's unit, to three decimals; the server checks it against the unit. */
+const qty = z.number().min(0).max(LIMITS.qty.max);
+const productUnit = z.enum(PRODUCT_UNITS);
+const optionalLine = (max: number) => z.string().trim().min(1).max(max).nullable();
+
+export const productCategorySchema = z.object({
+  id,
+  /** Null for a top-level category. */
+  parentId: id.nullable(),
+  nameUz: z.string(),
+  nameRu: z.string(),
+  sort: z.number().int(),
+  isActive: z.boolean(),
+});
+export type ProductCategory = z.infer<typeof productCategorySchema>;
+
+const categoryFields = { nameUz: name, nameRu: name };
+
+/** The free stock and how it stands against the minimum. */
+const stockFiguresSchema = z.object({
+  onHand: z.number(),
+  reserved: z.number(),
+  free: z.number(),
+  state: z.enum(STOCK_STATES),
+});
+export type StockFigures = z.infer<typeof stockFiguresSchema>;
+
+/** Purchase prices; null for who may not see them (costs.read, PLAN 8). */
+const productCostsSchema = z
+  .object({ avgCost: z.number().int(), lastCost: z.number().int().nullable() })
+  .nullable();
+
+export const productSchema = z.object({
+  id,
+  sku: z.string(),
+  barcode: z.string().nullable(),
+  nameUz: z.string(),
+  nameRu: z.string(),
+  descriptionUz: z.string().nullable(),
+  descriptionRu: z.string().nullable(),
+  categoryId: id,
+  brand: z.string().nullable(),
+  unit: productUnit,
+  pack: z.string().nullable(),
+  isForSale: z.boolean(),
+  isConsumable: z.boolean(),
+  sellPrice: z.number().int().nullable(),
+  minQty: z.number(),
+  sort: z.number().int(),
+  isActive: z.boolean(),
+  photos: z.array(photoLinkSchema),
+  stock: stockFiguresSchema,
+  costs: productCostsSchema,
+});
+export type Product = z.infer<typeof productSchema>;
+
+const productFields = {
+  sku: z.string().trim().min(LIMITS.sku.min).max(LIMITS.sku.max),
+  barcode: z
+    .string()
+    .trim()
+    .regex(new RegExp(`^\\d{${LIMITS.barcode.min},${LIMITS.barcode.max}}$`))
+    .nullable(),
+  nameUz: name,
+  nameRu: name,
+  descriptionUz: optionalLine(LIMITS.description.max),
+  descriptionRu: optionalLine(LIMITS.description.max),
+  categoryId: id,
+  brand: optionalLine(LIMITS.brand.max),
+  unit: productUnit,
+  pack: optionalLine(LIMITS.pack.max),
+  isForSale: z.boolean(),
+  isConsumable: z.boolean(),
+  sellPrice: z.number().int().min(0).max(LIMITS.price.max).nullable(),
+  minQty: qty,
+};
+
+export const supplierSchema = z.object({
+  id,
+  name: z.string(),
+  phone: z.string().nullable(),
+  inn: z.string().nullable(),
+  note: z.string().nullable(),
+  isActive: z.boolean(),
+});
+export type Supplier = z.infer<typeof supplierSchema>;
+
+const supplierFields = {
+  name,
+  phone: z.string().trim().min(1).max(32).nullable(),
+  inn: z
+    .string()
+    .trim()
+    .regex(new RegExp(`^\\d{${LIMITS.inn.min},${LIMITS.inn.max}}$`))
+    .nullable(),
+  note: optionalLine(LIMITS.note.max),
+};
+
+/** A row of the stock list (design A5). */
+export const stockRowSchema = z.object({
+  productId: id,
+  sku: z.string(),
+  nameUz: z.string(),
+  nameRu: z.string(),
+  categoryNameUz: z.string(),
+  categoryNameRu: z.string(),
+  unit: productUnit,
+  isForSale: z.boolean(),
+  isConsumable: z.boolean(),
+  minQty: z.number(),
+  isActive: z.boolean(),
+  stock: stockFiguresSchema,
+  /** Null without costs.read: the average cost and what the stock is worth at it. */
+  costs: z.object({ avgCost: z.number().int(), value: z.number().int() }).nullable(),
+});
+export type StockRow = z.infer<typeof stockRowSchema>;
+
+const documentRefSchema = z.object({
+  id,
+  number: z.number().int(),
+  kind: z.enum(STOCK_DOCUMENT_KINDS),
+});
+
+/** One line of the journal: a posted document moved this much of a product. */
+export const stockMovementSchema = z.object({
+  id,
+  at: instantSchema,
+  productId: id,
+  nameUz: z.string(),
+  nameRu: z.string(),
+  unit: productUnit,
+  delta: z.number(),
+  /** Null without costs.read. */
+  unitCost: z.number().int().nullable(),
+  document: documentRefSchema,
+  actorName: z.string().nullable(),
+});
+export type StockMovement = z.infer<typeof stockMovementSchema>;
+
+export const stockDocumentLineSchema = z.object({
+  productId: id,
+  sku: z.string(),
+  nameUz: z.string(),
+  nameRu: z.string(),
+  unit: productUnit,
+  qty: z.number(),
+  /** The invoice price of a receipt line. */
+  unitCost: z.number().int().nullable(),
+  /** What the books said when an inventory was posted; null before. */
+  expectedQty: z.number().nullable(),
+  /** For a draft: the stock now and after posting, so the screen can show "12,3 → 42,3". */
+  onHandNow: z.number().nullable(),
+  onHandAfter: z.number().nullable(),
+});
+export type StockDocumentLine = z.infer<typeof stockDocumentLineSchema>;
+
+export const stockDocumentSchema = z.object({
+  id,
+  number: z.number().int(),
+  kind: z.enum(STOCK_DOCUMENT_KINDS),
+  status: z.enum(STOCK_DOCUMENT_STATUSES),
+  supplier: z.object({ id, name: z.string() }).nullable(),
+  invoiceNo: z.string().nullable(),
+  invoiceDate: localDate.nullable(),
+  reason: z.enum(WRITE_OFF_REASONS).nullable(),
+  note: z.string().nullable(),
+  invoicePhoto: photoLinkSchema.nullable(),
+  lines: z.array(stockDocumentLineSchema),
+  /** The sum of a receipt at its invoice prices; null for the other kinds. */
+  total: z.number().int().nullable(),
+  createdAt: instantSchema,
+  createdBy: z.string(),
+  postedAt: instantSchema.nullable(),
+  postedBy: z.string().nullable(),
+});
+export type StockDocument = z.infer<typeof stockDocumentSchema>;
+
+export const stockDocumentSummarySchema = stockDocumentSchema
+  .pick({
+    id: true,
+    number: true,
+    kind: true,
+    status: true,
+    supplier: true,
+    invoiceNo: true,
+    reason: true,
+    total: true,
+    createdAt: true,
+    postedAt: true,
+  })
+  .extend({ lineCount: z.number().int() });
+export type StockDocumentSummary = z.infer<typeof stockDocumentSummarySchema>;
+
+/** What a person writes into a document: the whole list of lines every time. */
+const stockDocumentFields = {
+  supplierId: id.nullable(),
+  invoiceNo: optionalLine(LIMITS.invoiceNo.max),
+  invoiceDate: localDate.nullable(),
+  reason: z.enum(WRITE_OFF_REASONS).nullable(),
+  note: optionalLine(LIMITS.note.max),
+  lines: z
+    .array(
+      z.object({
+        productId: id,
+        qty,
+        unitCost: z.number().int().min(0).max(LIMITS.price.max).nullable(),
+      }),
+    )
+    .max(LIMITS.documentLines.max),
+};
+
+/** Below the minimum (the "Bugun" block). */
+export const lowStockItemSchema = z.object({
+  productId: id,
+  nameUz: z.string(),
+  nameRu: z.string(),
+  unit: productUnit,
+  free: z.number(),
+  minQty: z.number(),
+});
+export type LowStockItem = z.infer<typeof lowStockItemSchema>;
+
+// ---------------------------------------------------------------------------------------------
 // Stage 6: handover and payment (docs/PLAN.md, sections 7.12, 9.1 and 11)
 
 /** The "Bugun" screen (design A6) with the reports to check and the day's takings. */
@@ -866,6 +1098,8 @@ export const dashboardSchema = todaySchema.extend({
   reports: z.array(adminTaskSummarySchema.extend({ waitingMin: z.number().int() })),
   /** Null for who may not see the money. */
   cash: cashSchema.nullable(),
+  /** Below the minimum (stage 8); null for who may not see the warehouse. */
+  lowStock: z.array(lowStockItemSchema).nullable(),
 });
 export type Dashboard = z.infer<typeof dashboardSchema>;
 
@@ -1487,6 +1721,102 @@ export const contract = {
       })
       .refine(hasChange, atLeastOne),
     response: serviceSchema,
+  },
+
+  // Stage 8: the warehouse
+  'admin.stock': {
+    query: z.object({
+      q: z.string().trim().min(1).max(60).optional(),
+      filter: z.enum(STOCK_FILTERS).default('all'),
+      categoryId: id.optional(),
+    }),
+    /** The whole list: one workshop has hundreds of products, not thousands. */
+    response: z.object({ items: z.array(stockRowSchema) }),
+  },
+  'admin.stockMovements': {
+    query: z.object({
+      productId: id.optional(),
+      /** The last id of the previous page. */
+      cursor: id.optional(),
+      limit: z.coerce.number().int().min(1).max(100).default(50),
+    }),
+    response: z.object({ items: z.array(stockMovementSchema), nextCursor: id.nullable() }),
+  },
+  'admin.lowStock': { response: z.object({ items: z.array(lowStockItemSchema) }) },
+  'admin.stockDocuments': {
+    query: z.object({
+      kind: z.enum(STOCK_DOCUMENT_KINDS).optional(),
+      status: z.enum(STOCK_DOCUMENT_STATUSES).optional(),
+      cursor: id.optional(),
+      limit: z.coerce.number().int().min(1).max(100).default(50),
+    }),
+    response: z.object({ items: z.array(stockDocumentSummarySchema), nextCursor: id.nullable() }),
+  },
+  'admin.createStockDocument': {
+    body: z.object({ kind: z.enum(MANUAL_DOCUMENT_KINDS), ...stockDocumentFields }),
+    response: stockDocumentSchema,
+  },
+  'admin.stockDocument': { params: z.object({ id }), response: stockDocumentSchema },
+  'admin.updateStockDocument': {
+    params: z.object({ id }),
+    body: z.object(stockDocumentFields),
+    response: stockDocumentSchema,
+  },
+  'admin.deleteStockDocument': { params: z.object({ id }), response: done },
+  'admin.postStockDocument': { params: z.object({ id }), response: stockDocumentSchema },
+  'admin.putStockInvoicePhoto': {
+    params: z.object({ id, mediaId: id }),
+    body: photoBytes,
+    response: photoLinkSchema,
+  },
+  'admin.products': { response: z.object({ items: z.array(productSchema) }) },
+  'admin.createProduct': { body: z.object(productFields), response: productSchema },
+  'admin.updateProduct': {
+    params: z.object({ id }),
+    body: z
+      .object(productFields)
+      .partial()
+      .extend({ sort: sort.optional(), isActive: z.boolean().optional() })
+      .refine(hasChange, atLeastOne),
+    response: productSchema,
+  },
+  'admin.putProductPhoto': {
+    params: z.object({ id, mediaId: id }),
+    body: photoBytes,
+    response: photoLinkSchema,
+  },
+  'admin.deleteProductPhoto': { params: z.object({ id, mediaId: id }), response: done },
+  'admin.productCategories': { response: z.object({ items: z.array(productCategorySchema) }) },
+  'admin.createProductCategory': {
+    body: z.object({ ...categoryFields, parentId: id.nullable() }),
+    response: productCategorySchema,
+  },
+  'admin.updateProductCategory': {
+    params: z.object({ id }),
+    body: z
+      .object({
+        nameUz: name.optional(),
+        nameRu: name.optional(),
+        sort: sort.optional(),
+        isActive: z.boolean().optional(),
+      })
+      .refine(hasChange, atLeastOne),
+    response: productCategorySchema,
+  },
+  'admin.suppliers': { response: z.object({ items: z.array(supplierSchema) }) },
+  'admin.createSupplier': { body: z.object(supplierFields), response: supplierSchema },
+  'admin.updateSupplier': {
+    params: z.object({ id }),
+    body: z
+      .object({
+        name: name.optional(),
+        phone: supplierFields.phone.optional(),
+        inn: supplierFields.inn.optional(),
+        note: supplierFields.note.optional(),
+        isActive: z.boolean().optional(),
+      })
+      .refine(hasChange, atLeastOne),
+    response: supplierSchema,
   },
 } as const satisfies Record<RouteName, EndpointSchemas>;
 

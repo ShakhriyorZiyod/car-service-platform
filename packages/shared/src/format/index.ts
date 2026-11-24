@@ -8,3 +8,4 @@ export * from './duration';
 export * from './money';
 export * from './phone';
 export * from './plate';
+export * from './quantity';

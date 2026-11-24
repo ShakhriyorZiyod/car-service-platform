@@ -47,8 +47,18 @@ const EXPECTED: Record<Role, readonly Permission[]> = {
     'checkout.write',
     'clients.read',
     'clients.write',
+    'stock.read',
+    'stock.write',
   ],
-  director: ['panel.access', 'today.read', 'orders.read', 'schedule.read', 'clients.read'],
+  director: [
+    'panel.access',
+    'today.read',
+    'orders.read',
+    'schedule.read',
+    'clients.read',
+    'stock.read',
+    'costs.read',
+  ],
   owner: PERMISSIONS,
 };
 
@@ -72,6 +82,7 @@ describe('permissionsOf: the roles × permissions matrix (PLAN 8)', () => {
       'orders.cancel_in_work',
       'payments.correct',
       'clients.anonymize',
+      'products.write',
     ];
     for (const role of ['master', 'admin', 'director'] as const) {
       for (const permission of ownerOnly) expect(permissionsOf([role])).not.toContain(permission);
@@ -84,8 +95,16 @@ describe('permissionsOf: the roles × permissions matrix (PLAN 8)', () => {
     ).toEqual([]);
   });
 
+  it('only the director and the owner see purchase prices (TZ 2)', () => {
+    expect(permissionsOf(['admin'])).not.toContain('costs.read');
+    expect(permissionsOf(['director'])).toContain('costs.read');
+  });
+
   it('several roles add up', () => {
-    expect(permissionsOf(['director', 'admin'])).toEqual(permissionsOf(['admin']));
+    expect(permissionsOf(['director', 'admin'])).toEqual([
+      ...permissionsOf(['admin']),
+      'costs.read',
+    ]);
     expect(permissionsOf(['master', 'director'])).toEqual(permissionsOf(['director']));
   });
 });

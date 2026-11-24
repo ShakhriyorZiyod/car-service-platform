@@ -1,4 +1,5 @@
 import { LANGS } from '@cs/shared/i18n';
+import { PRODUCT_UNITS } from '@cs/shared/vocabulary';
 import { z } from 'zod';
 
 /**
@@ -134,6 +135,21 @@ export const notificationSchema = z.discriminatedUnion('type', [
     clientId: z.uuid(),
     clientName: z.string(),
   }),
+  /** To the admins and the owner, once a day: what has fallen to its minimum (stage 8). */
+  z.object({
+    type: z.literal('staff.stock_low'),
+    items: z.array(
+      z.object({
+        nameUz: z.string(),
+        nameRu: z.string(),
+        unit: z.enum(PRODUCT_UNITS),
+        free: z.number(),
+        minQty: z.number(),
+      }),
+    ),
+    /** How many more are low than the list names. */
+    more: z.number().int(),
+  }),
 ]);
 
 export type Notification = z.infer<typeof notificationSchema>;
@@ -157,7 +173,7 @@ export type WorkNotification = Extract<
 /** The messages that are about an order and so carry its facts. */
 export type OrderNotification = Exclude<
   Notification,
-  { type: 'staff.deletion_requested' } | WorkNotification
+  { type: 'staff.deletion_requested' | 'staff.stock_low' } | WorkNotification
 >;
 
 /** What the outbox stores: the language is the recipient's at the time of writing. */
@@ -173,6 +189,8 @@ export interface MessageButton {
   /** `order` and `task`: that screen in the Mini App; `panel`: the web panel. */
   target: 'order' | 'task' | 'panel';
   orderId: string | null;
+  /** A page of the panel other than an order's, relative to its root: "stock?filter=low". */
+  path?: string;
   taskId?: string | null;
 }
 

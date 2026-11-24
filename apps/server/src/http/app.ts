@@ -22,6 +22,7 @@ import {
 import { workshopAdminRoutes } from '../modules/workshop';
 import { dashboardAdminRoutes } from '../modules/dashboard';
 import { paymentsAdminRoutes, paymentsClientRoutes } from '../modules/payments';
+import { stockAdminRoutes } from '../modules/stock';
 import type { ClientActor, MasterActor, StaffActor, TmaActor } from '../platform/actors';
 import { AppError } from '../platform/errors';
 import { registerErrorHandling } from './plugins/errors';
@@ -248,6 +249,7 @@ export function createHttpApp(deps: HttpDeps): FastifyInstance {
         ...extrasAdminRoutes(services.extras),
         ...paymentsAdminRoutes(services.payments),
         ...dashboardAdminRoutes(services.dashboard),
+        ...stockAdminRoutes(services.stock),
       },
       {
         context: (request) => ({ actor: required(request.staffActor), ip: request.ip }),

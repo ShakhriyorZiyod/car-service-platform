@@ -267,7 +267,7 @@ qutisi ichida yonga suriladi. Dialog ekran kengligida. Tugma, filtr va menyu ban
 | T14 | Bot xabarlari | 15 | O'zg. | 3–6 |
 | — | Xato va oflayn holat | 19 | To'liq | 3 |
 | — | Skelet | 20 | To'liq | 3 |
-| T7, T10, T11 | Do'kon, mahsulot, savat | 7, 11, 12 | v2 | — |
+| T7, T10, T11 | Do'kon, mahsulot, savat | 7, 11, 12 | O'zg. (filial yo'q) | 9 |
 
 ### 7.2 Usta (Mini App, `apps/tma/src/shells/master`)
 
@@ -296,7 +296,8 @@ qutisi ichida yonga suriladi. Dialog ekran kengligida. Tugma, filtr va menyu ban
 | A13 | Sozlamalar: xodimlar va rollar | 14 | O'zg. | 1 |
 | — | Sozlamalar: bokslar, ish jadvali va bayramlar, markalar va modellar, ustaxona | 13–14 dagi tab'lar | Dizayn uslubida | 2 |
 | — | Audit jurnali | 13–14 dagi tab | Dizayn uslubida | 1 |
-| A9, A5, A11 | Do'kon buyurtmalari, ombor, kirim | 10, 5, 12 | v2 | — |
+| A5, A11 | Ombor, kirim (hisobdan chiqarish va inventarizatsiya shu uslubda) | 5, 12 | O'zg. (filial yo'q) | 8 |
+| A9 | Do'kon buyurtmalari, tezkor sotuv | 10 | O'zg. (filial yo'q) | 9 |
 
 ### 7.4 Rahbar
 
@@ -312,9 +313,9 @@ Har biri PLAN 1.2 va 22-bo'limdagi qarorlardan kelib chiqadi.
 | Joy | Dizaynda | v1 da | Sabab |
 |---|---|---|---|
 | Hamma joyda | "Chilonzor filiali" | Ustaxona nomi sozlamadan | Bitta ustaxona, filial tushunchasi yo'q |
-| T1, TabBar | Do'kon kartasi, 5 bandli menyu | Do'kon kartasi yo'q; menyu: Bosh, Garaj, Buyurtmalar, Profil | Do'kon v2 da |
+| T1, TabBar | Do'kon kartasi, 5 bandli menyu | Do'kon kartasi yo'q; menyu: Bosh, Garaj, Buyurtmalar, Profil | Do'kon 9-bosqichda |
 | T6 | "Qabul dalolatnomasi, PDF" | "Qabul dalolatnomasi" ilova ichida: ko'rsatkichlar, nuqsonlar va fotolar; tasdiqlanmagan bo'lsa "Tasdiqlayman" | Imzo va PDF v2 da |
-| T9 | Xizmat va do'kon buyurtmalari aralash | Faqat xizmat arizalari | Do'kon v2 da |
+| T9 | Xizmat va do'kon buyurtmalari aralash | Faqat xizmat arizalari | Do'kon 9-bosqichda |
 | T12 | Bajarilgan ishlar dalolatnomasi PDF, fiskal chek fayli | PDF yo'q; fiskal chek raqami matn sifatida | PDF va kassa API v2 da |
 | T13 | "Filial" qatori | Yo'q | Bitta ustaxona |
 | T13, usta profili | Mavzu tanlovi yo'q | "Mavzu: Avto / Och / Qorong'i" | Foydalanuvchi so'rovi (PLAN 22, 2026-11-19) |
@@ -326,11 +327,11 @@ Har biri PLAN 1.2 va 22-bo'limdagi qarorlardan kelib chiqadi.
 | U2 | "Bular siz tufayli emas — dalolatnomada mijoz imzosi bor" | "... mijoz tasdiqlagan" | Imzo yo'q, tasdiq bor |
 | U2 | "Qabulda qayd etilgan nuqsonlar, shu zonalarda" | Dalolatnomadagi barcha nuqsonlar | Nuqson va zona o'rtasida bog'lanish yo'q |
 | U3 | Sarflangan materiallar, ovozli izoh | Yo'q; faqat matnli izoh | Ombor va ovoz v2 da |
-| A1, Sidebar | Do'kon buyurtmalari, Ombor | Yo'q | v2 da |
+| A1, Sidebar | Do'kon buyurtmalari, Ombor | Ombor 8-bosqichda, do'kon buyurtmalari 9-bosqichda | — |
 | A2 | 4-qadam "Imzolar" | 4-qadam "Mijoz tasdig'i": botga yuborish yoki "og'zaki tasdiqladi"; tugma "Ishga topshirish" | Bot orqali tasdiq |
 | A3 | Sarflangan materiallar | Yo'q | Ombor v2 da |
 | A4 | "Hafta" ko'rinishi, kartani sudrab ko'chirish | Faqat "Kun"; ko'chirish ariza ichidagi "Ko'chirish" tugmasi orqali | Soddalik, v2 da |
-| A6 | "Omborda kam qoldi" | Yo'q | Ombor v2 da |
+| A6 | "Omborda kam qoldi" | 8-bosqichda | — |
 | A8 | Imzolar; "Tugma mijoz imzosidan keyin faollashadi"; chek KKM'ga avtomatik | Imzo yo'q; "Fiskal chek raqami" maydoni; tugma summa mos kelib, chek raqami kiritilganda faollashadi | Qo'lda fiskal |
 | A12 | Materiallar ustuni; "Xabar shablonlari" tab'i | Yo'q | v2 da |
 | A13 | Har rol uchun huquq almashtirgichlari | Rol tavsifi faqat o'qish uchun, faqat "Chegirma limiti, %" tahrirlanadi | Huquqlar kodda qat'iy (PLAN 8-bo'lim) |

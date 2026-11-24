@@ -1,9 +1,26 @@
+import { formatQty } from '@cs/shared/format';
 import type { Notification, RenderedMessage, WorkNotification } from '../types';
 import { dateTime, esc, itemsLine, phoneLine, totalLine } from './shared';
 
 /** Texts in Russian. */
 export function renderRu(notification: Exclude<Notification, WorkNotification>): RenderedMessage {
   const lang = 'ru';
+  if (notification.type === 'staff.stock_low') {
+    const lines = notification.items.map(
+      (item) =>
+        `• ${esc(item.nameRu)}: ${esc(formatQty(item.free, item.unit, lang))} (минимум ${esc(formatQty(item.minQty, item.unit, lang))})`,
+    );
+    if (notification.more > 0) lines.push(`…и ещё ${notification.more}`);
+    return {
+      text: `<b>На складе мало</b>\n\n${lines.join('\n')}`,
+      button: {
+        text: 'Открыть в панели',
+        target: 'panel',
+        orderId: null,
+        path: 'stock?filter=low',
+      },
+    };
+  }
   if (notification.type === 'staff.deletion_requested') {
     return {
       text: `<b>Запрос на удаление данных</b>\n\n${esc(notification.clientName)} просит удалить персональные данные. Откройте карточку клиента в панели.`,

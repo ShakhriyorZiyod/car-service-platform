@@ -4,15 +4,16 @@ import {
   cancelReasons,
   carBrands,
   carModels,
+  productCategories,
   serviceExcludes,
   services,
   serviceTypes,
 } from '../schema';
-import { CANCEL_REASONS, CAR_BRANDS, SERVICE_TYPES } from './reference-data';
+import { CANCEL_REASONS, CAR_BRANDS, PRODUCT_CATEGORIES, SERVICE_TYPES } from './reference-data';
 
 /**
- * `npm run seed:reference` (docs/PLAN.md, section 18, stage 2): the starting reference data of
- * TZ 14.1, 14.2 and 14.4. Safe in production and safe to run again.
+ * `npm run seed:reference` (docs/PLAN.md, section 18, stages 2 and 8): the starting reference data
+ * of TZ 14.1, 14.2, 14.3 and 14.4. Safe in production and safe to run again.
  *
  * Each group is written only into an empty table. Once the owner has edited a group in the panel it
  * is theirs: running the seed again does not bring back what they renamed or hid, and it does not
@@ -26,6 +27,7 @@ export interface ReferenceSeedReport {
   zones: number;
   excludes: number;
   cancelReasons: number;
+  productCategories: number;
 }
 
 /** Two seeds at once (a deploy running twice) take turns instead of writing the data twice. */
@@ -33,7 +35,7 @@ const SEED_LOCK = 'cs:seed:reference';
 
 const isEmpty = async (
   tx: Tx,
-  table: typeof carBrands | typeof serviceTypes | typeof cancelReasons,
+  table: typeof carBrands | typeof serviceTypes | typeof cancelReasons | typeof productCategories,
 ) => (await tx.select({ id: table.id }).from(table).limit(1)).length === 0;
 
 export async function seedReference(db: Db): Promise<ReferenceSeedReport> {
@@ -44,6 +46,7 @@ export async function seedReference(db: Db): Promise<ReferenceSeedReport> {
     zones: 0,
     excludes: 0,
     cancelReasons: 0,
+    productCategories: 0,
   };
 
   await db.transaction(async (tx) => {
@@ -128,6 +131,28 @@ export async function seedReference(db: Db): Promise<ReferenceSeedReport> {
         })),
       );
       report.cancelReasons = CANCEL_REASONS.length;
+    }
+
+    if (await isEmpty(tx, productCategories)) {
+      for (const [index, category] of PRODUCT_CATEGORIES.entries()) {
+        const [parent] = await tx
+          .insert(productCategories)
+          .values({ nameUz: category.nameUz, nameRu: category.nameRu, sort: index + 1 })
+          .returning({ id: productCategories.id });
+        if (!parent) throw new Error('insert returned no row');
+        const children = category.children ?? [];
+        if (children.length > 0) {
+          await tx.insert(productCategories).values(
+            children.map((child, childIndex) => ({
+              parentId: parent.id,
+              nameUz: child.nameUz,
+              nameRu: child.nameRu,
+              sort: childIndex + 1,
+            })),
+          );
+        }
+        report.productCategories += 1 + children.length;
+      }
     }
   });
 

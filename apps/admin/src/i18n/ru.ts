@@ -1,4 +1,5 @@
 import type { Dictionary } from '@cs/shared/i18n';
+import { stockRu } from './stock.ru';
 import type { uz } from './uz';
 
 export const ru: Dictionary<typeof uz> = {
@@ -11,6 +12,7 @@ export const ru: Dictionary<typeof uz> = {
     tasks: 'Отчёты мастеров',
     handover: 'Выдача и касса',
     clients: 'Клиенты',
+    stock: 'Склад',
     settings: 'Настройки',
   },
   notFound: 'Страница не найдена.',
@@ -92,6 +94,7 @@ export const ru: Dictionary<typeof uz> = {
       workshop: 'Мастерская',
       staff: 'Сотрудники и роли',
       audit: 'Журнал аудита',
+      products: 'Товары',
     },
   },
   form: {
@@ -365,6 +368,10 @@ export const ru: Dictionary<typeof uz> = {
     unpriced_items: 'Есть работа с договорной ценой: сначала укажите цену.',
     payment_mismatch: 'Сумма оплат не равна сумме к оплате.',
     discount_over_limit: 'Скидка больше вашего лимита. Больше может дать только владелец.',
+    sku_taken: 'Этот артикул уже есть у другого товара.',
+    barcode_taken: 'Этот штрихкод уже есть у другого товара.',
+    insufficient_stock:
+      'Не хватает свободного остатка: на складе столько нет или часть зарезервирована под заказы.',
     not_found: 'Не найдено. Обновите список.',
   },
   common: {
@@ -867,4 +874,5 @@ export const ru: Dictionary<typeof uz> = {
     photo: 'Увеличить фото',
     waiting: 'Ждёт проверки',
   },
+  stock: stockRu,
 };

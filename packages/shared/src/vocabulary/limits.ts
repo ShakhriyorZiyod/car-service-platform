@@ -41,6 +41,23 @@ export const LIMITS = {
   discountReason: { min: 1, max: 200 },
   /** The client's words about the work. */
   reviewText: { max: 1_000 },
+
+  // The warehouse (stage 8)
+  /** The article: "SH-NC1". */
+  sku: { min: 1, max: 40 },
+  /** EAN-8 to EAN-14, digits only. */
+  barcode: { min: 8, max: 14 },
+  brand: { max: 60 },
+  /** The pack, as written on the card: "1 l", "0,5 l". */
+  pack: { max: 40 },
+  description: { max: 2_000 },
+  productPhotos: { max: 5 },
+  /** A quantity in the product's unit; up to three decimals for litres, metres and kilograms. */
+  qty: { max: 1_000_000 },
+  documentLines: { max: 300 },
+  invoiceNo: { max: 64 },
+  /** A taxpayer number: 9 digits for a company, 14 for a person (PINFL). */
+  inn: { min: 9, max: 14 },
 } as const;
 
 /** Telegram's signed contact string; real ones are a few hundred characters. */

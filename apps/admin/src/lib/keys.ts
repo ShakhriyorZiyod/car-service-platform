@@ -33,3 +33,10 @@ export const MASTERS_KEY = ['masters'] as const;
 
 /** The handover of an order: the act of the work done, the payment and the receipt (stage 6). */
 export const handoverKey = (orderId: string) => ['handover', orderId] as const;
+
+/** The warehouse (stage 8): everything under STOCK_KEY is refreshed after a document is posted. */
+export const STOCK_KEY = ['stock'] as const;
+export const stockDocumentKey = (id: string) => ['stock', 'document', id] as const;
+export const PRODUCTS_KEY = ['stock', 'products'] as const;
+export const PRODUCT_CATEGORIES_KEY = ['stock', 'categories'] as const;
+export const SUPPLIERS_KEY = ['stock', 'suppliers'] as const;

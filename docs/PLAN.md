@@ -48,17 +48,18 @@ Natija: qog'oz jurnal ham, "mashinam qachon tayyor?" degan qo'ng'iroqlar ham ker
 ### 1.2 v1 tarkibi
 
 v1 bitta ustaxonada to'liq servis siklini qamraydi: bron → tasdiq → qabul → ish → topshirish → to'lov.
+Ombor va do'kon v1 dan keyin 8–10-bosqichlarda qo'shiladi (22-bo'lim, 2026-11-24).
 
-| Qism | v1 da | v2 ga qoladi |
-|---|---|---|
-| Mijoz Mini App | Kirish (til, rozilik, telefon), garaj, 5 qadamli bron, buyurtmalarim, ariza kuzatuvi, qo'shimcha ishni tasdiqlash, natija va baho, profil | Do'kon, savat, "mashina bilan birga" tovar |
-| Usta (Mini App, o'sha bot) | Vazifalar, ishni boshlash, "oldin/keyin" foto (oflayn navbat bilan), tekshiruvga yuborish, qayta ishlash | Materiallar sarfi, ovozli izoh, ko'rsatkichlar, PWA |
-| Admin panel | Bugun, Kanban, ariza ichida, qo'ng'iroq natijasi, yangi ariza, kunlik jadval va bloklash, qabul dalolatnomasi, vazifalar va hisobotlar, topshirish va to'lov, mijozlar | Do'kon buyurtmalari, ombor, haftalik jadval, sudrab ko'chirish |
-| Sozlamalar (egasi) | Ustaxona ma'lumoti va qoidalar, prays-matritsa, bokslar, ish vaqti va bayramlar, markalar va modellar, xodimlar, audit jurnali | Xabar shablonlari, bekor qilish sabablarini tahrirlash, materiallar me'yori, huquqlarni sozlash |
-| Rahbar | Bugun, arizalar, jadval, mijozlar (o'qish) | R1–R4 analitika, Excel eksport |
-| Bot | Bitta bot: mijoz va xodim xabarlari, tugmali tasdiqlar, 2-qadam kodi | Webhook, shablonlarni tahrirlash |
-| To'lov | Naqd, terminal, o'tkazma, aralash; chegirma; fiskal chek raqami qo'lda | Kassa API, onlayn to'lov, oldindan to'lov, qaytarish |
-| Hujjatlar | Dalolatnoma ma'lumoti va fotolari bazada, mijoz botda tasdiqlaydi | Imzo, PDF |
+| Qism | v1 da | 8–10-bosqichlarda | v2 ga qoladi |
+|---|---|---|---|
+| Mijoz Mini App | Kirish (til, rozilik, telefon), garaj, 5 qadamli bron, buyurtmalarim, ariza kuzatuvi, qo'shimcha ishni tasdiqlash, natija va baho, profil | Do'kon, savat, "mashina bilan birga" tovar | — |
+| Usta (Mini App, o'sha bot) | Vazifalar, ishni boshlash, "oldin/keyin" foto (oflayn navbat bilan), tekshiruvga yuborish, qayta ishlash | — | Materiallar sarfi, ovozli izoh, ko'rsatkichlar, PWA |
+| Admin panel | Bugun, Kanban, ariza ichida, qo'ng'iroq natijasi, yangi ariza, kunlik jadval va bloklash, qabul dalolatnomasi, vazifalar va hisobotlar, topshirish va to'lov, mijozlar | Ombor (kirim, hisobdan chiqarish, inventarizatsiya, qoldiqlar), do'kon buyurtmalari, tezkor sotuv | Haftalik jadval, sudrab ko'chirish |
+| Sozlamalar (egasi) | Ustaxona ma'lumoti va qoidalar, prays-matritsa, bokslar, ish vaqti va bayramlar, markalar va modellar, xodimlar, audit jurnali | Mahsulotlar va toifalar, yetkazib beruvchilar | Xabar shablonlari, bekor qilish sabablarini tahrirlash, materiallar me'yori, huquqlarni sozlash |
+| Rahbar | Bugun, arizalar, jadval, mijozlar (o'qish) | Ombor va do'kon (o'qish, tannarx bilan) | R1–R4 analitika, Excel eksport |
+| Bot | Bitta bot: mijoz va xodim xabarlari, tugmali tasdiqlar, 2-qadam kodi | Do'kon xabarlari, kam qoldiq | Webhook, shablonlarni tahrirlash |
+| To'lov | Naqd, terminal, o'tkazma, aralash; chegirma; fiskal chek raqami qo'lda | Do'kon buyurtmasi va tezkor sotuv o'sha kassada | Kassa API, onlayn to'lov, oldindan to'lov, qaytarish |
+| Hujjatlar | Dalolatnoma ma'lumoti va fotolari bazada, mijoz botda tasdiqlaydi | — | Imzo, PDF |
 
 ### 1.3 TZ dan ongli farqlar
 
@@ -82,6 +83,11 @@ v1 bitta ustaxonada to'liq servis siklini qamraydi: bron → tasdiq → qabul �
 | Docker Compose | systemd + nginx | barbershop_bot tajribasi | — |
 | Sentry, Prometheus, Grafana | pino logi va `/health` | Kichik yuklama | 19-bo'lim |
 | OpenAPI | Umumiy TypeScript kontrakti | Klientlar o'zimizniki | zod sxemalaridan avtomatik yaratiladi |
+| Ombor har filial bo'yicha, ko'chirish | Bitta ombor, filial yo'q | Bitta ustaxona | `stock_levels` ga `branch_id` |
+| Do'konda rezerv `confirmed` da (12.2) | Rezerv `new` da, tasdiqlanmasa `hold_until` da bekor | Oxirgi tovar ikki mijozga "mavjud" deb sotilmasin | — |
+| Kam qoldiq: har tovar bo'yicha kuniga bir xabar | Kuniga bitta jamlangan xabar | Bot shovqinsiz | — |
+| Tovar birligi va sotuv qadog'i alohida | Sotiladigan tovar donada; har qadoq alohida mahsulot | Butun sonli savat, oddiy rezerv | — |
+| Mijozdan tovar qaytarish | Yo'q | Pul qaytarish v2 da | `kind = return` va `refunds` |
 
 ---
 
@@ -181,7 +187,7 @@ tekshiriladi, xotiradan taxmin qilinmaydi.
   │  bot (grammY) · http (Fastify) · jobs (outbox, rejalashtiruvchi)│
   │  modules: identity, workshop, catalog, garage, booking, orders,  │
   │           reception, tasks, payments, media, clients,           │
-  │           dashboard, audit                                       │
+  │           dashboard, audit, stock, shop                          │
   └──────────────┬──────────────────────────────────┬───────────────┘
            PostgreSQL 16                     UPLOADS_DIR (fotolar)
 ```
@@ -206,6 +212,8 @@ murojaat qilmaydi: hammasi API orqali o'tadi.
 | `payments` | Chegirma, checkout, to'lovlar, fiskal chek | `payments`, `fiscal_receipts` | `orders`, `audit` |
 | `clients` | Admin uchun mijozlar ro'yxati, kartasi, anonimlashtirish | — (o'qiydi, yozishni `identity` va `garage` orqali qiladi) | `identity`, `garage` |
 | `dashboard` | "Bugun" ekrani | — (faqat o'qiydi) | — |
+| `stock` | Mahsulotlar va toifalar, yetkazib beruvchilar, ombor hujjatlari, harakatlar, qoldiq va rezerv, kam qoldiq (8-bosqich) | `product_categories`, `products`, `suppliers`, `stock_documents`, `stock_document_lines`, `stock_movements`, `stock_levels` | `audit`, `media` |
+| `shop` | Do'kon buyurtmasi, holat mashinasi, qo'ng'iroqlar, yig'ish, tezkor sotuv, checkout (9-bosqich) | `shop_orders`, `shop_order_items`, `shop_order_calls` | `stock`, `payments`, `identity`, `workshop`, `audit` |
 
 Umumiy infratuzilma modul emas, `src/platform/` da turadi: outbox, rejalashtiruvchi, `status_history`,
 `Clock`, tranzaksiya yordamchisi, xato turlari, portlar.
@@ -247,7 +255,8 @@ event bus, mikroservislar. Bitta jarayon va bitta baza uchun ular foyda bermaydi
 - Bitta tranzaksiyada bir necha modul ishlasa, ichki metodlar birinchi argument sifatida `tx` oladi
   (`booking.reserve(tx, ...)`). Tashqariga ochiq metodlar tranzaksiyani o'zi ochadi.
 - Bog'liqlik grafi tsiklsiz: `identity`, `audit`, `workshop`, `catalog`, `media` → `garage` →
-  `booking` → `orders` → `reception`, `tasks`, `payments` → `clients`, `dashboard`. Teskari chaqiruv
+  `booking` → `orders` → `reception`, `tasks`, `payments` → `clients`, `dashboard`. Ombor va do'kon:
+  `audit`, `media` → `stock` → `shop`; `payments` → `shop`. Teskari chaqiruv
   kerak bo'lsa (vazifa qabul qilindi → ariza tayyor), quyi modul yuqorisining metodini chaqiradi:
   `tasks` → `orders.onTasksChanged(tx, orderId)`.
 
@@ -679,6 +688,77 @@ idempotentligi), `created_by`, `created_at`. v2 da `provider` ga kassa nomi, `st
 **outbox** — `payload` jsonb, `dedupe_key` unique null, `status`, `attempts`, `next_attempt_at`,
 `last_error`, `sent_at`, `created_at`.
 
+### 7.14 stock (8-bosqich)
+
+Qoldiq qo'lda o'zgartirilmaydi: u har doim o'tkazilgan hujjatlar harakatlari yig'indisiga teng (TZ 8).
+Miqdor `numeric(12,3)`: sotiladigan tovar donada (butun son), sarf materiallar kasr bilan. Miqdorga
+qo'shish va ayirish SQL'da bajariladi (JS kasr xatosi bo'lmasin).
+
+**product_categories** — `parent_id` null (ikki daraja: "Aksessuarlar → Sochiqlar", TZ 14.3), `name_uz`,
+`name_ru`, `sort`, `is_active`.
+
+**products**
+
+| Maydon | Izoh |
+|---|---|
+| `sku` | text unique |
+| `barcode` | text unique null (EAN-13; skaner klaviatura kabi kiritadi) |
+| `name_uz`, `name_ru`, `description_uz` null, `description_ru` null | |
+| `category_id`, `brand` null | |
+| `unit` | enum(`pcs`, `ml`, `l`, `kg`, `m`, `m2`) |
+| `pack` | text null: "1 l", "0,5 l" |
+| `is_for_sale`, `is_consumable` | ikkalasi ham bo'lishi mumkin. CHECK: `is_for_sale → unit = 'pcs' AND sell_price IS NOT NULL` |
+| `sell_price` | null, so'm |
+| `min_qty` | numeric(12,3) ≥ 0, standart 0 |
+| `avg_cost`, `last_cost` | bigint, so'm birligiga; faqat o'tkazilgan kirim o'zgartiradi |
+| `is_active`, `sort` | |
+
+**stock_levels** — `product_id` PK, `on_hand` numeric(12,3), `reserved` numeric(12,3). CHECK: `on_hand ≥ 0`,
+`reserved ≥ 0`, `reserved ≤ on_hand`. Mahsulot yaratilganda nol qator bilan. Rezerv 9-bosqichda.
+
+**suppliers** — `name` unique, `phone` null, `inn` null, `note` null, `is_active`.
+
+**stock_documents** — `number` (`stock_document_number_seq`), `kind` enum(`receipt`, `write_off`,
+`inventory`, `sale`), `status` enum(`draft`, `posted`), `supplier_id` null, `invoice_no` null,
+`invoice_date` null, `reason` enum(`defect`, `expired`, `internal`, `other`) null, `note` null,
+`shop_order_id` null (9-bosqich), `posted_at`, `posted_by`, `created_by`, `updated_at`.
+CHECK: o'tkazilgan `write_off` da `reason` bor (qoralamada hali bo'lmasligi mumkin);
+`status = 'posted' ↔ posted_at, posted_by IS NOT NULL`; yetkazib beruvchi va nakladnoy faqat kirimda.
+O'tkazilgan hujjat o'zgarmaydi: xato yangi hujjat bilan tuzatiladi.
+
+**stock_document_lines** — `document_id`, `product_id`, `qty` (kirim va chiqimda > 0, inventarizatsiyada
+sanalgan miqdor ≥ 0), `unit_cost` null (kirimda majburiy), `expected_qty` null (inventarizatsiyani
+o'tkazish paytidagi hisobdagi miqdor); unique(`document_id`, `product_id`).
+
+**stock_movements** — `document_id`, `product_id`, `delta` numeric(12,3) ≠ 0, `unit_cost` bigint, `at`,
+`actor_id`. Faqat qo'shiladi: UPDATE va DELETE ni trigger rad etadi (audit kabi). Indeks (`product_id`,
+`at`).
+
+### 7.15 shop (9-bosqich)
+
+**shop_orders** — `number` (`nextval('order_number_seq')`: xizmat arizasi bilan bitta ketma-ketlik, raqam
+takrorlanmaydi), `status` enum(`new`, `confirmed`, `ready_for_pickup`, `completed`, `cancelled`), `source`
+enum(`tma`, `counter`), `client_id` null (tezkor sotuvda), `fulfillment` enum(`pickup`, `with_service`),
+`service_order_id` null (10-bosqich), `subtotal`, `discount_amount`, `discount_percent`,
+`discount_reason`, `discount_by`, `total` (7.8 dagi CHECK'lar), `client_comment`, `hold_until`,
+`pickup_until`, `confirmed_at`, `confirmed_by`, `ready_at`, `ready_by`, `completed_at`, `cancelled_at`,
+`cancelled_by`, `cancel_reason_id`, `cancel_note`, `client_request_id` (unique bilan `client_id`),
+`created_by`.
+
+**shop_order_items** — `shop_order_id`, `product_id`, `name_uz`, `name_ru`, `pack` (nusxa), `price`,
+`qty` int > 0, `line_total`; unique(`shop_order_id`, `product_id`).
+
+**shop_order_calls** — `shop_order_id`, `admin_id`, `outcome` enum(`confirmed`, `no_answer`,
+`rejected`), `note`, `at`.
+
+**Mavjud jadvallardagi o'zgarishlar:**
+- 8-bosqich: `media` ga `product_id` va `stock_document_id`, `purpose` ga `product_photo` va
+  `stock_invoice`; CHECK `num_nonnulls(reception_act_id, task_id, product_id, stock_document_id) = 1`.
+  Hujjatda bitta nakladnoy rasmini indeks emas, `media` servisi hujjat qulfi ostida saqlaydi (22-bo'lim).
+- 9-bosqich: `payments` va `fiscal_receipts` da `order_id` null bo'ladi, `shop_order_id` qo'shiladi, CHECK
+  `num_nonnulls(order_id, shop_order_id) = 1`; `status_history.entity` ga `shop_order`; `cancel_reasons`
+  ga `not_picked_up` (`system`, migratsiya bilan); `settings.rules.shopPickupHours` (72).
+
 ---
 
 ## 8. Rollar va huquqlar
@@ -699,6 +779,16 @@ so'rovi `master_id = actor.id` sharti bilan bajariladi.
 | Mijoz yaratish, tahrirlash, ichki izoh | — | — | ✔ | — | ✔ |
 | `in_work` dan bekor qilish, limitdan katta chegirma, to'lov usulini tuzatish, anonimlashtirish | — | — | — | — | ✔ |
 | Sozlamalar, prays, ma'lumotnomalar, xodimlar, audit jurnali | — | — | — | — | ✔ |
+| Ombor: qoldiqlar, jurnal, hujjatlar — ko'rish (`stock.read`) | — | — | ✔ | ✔ | ✔ |
+| Ombor: kirim, hisobdan chiqarish, inventarizatsiya (`stock.write`) | — | — | ✔ | — | ✔ |
+| Tannarx: o'rtacha va oxirgi kirim narxi, qoldiqning puldagi qiymati (`costs.read`) | — | — | — | ✔ | ✔ |
+| Mahsulot kartasi, chakana narx, toifalar, yetkazib beruvchilar (`products.write`) | — | — | — | — | ✔ |
+| Do'kon: o'z buyurtmasi, bekor qilish (9-bosqich) | ✔ | — | — | — | — |
+| Do'kon buyurtmalari — ko'rish (`shop.read`), qo'ng'iroq, yig'ish, tezkor sotuv (`shop.write`) (9-bosqich) | — | — | ✔ | o'qish | ✔ |
+
+- Admin kirimda nakladnoydagi narxni kiritadi, lekin `costs.read` siz javoblarda tannarx maydonlari
+  bo'lmaydi (TZ 2: xarid narxi va tannarx rahbar va egasida). Shu sabab rahbarda admin'da yo'q bitta
+  huquq bor.
 
 - Mijoz faqat Telegram orqali kiradi.
 - Xodim panelga login va parol bilan kiradi. Rahbar va egasi uchun 2-qadam majburiy: kod xodimning
@@ -757,6 +847,45 @@ javob beradi, admin esa "telefon orqali" deb belgilashi mumkin. `pending` va `re
 `draft` → `sent` (mijozga yuborildi) → `confirmed` (mijoz botda yoki ilovada tasdiqladi, yoki admin
 "og'zaki tasdiqladi" deb belgiladi). Yuborish shartlari: probeg, yoqilg'i darajasi va to'rt tomondan
 fotolar (old, orqa, chap, o'ng).
+
+### 9.5 Do'kon buyurtmasi (`shop/domain/shop-order-status.ts`, 9-bosqich)
+
+| Qayerdan | Qayerga | Kim | Shart va natija | Ombor |
+|---|---|---|---|---|
+| — | `new` | Mijoz (TMA) | Hamma pozitsiya bo'sh qoldiqqa sig'adi; `hold_until`; adminlarga xabar | Rezerv |
+| — | `completed` | Admin (tezkor sotuv) | To'lov va chek o'sha so'rovda | Sotuv |
+| `new` | `confirmed` | Admin ("Tasdiqladi") | Mijozga xabar | — |
+| `new` | `cancelled` | Mijoz yoki admin (sabab), tizim (`no_contact`, `now ≥ hold_until`) | | Rezerv yechiladi |
+| `confirmed` | `ready_for_pickup` | Admin ("Yig'ildi") | `pickup_until = ready_at + shopPickupHours`; mijozga xabar | — |
+| `confirmed` | `cancelled` | Mijoz yoki admin, sabab bilan | | Rezerv yechiladi |
+| `ready_for_pickup` | `completed` | Admin (checkout) | 11-bo'lim shartlari | Sotuv, rezerv yechiladi |
+| `ready_for_pickup` | `cancelled` | Admin (sabab), tizim (`not_picked_up`, `now ≥ pickup_until`) | | Rezerv yechiladi |
+
+- "Javobsiz" holatni o'zgartirmaydi: `shop_order_calls` ga yoziladi, `hold_until` 10.4 dagi kabi uzayadi.
+- Yig'ish ro'yxatidagi belgilar faqat ekranda; server faqat "Yig'ildi" o'tishini biladi.
+- Rezerv `new` da olinadi (TZ 12.2 da `confirmed`): 1.3-bo'lim.
+
+### 9.6 Ombor hujjati (`stock/domain`, 8-bosqich)
+
+`draft` → `posted`. Faqat `draft` tahrirlanadi va o'chiriladi; o'tkazish bitta tranzaksiyada harakatlarni
+yozadi, `stock_levels` ni o'zgartiradi va hujjatni `posted` qiladi (`WHERE status = 'draft'`).
+
+| Tur | Harakat (`delta`) | Shart |
+|---|---|---|
+| `receipt` (kirim) | `+qty`; `avg_cost` va `last_cost` yangilanadi | Har qatorda `unit_cost` |
+| `write_off` (hisobdan chiqarish) | `−qty` | Sabab majburiy; `qty ≤ on_hand − reserved` (rezervdagini chiqarib bo'lmaydi), aks holda `insufficient_stock` |
+| `inventory` | `counted − on_hand` (0 bo'lsa harakat yo'q) | O'tkazish paytidagi `on_hand` `expected_qty` ga yoziladi; `counted < reserved` bo'lsa `insufficient_stock` |
+| `sale` | `−qty`, rezerv ham kamayadi | Faqat `shop` yaratadi (9-bosqich), darhol `posted` |
+
+**O'rtacha tannarx** (kirimda): `avg = round_half_up((on_hand × avg + qty × cost) / (on_hand + qty))`,
+`on_hand = 0` bo'lsa `avg = cost`. Chiqim o'rtachani o'zgartirmaydi; harakat o'sha paytdagi `avg_cost` ni
+`unit_cost` sifatida saqlaydi.
+
+**Kam qoldiq:** `on_hand − reserved ≤ min_qty` va `min_qty > 0`. Panelda belgi, "Bugun" da blok, botga kuniga
+bitta jamlangan xabar (12-bo'lim).
+
+**Mijozga mavjudlik** (9-bosqich): aniq qoldiq yuborilmaydi, faqat `in_stock`, `low` (`free ≤ min_qty`) yoki
+`out` (`free ≤ 0`) va savat chegarasi `maxQty = min(free, 10)`.
 
 ---
 
@@ -839,6 +968,12 @@ funksiyalar orqali qayta tekshiriladi.
 - **Fiskal chek.** `FiscalProvider` porti; v1 implementatsiyasi `manual`: admin mavjud onlayn-KKM yoki
   virtual kassada chek chiqaradi va raqamini kiritadi. Interfeys v2 dagi asinxron kassa API'ga mos
   (`pending`, `failed`, qayta urinish).
+- **Do'kon (9-bosqich).** Narx, nom va qadoq `shop_order_items` ga nusxalanadi. Chegirma yuqoridagi
+  qoida bilan, `ready_for_pickup` gacha. Checkout xizmatniki bilan bir xil shartlarda (holat
+  `ready_for_pickup`, yig'indi = `total`, chek raqami, `requestId`); bitta tranzaksiyada `completed`, ombor
+  sotuvi, to'lovlar va chek. **Tezkor sotuv** — pozitsiyalar, mijoz ixtiyoriy, to'lovlar va chek bitta
+  so'rovda, darhol `completed`. To'lov va chekni `payments` modulining umumiy ichki metodi yozadi, shuning
+  uchun "Bugungi kassa" ikkala turni birga ko'rsatadi.
 
 ---
 
@@ -872,6 +1007,9 @@ yoziladi. Tugmalar:
 | `staff.report_submitted` | Adminlar | Usta hisobot topshirdi | Panelda ochish |
 | `staff.login_code` | Xodim | 2-qadam kodi. Outbox orqali emas, darhol yuboriladi: odam ekranda kutib turadi, 5 daqiqadan keyin kod keraksiz | — |
 | `staff.deletion_requested` | Egasi | Mijoz ma'lumotlarini o'chirishni so'radi | Panelda ochish |
+| `staff.stock_low` | Adminlar va egasi | Kuniga bir marta, ish boshlanganda: minimumdan past tovarlar ro'yxati (8-bosqich). `dedupe_key = stock_low:<sana>` | Panelda ochish |
+| `shop.created`, `shop.confirmed`, `shop.ready`, `shop.cancelled`, `shop.completed` | Mijoz | Do'kon buyurtmasi holatlari (9-bosqich); `ready` da manzil, ish vaqti va qachongacha olib ketish | Buyurtmani ochish (`?shopOrder=`) |
+| `staff.shop_order_new`, `staff.shop_client_cancelled` | Adminlar | Yangi do'kon buyurtmasi; mijoz bekor qildi (9-bosqich) | Panelda ochish |
 
 **Eslatma qoidasi** (`orders/domain/reminders.ts`): 24 soatlik eslatma ariza 24 soatlik oyna
 boshlanishidan oldin tasdiqlangan bo'lsa ketadi; 2 soatlik ham xuddi shunday. `dedupe_key =
@@ -963,6 +1101,24 @@ Yo'llar `packages/shared/src/routes`, sxemalar `contract` da. Guruhlar va autent
 | `GET, POST, PATCH /api/admin/service-types`, `.../services`, `PUT /api/admin/prices/:serviceTypeId` | Xizmatlar va prays-matritsa |
 | `GET, POST, PATCH /api/admin/staff`, `PUT .../:id/password` | Xodimlar |
 | `GET /api/admin/audit?cursor` | Audit jurnali |
+| `GET /api/admin/stock?q&filter&categoryId` | Ombor qoldiqlari (8-bosqich), to'liq ro'yxat; `costs.read` bo'lmasa tannarx maydonlari javobda yo'q |
+| `GET /api/admin/stock/movements?productId&cursor` | Harakatlar jurnali |
+| `GET /api/admin/stock/low` | Minimumdan past tovarlar ("Bugun" bloki) |
+| `GET, POST /api/admin/stock/documents`, `GET, PUT, DELETE .../:id`, `POST .../:id/post`, `PUT .../:id/invoice-photo/:mediaId` | Kirim, hisobdan chiqarish, inventarizatsiya (qoralama → o'tkazish) |
+| `GET, POST, PATCH /api/admin/products`, `PUT .../:id/photos/:mediaId`, `DELETE .../:id/photos/:mediaId` | Mahsulot kartasi va fotolari (5 tagacha) |
+| `GET, POST, PATCH /api/admin/product-categories`, `GET, POST, PATCH /api/admin/suppliers` | Toifalar va yetkazib beruvchilar |
+
+**Do'kon (9-bosqich)**
+
+| Yo'l | Vazifa |
+|---|---|
+| `GET /api/client/shop/categories`, `GET /api/client/shop/products?categoryId&q&inStock&sort&cursor`, `GET .../products/:id` | Katalog va karta: narx, `availability`, `maxQty`, fotolar |
+| `POST /api/client/shop/quote` | Savat: narxlar, jami, eskirgan yoki yetmaydigan pozitsiyalar |
+| `POST /api/client/shop/orders`, `GET .../:id`, `POST .../:id/cancel` | Buyurtma (`requestId`), kuzatuv, bekor qilish |
+| `GET /api/client/orders` | Xizmat va do'kon buyurtmalari birga, `kind` bilan |
+| `GET /api/admin/shop/orders?tab&q`, `GET .../:id` | Do'kon buyurtmalari (A9) |
+| `POST /api/admin/shop/orders/:id/call`, `.../ready`, `.../cancel`, `PUT .../discount`, `POST .../checkout` | Holatlar va to'lov |
+| `POST /api/admin/shop/quick-sale` | Tezkor sotuv |
 
 Ro'yxatlar `cursor` bilan sahifalanadi. Cheklovlar: hamma `/api` ga IP bo'yicha daqiqasiga 600 so'rov (2026-11-19 gacha 120 edi, 22-bo'lim)
 (`@fastify/rate-limit`, oqimdan himoya). Kirishga biznes-qoida: bir odamga 15 daqiqada 10 ta noto'g'ri
@@ -1064,6 +1220,9 @@ Docker yo'q, barbershop_bot bilan bir xil yondashuv:
 | 5 | Qabul va ustalar ishi | Qabul qilindi | [bosqich-5.md](reports/bosqich-5.md) |
 | 6 | Topshirish va to'lov | Qabul qilindi | [bosqich-6.md](reports/bosqich-6.md) |
 | 7 | Ishga tushirish | Kamchilik bilan: repo qismi tayyor, production server kutilmoqda | [bosqich-7.md](reports/bosqich-7.md) |
+| 8 | Ombor | Qabulga tayyor (`feat/stock` branch) | [bosqich-8.md](reports/bosqich-8.md) |
+| 9 | Do'kon | Kutilmoqda | — |
+| 10 | "Mashina bilan birga" | Kutilmoqda | — |
 
 ### Bosqich 0 — Poydevor
 
@@ -1320,6 +1479,67 @@ ishlaganda ham hisobot topshiradi. Hamma vazifa qabul qilinganda ariza o'zi "Top
   - ikkala til;
   - zaxiradan tiklash sinovi.
 
+### Bosqich 8 — Ombor
+
+**Maqsad:** mahsulotlar va qoldiq hujjatlar orqali yuritiladi; do'kon uchun poydevor.
+
+- **`stock` moduli:** 7.14 jadvallari; toifalar, mahsulotlar va fotolari, yetkazib beruvchilar; hujjatlar
+  (kirim, hisobdan chiqarish, inventarizatsiya) qoralama va o'tkazish bilan (9.6); qoldiqlar, harakatlar
+  jurnali, o'rtacha tannarx, kam qoldiq.
+- **`media`:** `product_photo` (5 tagacha), `stock_invoice`.
+- **`dashboard`:** "Bugun" da "Omborda kam qoldi" bloki (`stock.read` bo'lsa).
+- **Xabar:** `staff.stock_low` (kuniga bitta, rejalashtirilgan vazifa).
+- **Admin:** A5 (qoldiqlar, jurnal, hujjatlar, yetkazib beruvchilar), A11 (kirim; hisobdan chiqarish va
+  inventarizatsiya shu ekran uslubida), Sozlamalar → Mahsulotlar va toifalar, A6 bloki.
+- **Seed:** TZ 14.3 toifalari (`seed:reference`, faqat bo'sh jadvalga); namunaviy mahsulotlar,
+  yetkazib beruvchi va kirim (`seed:demo`).
+- **Testlar:**
+  - **invariant:** 100 ta tasodifiy hujjatdan keyin har mahsulotda `on_hand = Σ delta` (TZ 16.4);
+  - **o'rtacha tannarx:** birinchi kirim, keyingisi, nol qoldiqdan keyin, yaxlitlash;
+  - **hujjat:** faqat qoralama tahrirlanadi; ikki marta o'tkazib bo'lmaydi (parallel ham); kirimda narxsiz
+    qator rad; hisobdan chiqarishda sababsiz va bo'sh qoldiqdan ko'p rad; inventarizatsiya farqi;
+  - **baza:** `stock_movements` ga UPDATE va DELETE rad; `stock_levels` CHECK'lari; sotiladigan mahsulot
+    `pcs` va narxli;
+  - **huquqlar:** `stock.read`, `stock.write`, `products.write` matritsasi; `costs.read` siz javobda tannarx
+    yo'q;
+  - **kam qoldiq:** chegara aniq `min_qty` da; jamlangan xabar kuniga bir marta.
+- **Qo'lda:** kirim → qoldiq o'sdi va o'rtacha narx o'zgardi; hisobdan chiqarish va inventarizatsiya;
+  admin tannarxni ko'rmaydi, rahbar va egasi ko'radi; skaner bilan shtrix-kod; telefon va planshet
+  kengligida.
+
+### Bosqich 9 — Do'kon
+
+**Maqsad:** mijoz Mini App'dan buyurtma beradi, admin tasdiqlaydi, yig'adi va pulni oladi; peshtaxtada
+tezkor sotuv.
+
+- **`shop` moduli:** 7.15 jadvallari, holat mashinasi (9.5), rezerv, qo'ng'iroq, "Yig'ildi", bekor qilish,
+  chegirma, checkout, tezkor sotuv, avtomatik bekor (`hold_until`, `pickup_until`).
+- **`stock`:** rezerv (`UPDATE ... WHERE on_hand - reserved >= qty`, qulf `product_id` tartibida),
+  rezervni yechish, sotuv hujjati.
+- **`payments`:** `shop_order_id`, umumiy ichki metod; **`orders`:** birlashgan "Buyurtmalarim";
+  **`dashboard`:** do'kon hisoblagichi, kassada ikkala tur.
+- **Xabarlar:** `shop.*`, `staff.shop_order_new`, `staff.shop_client_cancelled`.
+- **Mini App:** T1 (5 bandli menyu, do'kon kartasi), T7, T10, T11, T9, do'kon buyurtmasi kuzatuvi; savat
+  Telegram CloudStorage'da; do'kon `React.lazy` bilan alohida chunk.
+- **Admin:** A9, tezkor sotuv, global qidiruvda do'kon raqami.
+- **Testlar:** holat o'tishlari jadvali; oxirgi dona uchun parallel buyurtmalar (100 so'rov) — bittasi
+  o'tadi; bir pozitsiya yetmasa butun buyurtma qaytadi; rezerv har bekor qilishda yechiladi; checkout
+  shartlari va bir martaligi; tezkor sotuv; narx nusxasi; egalik `404`; mijoz javobida aniq qoldiq yo'q;
+  kassa ikkala tur yig'indisiga teng.
+- **Qo'lda:** katalog → savat → buyurtma → qo'ng'iroq → yig'ildi → to'lov; haqiqiy Telegram'da iOS, Android,
+  Desktop; ikkala til va mavzu.
+
+### Bosqich 10 — "Mashina bilan birga"
+
+**Maqsad:** mijoz tovarni ochiq xizmat arizasiga qo'shadi va mashina bilan birga oladi (dizayn T11).
+
+- Savatda bu variant faqat mijozning `new`, `confirmed` yoki `in_work` dagi o'z arizasi bo'lsa chiqadi.
+- A8 bog'langan do'kon buyurtmalarini ko'rsatadi; checkout bitta so'rovda xizmat va do'kon buyurtmalarini
+  yopadi (to'lov qatorlari har biriga alohida, chek raqami bir xil).
+- Xizmat arizasi bekor bo'lsa bog'langan do'kon buyurtmasi ham bekor bo'ladi.
+- **Testlar:** birgalikdagi checkout summasi; ariza bekor bo'lganda rezerv yechiladi; boshqa mijozning
+  arizasiga bog'lab bo'lmaydi.
+
 ---
 
 ## 19. v2: keyinga qoldirildi va qanday qo'shiladi
@@ -1328,8 +1548,8 @@ ishlaganda ham hisobot topshiradi. Hamma vazifa qabul qilinganda ariza o'zi "Top
 
 | Funksiya | Qanday qo'shiladi |
 |---|---|
-| Do'kon va ombor | Yangi `shop` va `stock` modullari; `products`, `product_categories`, `stock_documents`, `stock_movements`, `suppliers`, `shop_orders`, `shop_order_items` jadvallari; o'z holat mashinasi (TZ 12.2). Xizmat arizalariga tegilmaydi. Mijozning "Buyurtmalarim" ro'yxati ikki jadvalni birlashtirib o'qiydi. Mini App'da `shells/client/shop` feature'i, admin'da `features/shop` va `features/stock` |
-| Materiallar me'yori va sarfi | `material_norms`; `tasks` ga sarf yozuvi; ombor harakati `write_off_service` |
+| Materiallar me'yori va sarfi | `material_norms`; `tasks` ga sarf yozuvi; `stock_documents.kind` ga `write_off_service` va `task_id` |
+| Mijozdan tovar qaytarish | `stock_documents.kind = return`, `refunds` bilan birga |
 | Kassa API (fiskal) | `FiscalProvider` ning yangi implementatsiyasi; `fiscal_receipts.status` ga `pending` va `failed`; qayta urinish vazifasi |
 | Imzo va PDF dalolatnomalar | `DocumentRenderer` porti; `reception_acts` va topshirishga `pdf_key` hamda imzo ustunlari; imzo rasmlari `media` da |
 | Onlayn va oldindan to'lov, qaytarish | `PaymentProvider` porti, webhook route'i, `payments.method = online`, `refunds` jadvali |
@@ -1387,6 +1607,12 @@ Yangi modul uchun chek-list:
 | 8 | Ish vaqtidan tashqari kelgan ariza: ertalab ochilishdan qancha vaqt ichida qo'ng'iroq qilinadi | Buyurtmachi | 10.4 qoidasi |
 | 9 | Raqam shrifti, qorong'i mavzu ranglari, kuzov sxemasi SVG'lari | Dizayner | DESIGN 9 |
 | 10 | Davlat raqami: 14 ta hudud kodi to'g'rimi; xorijiy, tranzit, davlat va diplomatik raqamlar qabul qilinishi kerakmi | Buyurtmachi | Faqat shaxsiy va yuridik format (`packages/shared/src/format/plate.ts`) |
+| 11 | Tovar mavjud bo'lsa do'kon buyurtmasi qo'ng'iroqsiz darhol tasdiqlansinmi (TZ 17) | Buyurtmachi | Qo'ng'iroq bilan, xizmat arizasi kabi |
+| 12 | Mahsulotlar ro'yxati, chakana narxlar, fotolar, minimal qoldiqlar | Buyurtmachi | `seed:demo` namunalari |
+| 13 | Admin yangi mahsulot qo'sha oladimi, chakana narxni o'zgartira oladimi | Buyurtmachi | Faqat egasi |
+| 14 | Kam qoldiq xabarini kim oladi ("ответственный склада") | Buyurtmachi | Adminlar va egasi |
+| 15 | Olib ketish muddati 72 soatmi, ish kunlarida hisoblanadimi | Buyurtmachi | 72 kalendar soat, sozlamada |
+| 16 | Tovarlar uchun IKPU kodlari (7-savolga qo'shimcha) | Buyurtmachi | Chek qo'lda, kod kerak emas |
 
 ---
 
@@ -1397,6 +1623,8 @@ Yangilari tepada.
 | Sana | Qaror | Sabab |
 |---|---|---|
 | 2026-11-24 | Telefon bitta ko'rinishda: bazada `+998XXXXXXXXX` (chet el raqami `+` va 8–15 raqam). Server avvalgidek hamma kirishni `normalizePhone` dan o'tkazadi (Telegram'ning `998...` ham); bunga baza CHECK'i qo'shildi (`users_phone_format`, `settings_workshop_phone_format`, migratsiya 0010). Panelda `PhoneField`: `+998 ` oldindan, yozilgan va qo'yilgan raqam `+998 90 123 45 67` ga tushadi (`formatPhoneInput`), chala raqamda saqlash o'chiq va sababi yoziladi (`phoneInputState`). Kirish sahifasidagi "Login yoki telefon" va qidiruvda niqob yo'q. Migratsiya production'da serverning o'zida `dist/migrate.js` bilan (DEPLOY.md) | Foydalanuvchi so'rovi: raqam qayerdan kelmasin bitta formatda saqlansin, panelda shablon yoki majburlash bo'lsin; chet el raqamlari qolsin, CHECK bazada ham bo'lsin. Migratsiyani serverda ishga tushirish baza parolini chatga va kompyuterga chiqarmaydi |
+| 2026-11-24 | 8-bosqichni bajarishda: ombor ro'yxati (`admin.stock`) sahifalanmaydi, to'liq qaytadi; hisobdan chiqarish sababi bazada faqat o'tkazilgan hujjatda majburiy (qoralamada keyin tanlanadi); hujjatda bitta nakladnoy rasmini `media` servisi hujjat qulfi ostida saqlaydi, indeks yo'q; A5 dagi "Bugungi harakatlar" o'rniga "So'nggi harakatlar" (oxirgi 8 ta); qatordagi kam/tugagan holat fon bilan emas, chap chiziq va yozuvli chip bilan | Bitta ustaxonada yuzlab mahsulot. Sabab qoralama yaratilgandan keyin tanlanadi. Enum'ga qo'shilgan qiymatni o'sha migratsiyadagi indeks sharti ishlata olmaydi (PostgreSQL). "Bugun" uchun sanani klient hisoblamaydi (CLAUDE.md). `*-soft` fonlar ikkala mavzuda och, qorong'ida oq matn o'qilmasdi (brauzerda topildi) |
+| 2026-11-24 | Ombor va do'kon v2 ro'yxatidan chiqib, 8–10-bosqichlar sifatida rejaga kirdi (20-bo'lim tartibi). Qarorlar: rezerv `new` da (TZ 12.2 da `confirmed`); do'kon buyurtmasi alohida jadvalda, raqami xizmat arizasi bilan umumiy `order_number_seq` dan; bitta kassa (`payments` va `fiscal_receipts` ikkala turga yoziladi); sotiladigan tovar donada, har qadoq alohida mahsulot; mijozga aniq qoldiq ko'rsatilmaydi, savat chegarasi `min(free, 10)`; kam qoldiq — kuniga bitta jamlangan xabar; kirim narxini admin kiritadi, tannarxni faqat rahbar va egasi ko'radi (`costs.read`); mahsulot kartasi va chakana narx faqat egasida; qaytarish, material sarfi, filial va kamera bilan skanerlash kirmaydi | Foydalanuvchi: do'kon qo'shilsin, reja loyihasini tasdiqladi ("ishni boshlang"). Oxirgi tovar ikki mijozga sotilmasin; kassa va qidiruv bitta bo'lsin; TZ 2 dagi xarid narxi qoidasi |
 | 2026-11-23 | Mini App bronida mijozga faqat praysda shu kuzov sinfi uchun katagi bor zonalar ko'rsatiladi; bunday zonasi yo'q ish turi chiqmaydi; hech narsa bo'lmasa "xizmatlar hali qo'shilmagan" ekrani (ustaxona telefoni bilan). Boshqa tanlangan zona qoplagan zona sababi bilan yoziladi ("“To'liq kuzov” ichiga kiradi"), ish turi chipida tanlangan zonalar soni. Narx hisobi (`client.quote`) xatosi ekranda ko'rsatiladi. Telegram CloudStorage'dagi qoralama o'qilmaguncha unga hech narsa yozilmaydi; o'qilgan qoralama mijoz tanlashni boshlagan bo'lsa qo'llanmaydi. Server va qoidalar o'zgarmaydi | Tester: "xizmat tanlagandan keyin qismlarni tanlash ishlamayapti". Prays bo'sh bo'lsa (production'da faqat `seed:reference`, narxlar `seed:demo` da) har zona kulrang "Bu sinf uchun mavjud emas" edi va bosilmasdi; sababi ko'rinmasdi. Qoralama o'qilayotganda birinchi yozuv uni o'chirar, kech kelgan javob esa mijoz tanlovini almashtirib yuborardi |
 | 2026-11-20 | Xodim (ega, admin, rahbar) Mini App'ni Telegram ilovasida ochsa, "Panelni ochish" oynasi ko'rsatilmaydi: panel darhol shu oynada ochiladi (`location.replace`, orqada Mini App sahifasi qolmaydi). Sessiya (30 kunlik cookie) bo'lsa "Bugun", bo'lmasa kirish. Telegram Web'da avvalgidek tugmali ekran, panel yangi oynada | Foydalanuvchi: bu oynada boshqa hech narsa yo'q, ortiqcha qadam. Telegram Web'da yangi oynani tugmasiz ochib bo'lmaydi va ramka ichida cookie yo'q |
 | 2026-11-20 | Brauzer yorlig'ida belgi (favicon): menyudagi logotip (to'q kvadratda qalqon), `public/favicon.svg` panelda ham, Mini App'da ham. Tor ekrandagi kirish sahifasida logotip forma tepasida, tillar bilan bir qatorda | Foydalanuvchi: brauzerda logo ko'rinmaydi. Avval `data:,` (bo'sh belgi) edi; telefonda logotipli brend paneli yashirilgan edi |

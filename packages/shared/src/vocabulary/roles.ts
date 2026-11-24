@@ -37,5 +37,12 @@ export const PERMISSIONS = [
   'settings.write',
   'staff.manage',
   'audit.read',
+  // Stage 8: the warehouse
+  'stock.read',
+  'stock.write',
+  /** Purchase prices and average costs (TZ 2: the director and the owner). */
+  'costs.read',
+  /** Product cards, retail prices, categories and suppliers. */
+  'products.write',
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];

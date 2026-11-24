@@ -13,6 +13,7 @@ import {
 import { createdAt } from './columns';
 import { users } from './identity';
 import { receptionActs } from './reception';
+import { products, stockDocuments } from './stock';
 import { tasks } from './tasks';
 
 /** Tables of the media module (docs/PLAN.md, section 7.11). Only this module writes them. */
@@ -35,6 +36,10 @@ export const media = pgTable(
     taskId: uuid().references(() => tasks.id),
     /** The attempt of the task the photo belongs to: a rework starts a new one. */
     attempt: integer(),
+    /** A photo of a product for the shop's card (stage 8). */
+    productId: uuid().references(() => products.id),
+    /** The supplier's invoice of a receipt (stage 8). */
+    stockDocumentId: uuid().references(() => stockDocuments.id),
     storageKey: text().notNull().unique(),
     mime: text().notNull(),
     bytes: integer().notNull(),
@@ -46,11 +51,16 @@ export const media = pgTable(
     createdAt: createdAt(),
   },
   (t) => [
-    check('media_one_owner', sql`num_nonnulls(${t.receptionActId}, ${t.taskId}) = 1`),
+    check(
+      'media_one_owner',
+      sql`num_nonnulls(${t.receptionActId}, ${t.taskId}, ${t.productId}, ${t.stockDocumentId}) = 1`,
+    ),
     check(
       'media_purpose_fits_owner',
       sql`(${t.purpose} in ('reception_side', 'reception_defect') and ${t.receptionActId} is not null)
-        or (${t.purpose} in ('task_before', 'task_after') and ${t.taskId} is not null and ${t.attempt} is not null)`,
+        or (${t.purpose} in ('task_before', 'task_after') and ${t.taskId} is not null and ${t.attempt} is not null)
+        or (${t.purpose}::text = 'product_photo' and ${t.productId} is not null)
+        or (${t.purpose}::text = 'stock_invoice' and ${t.stockDocumentId} is not null)`,
     ),
     check(
       'media_side_only_for_sides',
@@ -63,5 +73,9 @@ export const media = pgTable(
       .where(sql`${t.purpose} = 'reception_side'`),
     index('media_task_idx').on(t.taskId, t.attempt),
     index('media_act_idx').on(t.receptionActId),
+    // One invoice per document is kept by the media service, under the document's lock: an index
+    // here would compare a value the enum gains in the same migration, which PostgreSQL refuses.
+    index('media_product_idx').on(t.productId),
+    index('media_stock_document_idx').on(t.stockDocumentId),
   ],
 );

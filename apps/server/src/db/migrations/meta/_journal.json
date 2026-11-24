@@ -78,6 +78,27 @@
       "when": 1795503480117,
       "tag": "0010_phone_format",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1795509766178,
+      "tag": "0011_stock_document_number_seq",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1795509768468,
+      "tag": "0012_stock",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1795509770586,
+      "tag": "0013_stock_movements_append_only",
+      "breakpoints": true
     }
   ]
 }

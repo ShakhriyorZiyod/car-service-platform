@@ -145,6 +145,31 @@ export const ROUTES = {
   'client.review': { method: 'POST', path: '/api/client/orders/:id/review' },
   'admin.unmappedCars': { method: 'GET', path: '/api/admin/cars/unmapped' },
   'admin.mapCar': { method: 'POST', path: '/api/admin/cars/:id/map' },
+  // Stage 8: the warehouse
+  'admin.stock': { method: 'GET', path: '/api/admin/stock' },
+  'admin.stockMovements': { method: 'GET', path: '/api/admin/stock/movements' },
+  'admin.lowStock': { method: 'GET', path: '/api/admin/stock/low' },
+  'admin.stockDocuments': { method: 'GET', path: '/api/admin/stock/documents' },
+  'admin.createStockDocument': { method: 'POST', path: '/api/admin/stock/documents' },
+  'admin.stockDocument': { method: 'GET', path: '/api/admin/stock/documents/:id' },
+  'admin.updateStockDocument': { method: 'PUT', path: '/api/admin/stock/documents/:id' },
+  'admin.deleteStockDocument': { method: 'DELETE', path: '/api/admin/stock/documents/:id' },
+  'admin.postStockDocument': { method: 'POST', path: '/api/admin/stock/documents/:id/post' },
+  'admin.putStockInvoicePhoto': {
+    method: 'PUT',
+    path: '/api/admin/stock/documents/:id/invoice-photo/:mediaId',
+  },
+  'admin.products': { method: 'GET', path: '/api/admin/products' },
+  'admin.createProduct': { method: 'POST', path: '/api/admin/products' },
+  'admin.updateProduct': { method: 'PATCH', path: '/api/admin/products/:id' },
+  'admin.putProductPhoto': { method: 'PUT', path: '/api/admin/products/:id/photos/:mediaId' },
+  'admin.deleteProductPhoto': { method: 'DELETE', path: '/api/admin/products/:id/photos/:mediaId' },
+  'admin.productCategories': { method: 'GET', path: '/api/admin/product-categories' },
+  'admin.createProductCategory': { method: 'POST', path: '/api/admin/product-categories' },
+  'admin.updateProductCategory': { method: 'PATCH', path: '/api/admin/product-categories/:id' },
+  'admin.suppliers': { method: 'GET', path: '/api/admin/suppliers' },
+  'admin.createSupplier': { method: 'POST', path: '/api/admin/suppliers' },
+  'admin.updateSupplier': { method: 'PATCH', path: '/api/admin/suppliers/:id' },
 } as const satisfies RouteTable;
 
 export type RouteName = keyof typeof ROUTES;

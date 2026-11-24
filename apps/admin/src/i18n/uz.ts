@@ -1,3 +1,5 @@
+import { stockUz } from './stock.uz';
+
 /** Panel texts in Uzbek, the source dictionary: ru.ts must have the same shape. */
 export const uz = {
   brand: 'CarService',
@@ -9,6 +11,7 @@ export const uz = {
     tasks: 'Ustalar hisobotlari',
     handover: 'Topshirish va kassa',
     clients: 'Mijozlar',
+    stock: 'Ombor',
     settings: 'Sozlamalar',
   },
   notFound: 'Sahifa topilmadi.',
@@ -91,6 +94,7 @@ export const uz = {
       workshop: 'Ustaxona',
       staff: 'Xodimlar va rollar',
       audit: 'Audit jurnali',
+      products: 'Mahsulotlar',
     },
   },
   form: {
@@ -365,6 +369,10 @@ export const uz = {
     unpriced_items: 'Narxi kelishiladigan ish bor: avval unga narx qo‘ying.',
     payment_mismatch: 'To‘lovlar yig‘indisi to‘lanadigan summaga teng emas.',
     discount_over_limit: 'Chegirma limitingizdan katta. Ko‘prog‘ini faqat egasi beradi.',
+    sku_taken: 'Bu artikul boshqa mahsulotda bor.',
+    barcode_taken: 'Bu shtrix-kod boshqa mahsulotda bor.',
+    insufficient_stock:
+      'Bo‘sh qoldiq yetmaydi: omborda shuncha yo‘q yoki bir qismi buyurtmalar uchun rezervda.',
   } as Record<string, string>,
   common: {
     close: 'Yopish',
@@ -864,4 +872,5 @@ export const uz = {
     photo: 'Fotoni kattalashtirish',
     waiting: 'Tekshirishni kutmoqda',
   },
+  stock: stockUz,
 };

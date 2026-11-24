@@ -1,4 +1,4 @@
-import { formatDateLong } from '@cs/shared/format';
+import { formatDateLong, formatQty } from '@cs/shared/format';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { call } from '../../api';
@@ -147,6 +147,35 @@ export function TodayPage() {
                 </section>
               )}
               {data.cash && <CashCard cash={data.cash} />}
+              {data.lowStock && (
+                <section className="card today__reports">
+                  <h2 className="section-title">{t.stock.low.title}</h2>
+                  {data.lowStock.length === 0 ? (
+                    <p className="muted">{t.stock.low.empty}</p>
+                  ) : (
+                    <ul className="today__report-list">
+                      {data.lowStock.slice(0, 6).map((item) => (
+                        <li key={item.productId}>
+                          <Link className="today__report" to="/stock?filter=low">
+                            <span>{lang === 'ru' ? item.nameRu : item.nameUz}</span>
+                            <span className="today__report-time num">
+                              {t.stock.low.line(
+                                formatQty(item.free, item.unit, lang),
+                                formatQty(item.minQty, item.unit, lang),
+                              )}
+                            </span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {data.lowStock.length > 6 && (
+                    <Link className="table__link" to="/stock?filter=low">
+                      {t.stock.low.open}
+                    </Link>
+                  )}
+                </section>
+              )}
             </aside>
           </div>
         </>

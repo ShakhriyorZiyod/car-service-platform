@@ -74,6 +74,13 @@ export const API_ERROR_CODES = [
   'payment_mismatch',
   /** The discount is above the admin's limit: only the owner may give more. */
   'discount_over_limit',
+
+  // Stage 8: the warehouse
+  /** Another product already has this article or barcode. */
+  'sku_taken',
+  'barcode_taken',
+  /** There is not enough free stock: what is reserved for orders cannot be written off. */
+  'insufficient_stock',
 ] as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

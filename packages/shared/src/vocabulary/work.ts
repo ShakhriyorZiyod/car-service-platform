@@ -47,6 +47,9 @@ export const MEDIA_PURPOSES = [
   'reception_defect',
   'task_before',
   'task_after',
+  // Stage 8: up to five photos of a product, and the supplier's invoice of a receipt
+  'product_photo',
+  'stock_invoice',
 ] as const;
 export type MediaPurpose = (typeof MEDIA_PURPOSES)[number];
 

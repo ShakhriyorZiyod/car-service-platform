@@ -274,3 +274,31 @@ export const CANCEL_REASONS: readonly CancelReasonSeed[] = [
     appliesTo: 'system',
   },
 ];
+
+export interface ProductCategorySeed {
+  nameUz: string;
+  nameRu: string;
+  children?: readonly { nameUz: string; nameRu: string }[];
+}
+
+/**
+ * TZ 14.3: the shop's categories. "Aksessuarlar" is one group with three subcategories, which the
+ * Mini App shows as three tiles. Consumables are not sold, but they live in the warehouse too.
+ */
+export const PRODUCT_CATEGORIES: readonly ProductCategorySeed[] = [
+  { nameUz: 'Shampunlar', nameRu: 'Шампуни' },
+  { nameUz: 'Yuvish kimyosi', nameRu: 'Химия для мойки' },
+  { nameUz: 'Polirol va himoya', nameRu: 'Полироли и защита' },
+  { nameUz: 'Qoraytirgichlar', nameRu: 'Чернители' },
+  { nameUz: 'Xushbo‘ylagichlar', nameRu: 'Освежители' },
+  {
+    nameUz: 'Aksessuarlar',
+    nameRu: 'Аксессуары',
+    children: [
+      { nameUz: 'Sochiqlar', nameRu: 'Полотенца' },
+      { nameUz: 'Cho‘tkalar', nameRu: 'Щётки' },
+      { nameUz: 'Gubkalar va qo‘lqoplar', nameRu: 'Губки и варежки' },
+    ],
+  },
+  { nameUz: 'Sarf materiallari', nameRu: 'Расходные материалы' },
+];

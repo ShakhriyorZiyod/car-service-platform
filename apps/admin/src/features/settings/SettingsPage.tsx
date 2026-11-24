@@ -15,6 +15,7 @@ const TABS: readonly { key: TabKey; permission: Permission }[] = [
   { key: 'workshop', permission: 'settings.write' },
   { key: 'staff', permission: 'staff.manage' },
   { key: 'audit', permission: 'audit.read' },
+  { key: 'products', permission: 'products.write' },
 ];
 
 export function SettingsPage() {

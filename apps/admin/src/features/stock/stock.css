@@ -1,0 +1,304 @@
+/* The warehouse (design A5, A11). Colours come from the shared tokens only. */
+
+.stock,
+.stock-doc {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.stock__head,
+.stock-doc__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.stock__title,
+.stock-doc__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.stock__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.stock__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.stock__main {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.stock__tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.stock__search {
+  flex: 0 1 320px;
+}
+
+.pill.stock__pill-low {
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+.pill.stock__pill-low.is-active {
+  background: var(--warning-soft);
+}
+
+/* A wide table scrolls inside its own box, never the page (PLAN 22, 2026-11-20). */
+.stock__table-card {
+  overflow-x: auto;
+}
+
+.stock__table-card .table {
+  min-width: 640px;
+}
+
+/* A stripe, not a background: the soft tones are light in both themes and white text on them
+   would not read in the dark one. The chip says the state in words. */
+.stock__row--low td:first-child {
+  box-shadow: inset 4px 0 0 var(--warning);
+}
+
+.stock__row--out td:first-child {
+  box-shadow: inset 4px 0 0 var(--danger);
+}
+
+.stock__sub {
+  display: block;
+  font-size: 12px;
+}
+
+.stock__total {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--border);
+  text-align: right;
+}
+
+.chip--success {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.stock__side {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.stock__moves {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stock__move {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.stock__move-sign {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+}
+
+.stock__move-sign.is-in {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.stock__move-sign.is-out {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.stock__note {
+  margin: 0;
+  font-size: 12px;
+}
+
+.stock__in {
+  color: var(--success);
+}
+
+.stock__out {
+  color: var(--warning);
+}
+
+.stock__filter-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.stock__link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+tr.is-hidden td {
+  opacity: 0.6;
+}
+
+/* The document (A11) */
+
+.stock-doc__header {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+  align-items: end;
+  padding: var(--space-4);
+}
+
+/* A compact tile in the header row, the height of a field. */
+.stock-doc__photo .photo-tile__capture,
+.stock-doc__photo .photo-tile__image {
+  grid-auto-flow: column;
+  aspect-ratio: auto;
+  height: 44px;
+}
+
+.stock-doc__photo .photo-tile__image {
+  width: 88px;
+}
+
+.stock-doc__photo .photo-tile__retake {
+  position: static;
+}
+
+.stock-doc__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.stock-doc__lines {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  overflow-x: auto;
+}
+
+.stock-doc__search {
+  position: relative;
+}
+
+.stock-doc__search-box {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  padding: 0 var(--space-3);
+  border: 2px solid var(--text);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.stock-doc__search-box input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  outline: none;
+}
+
+.stock-doc__matches {
+  margin-top: var(--space-2);
+}
+
+.stock-doc__table {
+  min-width: 560px;
+}
+
+.stock-doc__input {
+  width: 120px;
+  min-height: 40px;
+  text-align: right;
+}
+
+.stock-doc__row--bad td:first-child {
+  box-shadow: inset 4px 0 0 var(--danger);
+}
+
+.stock-doc__negative {
+  color: var(--danger);
+}
+
+.stock-doc__foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+.stock-doc__after {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.stock-doc__after-list {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stock-doc__after-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+@media (max-width: 900px) {
+  .stock__grid,
+  .stock-doc__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .stock__search {
+    flex: 1 1 100%;
+  }
+
+  .stock-doc__input {
+    width: 96px;
+    min-height: 44px;
+  }
+}

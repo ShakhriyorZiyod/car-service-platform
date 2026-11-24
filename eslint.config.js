@@ -37,6 +37,7 @@ const SERVER_MODULES = [
   'tasks',
   'payments',
   'dashboard',
+  'stock',
 ];
 const MODULE_LAYERS = ['domain', 'app', 'http', 'bot'];
 

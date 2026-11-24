@@ -1,9 +1,21 @@
+import { formatQty } from '@cs/shared/format';
 import type { Notification, RenderedMessage, WorkNotification } from '../types';
 import { dateTime, esc, itemsLine, phoneLine, totalLine } from './shared';
 
 /** Texts in Uzbek. Visible text uses ‘ (U+2018) for o‘ and g‘. */
 export function renderUz(notification: Exclude<Notification, WorkNotification>): RenderedMessage {
   const lang = 'uz';
+  if (notification.type === 'staff.stock_low') {
+    const lines = notification.items.map(
+      (item) =>
+        `• ${esc(item.nameUz)}: ${esc(formatQty(item.free, item.unit, lang))} (minimum ${esc(formatQty(item.minQty, item.unit, lang))})`,
+    );
+    if (notification.more > 0) lines.push(`…va yana ${notification.more} ta`);
+    return {
+      text: `<b>Omborda kam qoldi</b>\n\n${lines.join('\n')}`,
+      button: { text: 'Panelda ochish', target: 'panel', orderId: null, path: 'stock?filter=low' },
+    };
+  }
   if (notification.type === 'staff.deletion_requested') {
     return {
       text: `<b>Ma’lumotni o‘chirish so‘rovi</b>\n\n${esc(notification.clientName)} shaxsiy ma’lumotlarini o‘chirishni so‘radi. Panelda mijoz kartasini oching.`,

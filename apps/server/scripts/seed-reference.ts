@@ -16,14 +16,19 @@ const database = createDatabase(config.databaseUrl, { logger });
 try {
   const report = await seedReference(database.db);
   const added =
-    report.brands + report.models + report.serviceTypes + report.zones + report.cancelReasons;
+    report.brands +
+    report.models +
+    report.serviceTypes +
+    report.zones +
+    report.cancelReasons +
+    report.productCategories;
   if (added === 0) {
     console.log('Ma‘lumotnomalar allaqachon bor, hech narsa qo‘shilmadi.');
   } else {
     console.log(
       `Qo‘shildi: ${report.brands} marka, ${report.models} model, ${report.serviceTypes} xizmat turi, ` +
         `${report.zones} zona (${report.excludes} ta "o‘chirish" qoidasi), ` +
-        `${report.cancelReasons} bekor qilish sababi.`,
+        `${report.cancelReasons} bekor qilish sababi, ${report.productCategories} mahsulot toifasi.`,
     );
   }
 } catch (error) {

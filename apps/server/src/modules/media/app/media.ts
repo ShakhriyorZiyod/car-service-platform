@@ -17,7 +17,10 @@ import { isValidMediaLink, mediaPath, signMediaLink } from '../domain/signed-url
  */
 
 export type MediaOwner =
-  { kind: 'act'; actId: string } | { kind: 'task'; taskId: string; attempt: number };
+  | { kind: 'act'; actId: string }
+  | { kind: 'task'; taskId: string; attempt: number }
+  | { kind: 'product'; productId: string }
+  | { kind: 'stock_document'; documentId: string };
 
 export interface PhotoUpload {
   /** The client makes it, so sending the same photo twice cannot make two. */
@@ -37,6 +40,8 @@ export interface Photo {
   receptionActId: string | null;
   taskId: string | null;
   attempt: number | null;
+  productId: string | null;
+  stockDocumentId: string | null;
   mime: PhotoMime;
   bytes: number;
   width: number;
@@ -62,6 +67,9 @@ export interface MediaService {
   ofAct(from: DbOrTx, actId: string): Promise<Photo[]>;
   /** The photos of a task: one attempt, or all of them. */
   ofTask(from: DbOrTx, taskId: string, attempt?: number): Promise<Photo[]>;
+  /** The photos of a product, the first one is its cover; or of a warehouse document. */
+  ofProduct(from: DbOrTx, productId: string): Promise<Photo[]>;
+  ofStockDocument(from: DbOrTx, documentId: string): Promise<Photo[]>;
   /** A photo by its id, or null. */
   find(from: DbOrTx, id: string): Promise<Photo | null>;
   /** The signed path to open a photo for the next 15 minutes. */
@@ -83,6 +91,8 @@ const toPhoto = (row: MediaRow): Photo => ({
   receptionActId: row.receptionActId,
   taskId: row.taskId,
   attempt: row.attempt,
+  productId: row.productId,
+  stockDocumentId: row.stockDocumentId,
   mime: row.mime as PhotoMime,
   bytes: row.bytes,
   width: row.width,
@@ -104,21 +114,39 @@ export function createMediaService(deps: MediaServiceDeps): MediaService {
     }
   }
 
+  /** Which owner each purpose belongs to. */
+  const OWNER_OF: Record<MediaPurpose, MediaOwner['kind']> = {
+    reception_side: 'act',
+    reception_defect: 'act',
+    task_before: 'task',
+    task_after: 'task',
+    product_photo: 'product',
+    stock_invoice: 'stock_document',
+  };
+
   function checkMeaning(upload: PhotoUpload): void {
     const { purpose, owner, side } = upload;
-    const forAct = purpose === 'reception_side' || purpose === 'reception_defect';
-    if (forAct !== (owner.kind === 'act')) throw new AppError('validation', 'photo purpose');
+    if (OWNER_OF[purpose] !== owner.kind) throw new AppError('validation', 'photo purpose');
     if ((purpose === 'reception_side') !== (side !== null)) {
       throw new AppError('validation', 'photo side', { paths: ['query.side'] });
     }
   }
 
+  function sameOwner(row: MediaRow, owner: MediaOwner): boolean {
+    switch (owner.kind) {
+      case 'act':
+        return row.receptionActId === owner.actId;
+      case 'task':
+        return row.taskId === owner.taskId && row.attempt === owner.attempt;
+      case 'product':
+        return row.productId === owner.productId;
+      case 'stock_document':
+        return row.stockDocumentId === owner.documentId;
+    }
+  }
+
   const sameMeaning = (row: MediaRow, upload: PhotoUpload): boolean =>
-    row.purpose === upload.purpose &&
-    row.side === upload.side &&
-    (upload.owner.kind === 'act'
-      ? row.receptionActId === upload.owner.actId
-      : row.taskId === upload.owner.taskId && row.attempt === upload.owner.attempt);
+    row.purpose === upload.purpose && row.side === upload.side && sameOwner(row, upload.owner);
 
   return {
     async put(tx, upload) {
@@ -138,8 +166,23 @@ export function createMediaService(deps: MediaServiceDeps): MediaService {
       const facts = readImage(upload.bytes);
       if (!facts) throw invalidPhoto('type');
 
-      // A new photo of a side takes the old one's place.
+      // A new photo of a side, or a new invoice, takes the old one's place.
       let replacedKey: string | null = null;
+      if (upload.purpose === 'stock_invoice' && upload.owner.kind === 'stock_document') {
+        const [old] = await tx
+          .select()
+          .from(media)
+          .where(
+            and(
+              eq(media.stockDocumentId, upload.owner.documentId),
+              eq(media.purpose, 'stock_invoice'),
+            ),
+          );
+        if (old) {
+          await tx.delete(media).where(eq(media.id, old.id));
+          replacedKey = old.storageKey;
+        }
+      }
       if (upload.purpose === 'reception_side' && upload.owner.kind === 'act') {
         const [old] = await tx
           .select()
@@ -169,6 +212,9 @@ export function createMediaService(deps: MediaServiceDeps): MediaService {
             receptionActId: upload.owner.kind === 'act' ? upload.owner.actId : null,
             taskId: upload.owner.kind === 'task' ? upload.owner.taskId : null,
             attempt: upload.owner.kind === 'task' ? upload.owner.attempt : null,
+            productId: upload.owner.kind === 'product' ? upload.owner.productId : null,
+            stockDocumentId:
+              upload.owner.kind === 'stock_document' ? upload.owner.documentId : null,
             storageKey,
             mime: facts.mime,
             bytes: upload.bytes.length,
@@ -210,6 +256,24 @@ export function createMediaService(deps: MediaServiceDeps): MediaService {
             ? eq(media.taskId, taskId)
             : and(eq(media.taskId, taskId), eq(media.attempt, attempt)),
         )
+        .orderBy(asc(media.createdAt), asc(media.id));
+      return rows.map(toPhoto);
+    },
+
+    async ofProduct(from, productId) {
+      const rows = await from
+        .select()
+        .from(media)
+        .where(eq(media.productId, productId))
+        .orderBy(asc(media.createdAt), asc(media.id));
+      return rows.map(toPhoto);
+    },
+
+    async ofStockDocument(from, documentId) {
+      const rows = await from
+        .select()
+        .from(media)
+        .where(eq(media.stockDocumentId, documentId))
         .orderBy(asc(media.createdAt), asc(media.id));
       return rows.map(toPhoto);
     },

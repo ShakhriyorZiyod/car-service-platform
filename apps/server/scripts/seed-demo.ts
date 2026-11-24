@@ -61,6 +61,7 @@ try {
       `Bokslar: +${report.boxes}`,
       `Prays: ${report.pricedTypes.length > 0 ? report.pricedTypes.join(', ') : 'bor edi'}`,
       `Xodimlar: ${report.staff.length > 0 ? report.staff.join(', ') : 'bor edi'}`,
+      `Ombor: ${report.receipt === null ? 'bor edi' : `${report.products} mahsulot, kirim №${report.receipt}`}`,
     ].join('\n'),
   );
   if (report.staff.length > 0) {

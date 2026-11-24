@@ -99,6 +99,18 @@ export const router = createBrowserRouter(
           })),
         },
         {
+          path: 'stock',
+          ...screen(async () => ({
+            Component: (await import('./features/stock/StockPage')).StockPage,
+          })),
+        },
+        {
+          path: 'stock/documents/:id',
+          ...screen(async () => ({
+            Component: (await import('./features/stock/DocumentPage')).DocumentPage,
+          })),
+        },
+        {
           path: 'settings',
           lazy: async () => ({
             Component: (await import('./features/settings/SettingsPage')).SettingsPage,
@@ -130,6 +142,9 @@ export const router = createBrowserRouter(
             })),
             settingsRoute('audit', async () => ({
               Component: (await import('./features/settings/AuditTab')).AuditTab,
+            })),
+            settingsRoute('products', async () => ({
+              Component: (await import('./features/settings/ProductsTab')).ProductsTab,
             })),
           ],
         },

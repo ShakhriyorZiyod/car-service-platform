@@ -35,8 +35,8 @@ const rows = async (
   return result?.n ?? 0;
 };
 
-describe('seed:reference (TZ 14.1, 14.2, 14.4)', () => {
-  it('writes the brands and models, the kinds of work with their zones, and the cancel reasons', async () => {
+describe('seed:reference (TZ 14.1–14.4)', () => {
+  it('writes the brands and models, the kinds of work with their zones, the cancel reasons and the shop categories', async () => {
     const report = await seedReference(database.db);
     expect(report).toEqual({
       brands: 5,
@@ -45,6 +45,7 @@ describe('seed:reference (TZ 14.1, 14.2, 14.4)', () => {
       zones: 11 + 7 + 9 + 3 + 6 + 4,
       excludes: 5 + 4 + 6 + 5,
       cancelReasons: 9,
+      productCategories: 7 + 3,
     });
     expect(await rows(carBrands)).toBe(5);
     expect(await rows(carModels)).toBe(23);
@@ -126,6 +127,7 @@ describe('seed:reference (TZ 14.1, 14.2, 14.4)', () => {
       zones: 0,
       excludes: 0,
       cancelReasons: 0,
+      productCategories: 0,
     });
     expect([await rows(carBrands), await rows(carModels), await rows(serviceTypes)]).toEqual([
       5, 23, 6,
@@ -227,7 +229,15 @@ describe('seed:demo', () => {
   it('running it again adds nothing', async () => {
     const { owner } = await demo();
     const again = await seedDemo(t.services, owner);
-    expect(again).toEqual({ hours: false, holidays: 0, boxes: 0, pricedTypes: [], staff: [] });
+    expect(again).toEqual({
+      hours: false,
+      holidays: 0,
+      boxes: 0,
+      pricedTypes: [],
+      staff: [],
+      products: 0,
+      receipt: null,
+    });
     expect(await t.services.workshop.boxes.list(owner)).toHaveLength(4);
   });
 

@@ -42,9 +42,22 @@ const ROLE_PERMISSIONS: Readonly<Record<Role, readonly Permission[]>> = {
     'checkout.write',
     'clients.read',
     'clients.write',
+    'stock.read',
+    'stock.write',
   ],
-  /** Reads what the admin works on; reports and analytics come in v2. */
-  director: ['panel.access', 'today.read', 'orders.read', 'schedule.read', 'clients.read'],
+  /**
+   * Reads what the admin works on; reports and analytics come in v2. Unlike the admin, sees the
+   * purchase prices and average costs (TZ 2).
+   */
+  director: [
+    'panel.access',
+    'today.read',
+    'orders.read',
+    'schedule.read',
+    'clients.read',
+    'stock.read',
+    'costs.read',
+  ],
   owner: PERMISSIONS,
 };
 
