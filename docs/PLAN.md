@@ -1220,8 +1220,8 @@ Docker yo'q, barbershop_bot bilan bir xil yondashuv:
 | 5 | Qabul va ustalar ishi | Qabul qilindi | [bosqich-5.md](reports/bosqich-5.md) |
 | 6 | Topshirish va to'lov | Qabul qilindi | [bosqich-6.md](reports/bosqich-6.md) |
 | 7 | Ishga tushirish | Kamchilik bilan: repo qismi tayyor, production server kutilmoqda | [bosqich-7.md](reports/bosqich-7.md) |
-| 8 | Ombor | Qabulga tayyor (`feat/stock` branch) | [bosqich-8.md](reports/bosqich-8.md) |
-| 9 | Do'kon | Kutilmoqda | — |
+| 8 | Ombor | Qabul qilindi | [bosqich-8.md](reports/bosqich-8.md) |
+| 9 | Do'kon | Jarayonda | — |
 | 10 | "Mashina bilan birga" | Kutilmoqda | — |
 
 ### Bosqich 0 — Poydevor
