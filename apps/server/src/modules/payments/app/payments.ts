@@ -11,7 +11,13 @@ import type { AuditService } from '../../audit';
 import type { AdminOrdersService } from '../../orders';
 import type { TaskWork, TasksService } from '../../tasks';
 import type { WorkshopService } from '../../workshop';
-import { cashSummary, checkCheckout, cleanReceiptNo, type PaymentLine } from '../domain/checkout';
+import {
+  cashSummary,
+  checkCheckout,
+  checkPayments,
+  cleanReceiptNo,
+  type PaymentLine,
+} from '../domain/checkout';
 import type { FiscalProvider } from './fiscal';
 
 /**
@@ -35,7 +41,26 @@ export interface CheckoutInput {
   receiptNo: string;
 }
 
+/** What the money is for: a service order or a shop order (one kassa, stage 9). */
+export type PaymentTarget = { kind: 'order'; id: string } | { kind: 'shop_order'; id: string };
+
+export interface RecordInput extends CheckoutInput {
+  /** What the payments must add up to. */
+  total: number;
+}
+
 export interface PaymentsService {
+  /**
+   * Writes the payments and the fiscal receipt inside the caller's transaction, after the caller has
+   * locked the order and checked its state. Returns false when this `requestId` already did it (a
+   * repeated request): then nothing is written and the caller changes nothing either.
+   */
+  recordInside(
+    tx: Tx,
+    actor: StaffActor,
+    target: PaymentTarget,
+    input: RecordInput,
+  ): Promise<{ recorded: boolean; receiptNo: string }>;
   handover(actor: StaffActor, orderId: string): Promise<Handover>;
   /** Idempotent by `requestId`; of two different checkouts of one order only one passes. */
   checkout(
@@ -126,6 +151,70 @@ export function createPaymentsService(deps: PaymentsDeps): PaymentsService {
     };
   }
 
+  async function recordInside(
+    tx: Tx,
+    actor: StaffActor,
+    target: PaymentTarget,
+    input: RecordInput,
+  ): Promise<{ recorded: boolean; receiptNo: string }> {
+    const [earlier] = await tx
+      .select()
+      .from(fiscalReceipts)
+      .where(eq(fiscalReceipts.requestId, input.requestId));
+    if (earlier) {
+      const same =
+        target.kind === 'order' ? earlier.orderId === target.id : earlier.shopOrderId === target.id;
+      if (!same) throw invalidAt('body.requestId', 'this key was used for another order');
+      return { recorded: false, receiptNo: earlier.receiptNo };
+    }
+    const problem = checkPayments({
+      total: input.total,
+      payments: input.payments,
+      receiptNo: input.receiptNo,
+    });
+    if (problem === 'payment_mismatch') {
+      throw new AppError('payment_mismatch', 'payments do not add up', {
+        paths: ['body.payments'],
+      });
+    }
+    if (problem === 'receipt_missing') throw invalidAt('body.receiptNo', 'no receipt number');
+    if (problem === 'bad_payments') throw invalidAt('body.payments', 'bad payment lines');
+
+    const now = clock.now();
+    const issued = await fiscal.issue({
+      orderId: target.id,
+      amount: input.total,
+      requestId: input.requestId,
+      receiptNo: cleanReceiptNo(input.receiptNo),
+    });
+    const owner =
+      target.kind === 'order'
+        ? { orderId: target.id, shopOrderId: null }
+        : { orderId: null, shopOrderId: target.id };
+    for (const line of input.payments) {
+      await tx.insert(payments).values({
+        ...owner,
+        method: line.method,
+        amount: line.amount,
+        receivedBy: actor.userId,
+        receivedAt: now,
+      });
+    }
+    await tx.insert(fiscalReceipts).values({
+      ...owner,
+      provider: issued.provider,
+      status: issued.status,
+      receiptNo: issued.receiptNo,
+      fiscalSign: issued.fiscalSign,
+      receiptUrl: issued.receiptUrl,
+      amount: input.total,
+      requestId: input.requestId,
+      createdBy: actor.userId,
+      createdAt: now,
+    });
+    return { recorded: true, receiptNo: issued.receiptNo };
+  }
+
   /** Writes the checkout inside the transaction; nothing when this key already did it. */
   async function checkoutInside(
     tx: Tx,
@@ -137,7 +226,7 @@ export function createPaymentsService(deps: PaymentsDeps): PaymentsService {
     // The order's lock first: a second checkout waits here and then sees the first one's result.
     const state = await ordersService.checkoutState(tx, orderId);
     const [earlier] = await tx
-      .select()
+      .select({ orderId: fiscalReceipts.orderId })
       .from(fiscalReceipts)
       .where(eq(fiscalReceipts.requestId, input.requestId));
     if (earlier) {
@@ -165,35 +254,15 @@ export function createPaymentsService(deps: PaymentsDeps): PaymentsService {
     if (problem === 'receipt_missing') throw invalidAt('body.receiptNo', 'no receipt number');
     if (problem === 'bad_payments') throw invalidAt('body.payments', 'bad payment lines');
 
-    const now = clock.now();
-    const receiptNo = cleanReceiptNo(input.receiptNo);
-    const issued = await fiscal.issue({
-      orderId,
-      amount: state.total,
-      requestId: input.requestId,
-      receiptNo,
-    });
-    for (const line of input.payments) {
-      await tx.insert(payments).values({
-        orderId,
-        method: line.method,
-        amount: line.amount,
-        receivedBy: actor.userId,
-        receivedAt: now,
-      });
-    }
-    await tx.insert(fiscalReceipts).values({
-      orderId,
-      provider: issued.provider,
-      status: issued.status,
-      receiptNo: issued.receiptNo,
-      fiscalSign: issued.fiscalSign,
-      receiptUrl: issued.receiptUrl,
-      amount: state.total,
-      requestId: input.requestId,
-      createdBy: actor.userId,
-      createdAt: now,
-    });
+    const issued = await recordInside(
+      tx,
+      actor,
+      { kind: 'order', id: orderId },
+      {
+        ...input,
+        total: state.total,
+      },
+    );
     await ordersService.completeInside(tx, actor, orderId, issued.receiptNo);
     await audit.record(tx, {
       actorId: actor.userId,
@@ -210,6 +279,8 @@ export function createPaymentsService(deps: PaymentsDeps): PaymentsService {
   }
 
   return {
+    recordInside,
+
     async handover(actor, orderId) {
       requirePermission(actor, 'orders.read');
       return handoverView(actor, orderId);
@@ -229,7 +300,8 @@ export function createPaymentsService(deps: PaymentsDeps): PaymentsService {
           .from(payments)
           .where(eq(payments.id, paymentId))
           .for('update');
-        if (!payment) throw new AppError('not_found');
+        // A shop order's payment is corrected on the shop's page (not in this version).
+        if (!payment?.orderId) throw new AppError('not_found');
         if (payment.method === method) return payment.orderId;
         await tx.update(payments).set({ method }).where(eq(payments.id, paymentId));
         await audit.record(tx, {

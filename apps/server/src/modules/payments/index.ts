@@ -9,5 +9,6 @@ export function createPayments(deps: PaymentsDeps): PaymentsService {
 }
 
 export { createManualFiscalProvider, type FiscalProvider } from './app/fiscal';
+export type { PaymentTarget, RecordInput } from './app/payments';
 export type { PaymentsService } from './app/payments';
 export { paymentsAdminRoutes, paymentsClientRoutes } from './http/routes';

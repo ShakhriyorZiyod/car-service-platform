@@ -49,7 +49,11 @@ export function createMessageSender(
           }
         } else if (urls.miniApp) {
           const query =
-            button.target === 'task' ? `?task=${button.taskId}` : `?order=${button.orderId}`;
+            button.target === 'task'
+              ? `?task=${button.taskId}`
+              : button.target === 'shop_order'
+                ? `?shopOrder=${button.shopOrderId}`
+                : `?order=${button.orderId}`;
           keyboard.webApp(button.text, `${urls.miniApp}${query}`);
         }
       }

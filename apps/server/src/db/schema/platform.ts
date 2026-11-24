@@ -14,7 +14,7 @@ import { users } from './identity';
 
 /** Tables of the shared platform (docs/PLAN.md, sections 4.8 and 7.13). */
 
-export const statusEntityEnum = pgEnum('status_entity', ['order', 'task']);
+export const statusEntityEnum = pgEnum('status_entity', ['order', 'task', 'shop_order']);
 
 /**
  * Every change of status of an order or a task, in the transaction that made it (PLAN 2, rule 4).

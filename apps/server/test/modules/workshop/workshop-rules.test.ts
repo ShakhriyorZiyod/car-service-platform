@@ -114,6 +114,7 @@ describe('settings (PLAN 7.4)', () => {
       callEscalateMin: 30,
       reminderHours: [24, 2],
       adminDiscountLimitPct: 5,
+      shopPickupHours: 72,
     });
   });
 

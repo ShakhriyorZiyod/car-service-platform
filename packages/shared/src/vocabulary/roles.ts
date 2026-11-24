@@ -44,5 +44,8 @@ export const PERMISSIONS = [
   'costs.read',
   /** Product cards, retail prices, categories and suppliers. */
   'products.write',
+  // Stage 9: the shop
+  'shop.read',
+  'shop.write',
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];

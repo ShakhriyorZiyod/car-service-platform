@@ -81,6 +81,10 @@ export const API_ERROR_CODES = [
   'barcode_taken',
   /** There is not enough free stock: what is reserved for orders cannot be written off. */
   'insufficient_stock',
+
+  // Stage 9: the shop
+  /** Not enough is free of one of the goods: the order is not taken, nothing is reserved. */
+  'out_of_stock',
 ] as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

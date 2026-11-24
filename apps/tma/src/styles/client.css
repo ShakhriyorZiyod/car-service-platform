@@ -101,7 +101,7 @@
 
 .tab-bar {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   margin: calc(-1 * var(--space-1)) calc(-1 * var(--space-3));
 }
 
@@ -485,6 +485,12 @@
   justify-content: space-between;
 }
 
+.order-card__kind {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 .order-card__works {
   font-weight: 600;
 }
@@ -810,4 +816,19 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-2);
+}
+
+/* The shop on "Bosh" (stage 9) */
+.home-shop p {
+  margin: 0;
+}
+
+.home-shop__icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  color: var(--accent-text);
 }

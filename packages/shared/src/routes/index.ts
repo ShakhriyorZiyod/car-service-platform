@@ -170,6 +170,24 @@ export const ROUTES = {
   'admin.suppliers': { method: 'GET', path: '/api/admin/suppliers' },
   'admin.createSupplier': { method: 'POST', path: '/api/admin/suppliers' },
   'admin.updateSupplier': { method: 'PATCH', path: '/api/admin/suppliers/:id' },
+  // Stage 9: the shop
+  'client.shopCategories': { method: 'GET', path: '/api/client/shop/categories' },
+  'client.shopProducts': { method: 'GET', path: '/api/client/shop/products' },
+  'client.shopProduct': { method: 'GET', path: '/api/client/shop/products/:id' },
+  'client.shopQuote': { method: 'POST', path: '/api/client/shop/quote' },
+  'client.createShopOrder': { method: 'POST', path: '/api/client/shop/orders' },
+  'client.shopOrders': { method: 'GET', path: '/api/client/shop/orders' },
+  'client.shopOrder': { method: 'GET', path: '/api/client/shop/orders/:id' },
+  'client.cancelShopOrder': { method: 'POST', path: '/api/client/shop/orders/:id/cancel' },
+  'admin.shopOrders': { method: 'GET', path: '/api/admin/shop/orders' },
+  'admin.shopOrder': { method: 'GET', path: '/api/admin/shop/orders/:id' },
+  'admin.shopOrderCall': { method: 'POST', path: '/api/admin/shop/orders/:id/call' },
+  'admin.shopOrderReady': { method: 'POST', path: '/api/admin/shop/orders/:id/ready' },
+  'admin.cancelShopOrder': { method: 'POST', path: '/api/admin/shop/orders/:id/cancel' },
+  'admin.setShopDiscount': { method: 'PUT', path: '/api/admin/shop/orders/:id/discount' },
+  'admin.shopCheckout': { method: 'POST', path: '/api/admin/shop/orders/:id/checkout' },
+  'admin.quickSale': { method: 'POST', path: '/api/admin/shop/quick-sale' },
+  'admin.saleProducts': { method: 'GET', path: '/api/admin/shop/products' },
 } as const satisfies RouteTable;
 
 export type RouteName = keyof typeof ROUTES;

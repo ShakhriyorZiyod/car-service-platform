@@ -11,6 +11,7 @@ import type { WorkshopService } from '../workshop';
 import { createDocumentsService, type DocumentsService } from './app/documents';
 import { createLevelsService, type LevelsService } from './app/levels';
 import { createProductsService, type ProductsService } from './app/products';
+import { createShopStockService, type ShopStockService } from './app/shop-stock';
 
 export interface StockDeps extends PlatformDeps {
   audit: AuditService;
@@ -24,6 +25,8 @@ export interface StockService {
   products: ProductsService;
   documents: DocumentsService;
   levels: LevelsService;
+  /** What the shop asks of the warehouse (stage 9). */
+  shop: ShopStockService;
 }
 
 export function createStock(deps: StockDeps): StockService {
@@ -31,10 +34,12 @@ export function createStock(deps: StockDeps): StockService {
     products: createProductsService(deps),
     documents: createDocumentsService(deps),
     levels: createLevelsService(deps),
+    shop: createShopStockService(deps),
   };
 }
 
 export type { DocumentsService, DocumentInput } from './app/documents';
 export type { LevelsService } from './app/levels';
 export type { ProductInput, ProductsService } from './app/products';
+export type { CatalogQuery, SaleFacts, ShopStockService, StockLine } from './app/shop-stock';
 export { stockAdminRoutes } from './http/routes';

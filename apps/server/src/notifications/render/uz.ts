@@ -1,9 +1,11 @@
 import { formatQty } from '@cs/shared/format';
-import type { Notification, RenderedMessage, WorkNotification } from '../types';
+import type { Notification, RenderedMessage, ShopNotification, WorkNotification } from '../types';
 import { dateTime, esc, itemsLine, phoneLine, totalLine } from './shared';
 
 /** Texts in Uzbek. Visible text uses ‘ (U+2018) for o‘ and g‘. */
-export function renderUz(notification: Exclude<Notification, WorkNotification>): RenderedMessage {
+export function renderUz(
+  notification: Exclude<Notification, WorkNotification | ShopNotification>,
+): RenderedMessage {
   const lang = 'uz';
   if (notification.type === 'staff.stock_low') {
     const lines = notification.items.map(

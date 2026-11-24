@@ -1,5 +1,5 @@
 import type { Bootstrap } from '@cs/shared';
-import { Car as CarIcon } from 'lucide-react';
+import { Car as CarIcon, ShoppingBag } from 'lucide-react';
 import { useT } from '../../../i18n';
 import { useCars, useOrders } from '../../../lib/client-data';
 import { Button } from '../../../ui/Button';
@@ -11,11 +11,13 @@ export function HomeScreen({
   onBook,
   onAddCar,
   onOpenOrder,
+  onShop,
 }: {
   bootstrap: Bootstrap;
   onBook: () => void;
   onAddCar: () => void;
   onOpenOrder: (orderId: string) => void;
+  onShop: () => void;
 }) {
   const t = useT().client;
   const cars = useCars();
@@ -49,6 +51,17 @@ export function HomeScreen({
           ))}
         </>
       )}
+
+      <div className="card home-shop">
+        <span className="home-shop__icon" aria-hidden="true">
+          <ShoppingBag size={24} />
+        </span>
+        <h2 className="title">{t.shop.homeTitle}</h2>
+        <p className="secondary">{t.shop.homeText}</p>
+        <Button variant="secondary" onClick={onShop}>
+          {t.shop.homeOpen}
+        </Button>
+      </div>
     </section>
   );
 }

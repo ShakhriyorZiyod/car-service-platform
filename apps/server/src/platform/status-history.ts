@@ -3,7 +3,7 @@ import { statusHistory } from '../db/schema';
 
 /** One step of an order's or a task's life (docs/PLAN.md, sections 2 and 7.8). */
 export interface StatusStep {
-  entity: 'order' | 'task';
+  entity: 'order' | 'task' | 'shop_order';
   entityId: string;
   /** Null for the first status. */
   from: string | null;

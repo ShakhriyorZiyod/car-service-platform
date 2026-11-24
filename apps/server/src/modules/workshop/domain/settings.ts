@@ -25,6 +25,7 @@ export const DEFAULT_SETTINGS: Settings = {
     callEscalateMin: 30,
     reminderHours: [24, 2],
     adminDiscountLimitPct: 5,
+    shopPickupHours: 72,
   },
 };
 

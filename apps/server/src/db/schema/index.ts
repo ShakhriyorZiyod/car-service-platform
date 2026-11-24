@@ -12,6 +12,7 @@ export * from './orders';
 export * from './payments';
 export * from './platform';
 export * from './reception';
+export * from './shop';
 export * from './stock';
 export * from './tasks';
 export * from './workshop';

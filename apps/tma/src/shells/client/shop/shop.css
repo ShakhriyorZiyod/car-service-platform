@@ -1,0 +1,388 @@
+/* The shop (design T7, T10, T11). Tokens only, both themes; loaded with the shop's chunk. */
+
+.shop-search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+  color: var(--text-muted);
+}
+
+.shop-search input {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--tap-min);
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  outline: none;
+}
+
+.shop-chips {
+  display: flex;
+  gap: var(--space-2);
+  margin: 0 calc(-1 * var(--space-4));
+  padding: 0 var(--space-4);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.shop-chips .chip-choice {
+  flex: none;
+  white-space: nowrap;
+}
+
+/* Dark on light, light on dark: --ink is too close to the cards in the dark theme. */
+.shop-chips .chip-choice.is-selected {
+  border-color: var(--text);
+  background: var(--text);
+  color: var(--surface);
+}
+
+.shop-filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.shop-check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap-min);
+  cursor: pointer;
+}
+
+.shop-check input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+}
+
+.shop-sort {
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+/* The goods: two to a row on a phone, more on a wide window */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(156px, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.product-tile {
+  align-content: start;
+  height: 100%;
+  padding: var(--space-3);
+}
+
+.product-tile__open {
+  display: grid;
+  gap: var(--space-2);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.product-tile__name {
+  display: -webkit-box;
+  overflow: hidden;
+  font-weight: 600;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.product-tile__price {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.product-photo {
+  display: grid;
+  overflow: hidden;
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+}
+
+.product-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-photo__none {
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+}
+
+.product-photo--sm {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+}
+
+.avail {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.avail__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.avail--in_stock {
+  color: var(--success);
+}
+
+.avail--low {
+  color: var(--warning);
+}
+
+.avail--out {
+  color: var(--danger);
+}
+
+/* − n + */
+.stepper {
+  display: inline-grid;
+  grid-template-columns: var(--tap-min) minmax(28px, auto) var(--tap-min);
+  align-items: center;
+  justify-self: start;
+  border-radius: var(--radius-md);
+}
+
+.stepper button {
+  display: grid;
+  place-items: center;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.stepper button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.stepper__qty {
+  text-align: center;
+  font-weight: 700;
+}
+
+.stepper--ink {
+  background: var(--ink);
+  color: var(--on-ink);
+}
+
+.stepper--light {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.add-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-height: var(--tap-min);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--accent);
+  color: var(--on-accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cart-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: var(--button-height);
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--accent);
+  color: var(--on-accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cart-bar .num {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* T10 */
+.product-gallery {
+  display: grid;
+  grid-auto-columns: 100%;
+  grid-auto-flow: column;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  border-radius: var(--radius-lg);
+  background: var(--surface-muted);
+}
+
+.product-gallery img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  scroll-snap-align: start;
+}
+
+.product-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.product-text {
+  margin: 0;
+  white-space: pre-line;
+}
+
+.product-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+}
+
+.product-facts dt {
+  color: var(--text-muted);
+}
+
+.product-facts dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.product-actions {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* T11 */
+.cart-lines {
+  gap: var(--space-3);
+}
+
+.cart-line {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.cart-line__text {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cart-line__name {
+  font-weight: 600;
+}
+
+.cart-line__problem {
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--danger);
+  cursor: pointer;
+}
+
+.pickup-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.pickup-choice.is-selected {
+  border: 2px solid var(--accent);
+}
+
+.pickup-choice__radio {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  border: 6px solid var(--accent);
+  border-radius: 50%;
+  background: var(--surface);
+}
+
+.pickup-choice__text {
+  gap: var(--space-1);
+}
+
+.cart-info {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.cart-info svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+/* A price set large: the product's and the cart's total. */
+.price-lg {
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 700;
+}

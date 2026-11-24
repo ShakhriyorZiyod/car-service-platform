@@ -58,6 +58,14 @@ export const LIMITS = {
   invoiceNo: { max: 64 },
   /** A taxpayer number: 9 digits for a company, 14 for a person (PINFL). */
   inn: { min: 9, max: 14 },
+
+  // The shop (stage 9)
+  /** The most of one product in one order; the cart's stepper stops at the free stock below it. */
+  cartQty: { max: 10 },
+  /** Different products in one order. */
+  cartLines: { max: 50 },
+  /** The client's words to a shop order. */
+  shopComment: { max: 300 },
 } as const;
 
 /** Telegram's signed contact string; real ones are a few hundred characters. */
@@ -75,4 +83,5 @@ export const RULE_LIMITS = {
   callEscalateMin: { min: 1, max: 1_440 },
   reminderHours: { min: 1, max: 168, count: 4 },
   adminDiscountLimitPct: { min: 0, max: 100 },
+  shopPickupHours: { min: 1, max: 336 },
 } as const;

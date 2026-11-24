@@ -273,6 +273,13 @@ export const CANCEL_REASONS: readonly CancelReasonSeed[] = [
     nameRu: 'Нет связи с клиентом',
     appliesTo: 'system',
   },
+  // Stage 9: a gathered shop order nobody came for. Existing workshops get it from migration 0015.
+  {
+    code: 'not_picked_up',
+    nameUz: 'Muddatida olib ketilmadi',
+    nameRu: 'Не забрали в срок',
+    appliesTo: 'system',
+  },
 ];
 
 export interface ProductCategorySeed {

@@ -39,7 +39,36 @@ const orderRef = z.object({
   plate: z.string(),
 });
 
+/** What every message about a shop order says of it (stage 9). */
+const shopFacts = z.object({
+  shopOrderId: z.uuid(),
+  number: z.number().int(),
+  items: z.array(z.object({ nameUz: z.string(), nameRu: z.string(), qty: z.number().int() })),
+  total: z.number().int(),
+});
+
 export const notificationSchema = z.discriminatedUnion('type', [
+  /** To the client: the shop order was received, then confirmed, gathered, cancelled, handed over. */
+  shopFacts.extend({ type: z.literal('shop.created') }),
+  shopFacts.extend({ type: z.literal('shop.confirmed') }),
+  shopFacts.extend({
+    type: z.literal('shop.ready'),
+    pickupUntil: when,
+    address: z.string().nullable(),
+  }),
+  shopFacts.extend({
+    type: z.literal('shop.cancelled'),
+    reason: bilingual.nullable(),
+    workshopPhone: z.string().nullable(),
+  }),
+  shopFacts.extend({ type: z.literal('shop.completed') }),
+  /** To the admins: a new shop order waits for a call; a client cancelled theirs. */
+  shopFacts.extend({ type: z.literal('staff.shop_order_new'), clientName: z.string() }),
+  shopFacts.extend({
+    type: z.literal('staff.shop_client_cancelled'),
+    clientName: z.string(),
+    reason: bilingual.nullable(),
+  }),
   /** To the client: their request was received. */
   orderFacts.extend({ type: z.literal('order.created') }),
   /** To the client: the workshop (or the system) cancelled the request. */
@@ -170,10 +199,16 @@ export type WorkNotification = Extract<
   }
 >;
 
+/** The shop's messages (stage 9). */
+export type ShopNotification = Extract<
+  Notification,
+  { type: `shop.${string}` | `staff.shop_${string}` }
+>;
+
 /** The messages that are about an order and so carry its facts. */
 export type OrderNotification = Exclude<
   Notification,
-  { type: 'staff.deletion_requested' | 'staff.stock_low' } | WorkNotification
+  { type: 'staff.deletion_requested' | 'staff.stock_low' } | WorkNotification | ShopNotification
 >;
 
 /** What the outbox stores: the language is the recipient's at the time of writing. */
@@ -186,9 +221,10 @@ export type OutboxPayload = z.infer<typeof outboxPayloadSchema>;
 /** The button under a message: where it leads is decided when it is sent (it needs the URLs). */
 export interface MessageButton {
   text: string;
-  /** `order` and `task`: that screen in the Mini App; `panel`: the web panel. */
-  target: 'order' | 'task' | 'panel';
+  /** `order`, `task` and `shop_order`: that screen in the Mini App; `panel`: the web panel. */
+  target: 'order' | 'task' | 'shop_order' | 'panel';
   orderId: string | null;
+  shopOrderId?: string;
   /** A page of the panel other than an order's, relative to its root: "stock?filter=low". */
   path?: string;
   taskId?: string | null;

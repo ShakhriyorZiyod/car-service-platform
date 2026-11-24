@@ -48,6 +48,31 @@ export function useOrder(id: string) {
   });
 }
 
+// The shop (stage 9)
+export const shopOrdersKey = (tab: OrderTab) => ['shopOrders', tab] as const;
+export const shopOrderKey = (id: string) => ['shopOrder', id] as const;
+
+export function useShopOrders(tab: OrderTab) {
+  const api = useApi();
+  return useQuery({
+    queryKey: shopOrdersKey(tab),
+    queryFn: () => api.call('client.shopOrders', { query: { tab } }),
+  });
+}
+
+/** While the order is open its screen is refreshed now and then: the workshop moves it on. */
+export function useShopOrder(id: string) {
+  const api = useApi();
+  return useQuery({
+    queryKey: shopOrderKey(id),
+    queryFn: () => api.call('client.shopOrder', { params: { id } }),
+    refetchInterval: (query) =>
+      ['new', 'confirmed', 'ready_for_pickup'].includes(query.state.data?.status ?? '')
+        ? 30_000
+        : false,
+  });
+}
+
 export const actKey = (orderId: string) => ['act', orderId] as const;
 
 /** The reception act of an order: none until the workshop has sent it. */

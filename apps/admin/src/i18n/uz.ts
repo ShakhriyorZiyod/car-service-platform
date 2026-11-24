@@ -1,4 +1,5 @@
 import { stockUz } from './stock.uz';
+import { shopUz } from './shop.uz';
 
 /** Panel texts in Uzbek, the source dictionary: ru.ts must have the same shape. */
 export const uz = {
@@ -12,6 +13,7 @@ export const uz = {
     handover: 'Topshirish va kassa',
     clients: 'Mijozlar',
     stock: 'Ombor',
+    shop: 'Do‘kon buyurtmalari',
     settings: 'Sozlamalar',
   },
   notFound: 'Sahifa topilmadi.',
@@ -150,6 +152,10 @@ export const uz = {
       holdNewWorkMin: {
         label: 'Yangi arizani ushlab turish, ish daqiqasi',
         hint: 'Admin qo‘ng‘iroq qilguncha vaqt shuncha ish daqiqasi band turadi.',
+      },
+      shopPickupHours: {
+        label: 'Do‘kon buyurtmasini olib ketish muddati, soat',
+        hint: 'Yig‘ilgan buyurtma shuncha soat kutadi, keyin rezerv avtomatik yechiladi.',
       },
       holdNoAnswerHours: {
         label: '“Javobsiz”dan keyin, soat',
@@ -371,6 +377,7 @@ export const uz = {
     discount_over_limit: 'Chegirma limitingizdan katta. Ko‘prog‘ini faqat egasi beradi.',
     sku_taken: 'Bu artikul boshqa mahsulotda bor.',
     barcode_taken: 'Bu shtrix-kod boshqa mahsulotda bor.',
+    out_of_stock: 'Tovar yetmaydi: bo‘sh qoldiq kam yoki boshqa buyurtmalar uchun rezervda.',
     insufficient_stock:
       'Bo‘sh qoldiq yetmaydi: omborda shuncha yo‘q yoki bir qismi buyurtmalar uchun rezervda.',
   } as Record<string, string>,
@@ -873,4 +880,5 @@ export const uz = {
     waiting: 'Tekshirishni kutmoqda',
   },
   stock: stockUz,
+  shop: shopUz,
 };

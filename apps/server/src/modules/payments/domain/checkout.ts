@@ -25,16 +25,12 @@ export type CheckoutProblem =
 /** The receipt number as it is kept: without the spaces around it. */
 export const cleanReceiptNo = (value: string): string => value.trim();
 
-export function checkCheckout(input: {
-  status: OrderStatus;
+/** The payments and the receipt alone: what a shop order's checkout checks too (stage 9). */
+export function checkPayments(input: {
   total: number;
-  unpricedCount: number;
   payments: readonly PaymentLine[];
   receiptNo: string;
-}): CheckoutProblem | null {
-  if (input.status !== 'ready_for_pickup') return 'invalid_transition';
-  if (input.unpricedCount > 0) return 'unpriced_items';
-
+}): Exclude<CheckoutProblem, 'invalid_transition' | 'unpriced_items'> | null {
   const receipt = cleanReceiptNo(input.receiptNo);
   if (receipt.length < LIMITS.receiptNo.min || receipt.length > LIMITS.receiptNo.max) {
     return 'receipt_missing';
@@ -49,6 +45,18 @@ export function checkCheckout(input: {
   const paid = input.payments.reduce((sum, line) => sum + line.amount, 0);
   if (paid !== input.total) return 'payment_mismatch';
   return null;
+}
+
+export function checkCheckout(input: {
+  status: OrderStatus;
+  total: number;
+  unpricedCount: number;
+  payments: readonly PaymentLine[];
+  receiptNo: string;
+}): CheckoutProblem | null {
+  if (input.status !== 'ready_for_pickup') return 'invalid_transition';
+  if (input.unpricedCount > 0) return 'unpriced_items';
+  return checkPayments(input);
 }
 
 /** The day's takings by method and the number of receipts (design A6, "Bugungi kassa"). */

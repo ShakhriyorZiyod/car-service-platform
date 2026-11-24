@@ -37,6 +37,7 @@ import {
 } from './modules/payments';
 import { createMedia, type MediaService } from './modules/media';
 import { createReception, type ReceptionService } from './modules/reception';
+import { createShop, type ShopService } from './modules/shop';
 import { createStock, type StockService } from './modules/stock';
 import { createTasks, type TasksService } from './modules/tasks';
 import type { Clock } from './platform/clock';
@@ -79,6 +80,8 @@ export interface Services {
   dashboard: DashboardService;
   /** The warehouse (stage 8). */
   stock: StockService;
+  /** The shop (stage 9). */
+  shop: ShopService;
   /** What the system does by itself on a timer (jobs/scheduler.ts). */
   tasks: ScheduledTask[];
 }
@@ -132,6 +135,15 @@ export function createServices(deps: ServicesDeps): Services {
     fiscal: deps.fiscal ?? createManualFiscalProvider(),
   });
   const stock = createStock({ ...platform, audit, media, outbox, staff, workshop });
+  const shop = createShop({
+    ...platform,
+    audit,
+    outbox,
+    staff,
+    workshop,
+    stock: stock.shop,
+    payments,
+  });
   return {
     audit,
     workshop,
@@ -159,6 +171,7 @@ export function createServices(deps: ServicesDeps): Services {
       tasks: taskService,
       payments,
       stock: stock.levels,
+      shop,
     }),
     reception: createReception({
       ...platform,
@@ -168,6 +181,7 @@ export function createServices(deps: ServicesDeps): Services {
       orders: orders.admin,
     }),
     stock,
-    tasks: [...orders.tasks, ...stock.levels.tasks],
+    shop,
+    tasks: [...orders.tasks, ...stock.levels.tasks, ...shop.tasks],
   };
 }

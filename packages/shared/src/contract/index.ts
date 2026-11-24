@@ -4,6 +4,7 @@ import type { RouteName } from '../routes';
 import {
   ACT_CONFIRM_CHANNELS,
   ACT_STATUSES,
+  AVAILABILITIES,
   ADMIN_TASK_TABS,
   MASTER_TASK_TABS,
   TASK_PHOTO_KINDS,
@@ -31,6 +32,11 @@ import {
   RULE_LIMITS,
   SERVICE_GROUPS,
   SHELLS,
+  SHOP_FULFILLMENTS,
+  SHOP_ORDER_SOURCES,
+  SHOP_ORDER_STATUSES,
+  SHOP_ORDER_TABS,
+  SHOP_SORTS,
   STOCK_DOCUMENT_KINDS,
   STOCK_DOCUMENT_STATUSES,
   STOCK_FILTERS,
@@ -194,6 +200,8 @@ export const rulesSchema = z
       .array(wholeNumber(RULE_LIMITS.reminderHours.min, RULE_LIMITS.reminderHours.max))
       .max(RULE_LIMITS.reminderHours.count),
     adminDiscountLimitPct: limited(RULE_LIMITS.adminDiscountLimitPct),
+    /** A gathered shop order waits this many hours to be picked up (stage 9). */
+    shopPickupHours: limited(RULE_LIMITS.shopPickupHours),
   })
   .refine((rules) => rules.callEscalateMin > rules.callWarnMin, {
     path: ['callEscalateMin'],
@@ -1100,6 +1108,8 @@ export const dashboardSchema = todaySchema.extend({
   cash: cashSchema.nullable(),
   /** Below the minimum (stage 8); null for who may not see the warehouse. */
   lowStock: z.array(lowStockItemSchema).nullable(),
+  /** Shop orders to call about and to hand over (stage 9); null without shop.read. */
+  shop: z.object({ newOrders: z.number().int(), readyForPickup: z.number().int() }).nullable(),
 });
 export type Dashboard = z.infer<typeof dashboardSchema>;
 
@@ -1160,6 +1170,161 @@ const discountReason = z
 const staffReason = z.object({ reasonId: id, note: comment.nullable().optional() });
 
 // ---------------------------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------------------------
+// Stage 9: the shop (docs/PLAN.md, sections 7.15, 9.5 and 11)
+
+const availability = z.enum(AVAILABILITIES);
+const shopOrderStatus = z.enum(SHOP_ORDER_STATUSES);
+
+export const shopCategorySchema = z.object({
+  id,
+  parentId: id.nullable(),
+  nameUz: z.string(),
+  nameRu: z.string(),
+});
+export type ShopCategory = z.infer<typeof shopCategorySchema>;
+
+/** A product as a client sees it: never the exact stock, only whether there is some (TZ 4.5). */
+export const shopProductSchema = z.object({
+  id,
+  categoryId: id,
+  sku: z.string(),
+  nameUz: z.string(),
+  nameRu: z.string(),
+  pack: z.string().nullable(),
+  price: z.number().int(),
+  availability,
+  /** How many the cart may hold: what is free, at most LIMITS.cartQty.max; 0 when out. */
+  maxQty: z.number().int(),
+  /** The cover photo, a signed link. */
+  photo: z.string().nullable(),
+});
+export type ShopProduct = z.infer<typeof shopProductSchema>;
+
+export const shopProductCardSchema = shopProductSchema.extend({
+  photos: z.array(z.string()),
+  descriptionUz: z.string().nullable(),
+  descriptionRu: z.string().nullable(),
+  brand: z.string().nullable(),
+});
+export type ShopProductCard = z.infer<typeof shopProductCardSchema>;
+
+/** A cart line: the product and how many. */
+const cartItem = z.object({
+  productId: id,
+  qty: z.number().int().min(1).max(LIMITS.cartQty.max),
+});
+const cartItems = z.array(cartItem).min(1).max(LIMITS.cartLines.max);
+
+/** The cart priced by the server: what can be ordered and what has changed. */
+export const shopQuoteSchema = z.object({
+  lines: z.array(
+    z.object({
+      productId: id,
+      nameUz: z.string(),
+      nameRu: z.string(),
+      pack: z.string().nullable(),
+      photo: z.string().nullable(),
+      price: z.number().int(),
+      qty: z.number().int(),
+      lineTotal: z.number().int(),
+      availability,
+      maxQty: z.number().int(),
+      /** `gone`: no longer on sale; `short`: less is free than the cart holds. */
+      problem: z.enum(['gone', 'short']).nullable(),
+    }),
+  ),
+  subtotal: z.number().int(),
+  /** Every line can be ordered as it is. */
+  canOrder: z.boolean(),
+});
+export type ShopQuote = z.infer<typeof shopQuoteSchema>;
+
+const shopOrderItemSchema = z.object({
+  productId: id,
+  nameUz: z.string(),
+  nameRu: z.string(),
+  pack: z.string().nullable(),
+  price: z.number().int(),
+  qty: z.number().int(),
+  lineTotal: z.number().int(),
+});
+
+/** A shop order as its client sees it (design T9 and the order's own screen). */
+export const shopOrderSchema = z.object({
+  id,
+  number: z.number().int(),
+  status: shopOrderStatus,
+  fulfillment: z.enum(SHOP_FULFILLMENTS),
+  items: z.array(shopOrderItemSchema),
+  subtotal: z.number().int(),
+  discount: z.number().int(),
+  total: z.number().int(),
+  comment: z.string().nullable(),
+  createdAt: instantSchema,
+  /** Gathered: it waits to be picked up until then. */
+  pickupUntil: instantSchema.nullable(),
+  cancelReason: z.object({ uz: z.string(), ru: z.string() }).nullable(),
+  /** Handed over: how it was paid and the receipt. */
+  payments: z.array(z.object({ method: paymentMethodSchema, amount: z.number().int() })),
+  receiptNo: z.string().nullable(),
+  /** What the client may do now: the server decides. */
+  canCancel: z.boolean(),
+  history: z.array(z.object({ status: shopOrderStatus, at: instantSchema })),
+});
+export type ShopOrder = z.infer<typeof shopOrderSchema>;
+
+/** A shop order as the staff see it (design A9). */
+export const adminShopOrderSchema = shopOrderSchema.extend({
+  source: z.enum(SHOP_ORDER_SOURCES),
+  client: clientRef.nullable(),
+  discountInfo: z
+    .object({
+      amount: z.number().int(),
+      percent: z.number().nullable(),
+      reason: z.string().nullable(),
+    })
+    .nullable(),
+  calls: z.array(
+    z.object({
+      id,
+      outcome: z.enum(CALL_OUTCOMES),
+      note: z.string().nullable(),
+      at: instantSchema,
+      adminName: z.string(),
+    }),
+  ),
+  paymentLines: z.array(
+    z.object({
+      id,
+      method: paymentMethodSchema,
+      amount: z.number().int(),
+      receivedAt: instantSchema,
+    }),
+  ),
+  receipt: z
+    .object({ receiptNo: z.string(), amount: z.number().int(), createdAt: instantSchema })
+    .nullable(),
+  /** While new: the order waits for the call until then. */
+  holdUntil: instantSchema.nullable(),
+  actions: z.object({
+    canCall: z.boolean(),
+    canReady: z.boolean(),
+    canCancel: z.boolean(),
+    canDiscount: z.boolean(),
+    canCheckout: z.boolean(),
+  }),
+  /** The admin's discount limit, for the discount form. */
+  discountLimitPct: z.number(),
+  discountUnlimited: z.boolean(),
+});
+export type AdminShopOrder = z.infer<typeof adminShopOrderSchema>;
+
+const shopPayments = z
+  .array(z.object({ method: paymentMethodSchema, amount: z.number().int().min(1) }))
+  .max(PAYMENT_METHODS.length);
+const shopReceiptNo = z.string().trim().min(LIMITS.receiptNo.min).max(LIMITS.receiptNo.max);
 
 export const contract = {
   'tma.bootstrap': { response: bootstrapSchema },
@@ -1817,6 +1982,101 @@ export const contract = {
       })
       .refine(hasChange, atLeastOne),
     response: supplierSchema,
+  },
+
+  // Stage 9: the shop
+  'client.shopCategories': { response: z.object({ items: z.array(shopCategorySchema) }) },
+  'client.shopProducts': {
+    query: z.object({
+      categoryId: id.optional(),
+      q: z.string().trim().min(1).max(60).optional(),
+      inStock: z.enum(['true', 'false']).optional(),
+      sort: z.enum(SHOP_SORTS).default('popular'),
+    }),
+    response: z.object({ items: z.array(shopProductSchema) }),
+  },
+  'client.shopProduct': { params: z.object({ id }), response: shopProductCardSchema },
+  'client.shopQuote': { body: z.object({ items: cartItems }), response: shopQuoteSchema },
+  'client.createShopOrder': {
+    body: z.object({
+      /** The order's key: sent again, it gives the same order. */
+      requestId: id,
+      items: cartItems,
+      comment: z.string().trim().min(1).max(LIMITS.shopComment.max).nullable(),
+    }),
+    response: shopOrderSchema,
+  },
+  'client.shopOrders': {
+    query: z.object({ tab: z.enum(ORDER_TABS).default('active') }),
+    response: z.object({ items: z.array(shopOrderSchema) }),
+  },
+  'client.shopOrder': { params: z.object({ id }), response: shopOrderSchema },
+  'client.cancelShopOrder': {
+    params: z.object({ id }),
+    body: z.object({ reasonId: id, note: comment.nullable().optional() }),
+    response: shopOrderSchema,
+  },
+  'admin.shopOrders': {
+    query: z.object({
+      tab: z.enum(SHOP_ORDER_TABS).default('new'),
+      q: z.string().trim().min(1).max(60).optional(),
+    }),
+    response: z.object({ items: z.array(adminShopOrderSchema) }),
+  },
+  'admin.shopOrder': { params: z.object({ id }), response: adminShopOrderSchema },
+  'admin.shopOrderCall': {
+    params: z.object({ id }),
+    body: z.object({
+      outcome: z.enum(CALL_OUTCOMES),
+      /** Required when the client refused. */
+      reasonId: id.optional(),
+      note: comment.nullable().optional(),
+    }),
+    response: adminShopOrderSchema,
+  },
+  'admin.shopOrderReady': { params: z.object({ id }), response: adminShopOrderSchema },
+  'admin.cancelShopOrder': {
+    params: z.object({ id }),
+    body: z.object({ reasonId: id, note: comment.nullable().optional() }),
+    response: adminShopOrderSchema,
+  },
+  'admin.setShopDiscount': {
+    params: z.object({ id }),
+    body: z.discriminatedUnion('kind', [
+      z.object({
+        kind: z.literal('percent'),
+        percent: z.number().gt(0).max(100).multipleOf(0.01),
+        reason: discountReason,
+      }),
+      z.object({
+        kind: z.literal('amount'),
+        amount: z.number().int().min(1).max(LIMITS.price.max),
+        reason: discountReason,
+      }),
+      z.object({ kind: z.literal('none') }),
+    ]),
+    response: adminShopOrderSchema,
+  },
+  'admin.shopCheckout': {
+    params: z.object({ id }),
+    body: z.object({ requestId: id, payments: shopPayments, receiptNo: shopReceiptNo }),
+    response: adminShopOrderSchema,
+  },
+  'admin.quickSale': {
+    body: z.object({
+      requestId: id,
+      clientId: id.nullable(),
+      items: cartItems,
+      payments: shopPayments,
+      receiptNo: shopReceiptNo,
+    }),
+    response: adminShopOrderSchema,
+  },
+  /** Goods on sale for the counter: the staff see the free stock itself. */
+  'admin.saleProducts': {
+    response: z.object({
+      items: z.array(shopProductSchema.extend({ free: z.number() })),
+    }),
   },
 } as const satisfies Record<RouteName, EndpointSchemas>;
 

@@ -1,9 +1,11 @@
 import { formatQty } from '@cs/shared/format';
-import type { Notification, RenderedMessage, WorkNotification } from '../types';
+import type { Notification, RenderedMessage, ShopNotification, WorkNotification } from '../types';
 import { dateTime, esc, itemsLine, phoneLine, totalLine } from './shared';
 
 /** Texts in Russian. */
-export function renderRu(notification: Exclude<Notification, WorkNotification>): RenderedMessage {
+export function renderRu(
+  notification: Exclude<Notification, WorkNotification | ShopNotification>,
+): RenderedMessage {
   const lang = 'ru';
   if (notification.type === 'staff.stock_low') {
     const lines = notification.items.map(

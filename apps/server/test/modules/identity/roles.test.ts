@@ -49,6 +49,8 @@ const EXPECTED: Record<Role, readonly Permission[]> = {
     'clients.write',
     'stock.read',
     'stock.write',
+    'shop.read',
+    'shop.write',
   ],
   director: [
     'panel.access',
@@ -58,6 +60,7 @@ const EXPECTED: Record<Role, readonly Permission[]> = {
     'clients.read',
     'stock.read',
     'costs.read',
+    'shop.read',
   ],
   owner: PERMISSIONS,
 };
@@ -101,10 +104,10 @@ describe('permissionsOf: the roles × permissions matrix (PLAN 8)', () => {
   });
 
   it('several roles add up', () => {
-    expect(permissionsOf(['director', 'admin'])).toEqual([
-      ...permissionsOf(['admin']),
-      'costs.read',
-    ]);
+    // In the vocabulary's order: the director adds only the purchase prices to the admin's.
+    expect([...permissionsOf(['director', 'admin'])].sort()).toEqual(
+      [...permissionsOf(['admin']), 'costs.read'].sort(),
+    );
     expect(permissionsOf(['master', 'director'])).toEqual(permissionsOf(['director']));
   });
 });

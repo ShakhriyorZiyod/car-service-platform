@@ -25,6 +25,7 @@ const NUMBER_RULES = [
   'callWarnMin',
   'callEscalateMin',
   'adminDiscountLimitPct',
+  'shopPickupHours',
 ] as const;
 type NumberRule = (typeof NUMBER_RULES)[number];
 

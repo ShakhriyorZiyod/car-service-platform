@@ -1,7 +1,7 @@
-import type { Order } from '@cs/shared';
+import type { Order, ShopOrder } from '@cs/shared';
 import { formatDateLong, formatMoney, formatPlate } from '@cs/shared/format';
-import type { OrderStatus } from '@cs/shared/vocabulary';
-import { ChevronLeft } from 'lucide-react';
+import type { OrderStatus, ShopOrderStatus } from '@cs/shared/vocabulary';
+import { ChevronLeft, ShoppingBag } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useLang, useT } from '../i18n';
 import { pick } from '../lib/client-data';
@@ -127,6 +127,51 @@ export function OrderCard({ order, onOpen }: { order: Order; onOpen: () => void 
       </span>
       <span className="order-card__bottom">
         <PlateChip plate={order.car.plate} />
+        <span className="num">{formatMoney(order.total, lang)}</span>
+      </span>
+    </button>
+  );
+}
+
+const SHOP_TONE: Record<ShopOrderStatus, string> = {
+  new: 'info',
+  confirmed: 'teal',
+  ready_for_pickup: 'success',
+  completed: 'neutral',
+  cancelled: 'danger',
+};
+
+export function ShopStatusChip({ status }: { status: ShopOrderStatus }) {
+  const t = useT().client.shop.status;
+  return (
+    <span className={`status-chip status-chip--${SHOP_TONE[status]}`}>
+      <span className="status-chip__dot" aria-hidden="true" />
+      {t[status]}
+    </span>
+  );
+}
+
+/** A shop order among the service orders of T9: its number, what is in it and the total. */
+export function ShopOrderCard({ order, onOpen }: { order: ShopOrder; onOpen: () => void }) {
+  const t = useT().client;
+  const lang = useLang();
+  return (
+    <button type="button" className="card order-card" onClick={onOpen}>
+      <span className="order-card__top">
+        <span className="order-card__kind">
+          <ShoppingBag size={16} aria-hidden="true" />
+          <span className="num">{t.orders.number(order.number)}</span>
+          <span className="secondary">{t.shop.kind}</span>
+        </span>
+        <ShopStatusChip status={order.status} />
+      </span>
+      <span className="order-card__works">
+        {order.items
+          .map((item) => `${pick(lang, { uz: item.nameUz, ru: item.nameRu })} × ${item.qty}`)
+          .join(', ')}
+      </span>
+      <span className="order-card__bottom">
+        <span className="secondary">{formatDateLong(order.createdAt.date, lang)}</span>
         <span className="num">{formatMoney(order.total, lang)}</span>
       </span>
     </button>

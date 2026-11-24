@@ -848,7 +848,7 @@ javob beradi, admin esa "telefon orqali" deb belgilashi mumkin. `pending` va `re
 "og'zaki tasdiqladi" deb belgiladi). Yuborish shartlari: probeg, yoqilg'i darajasi va to'rt tomondan
 fotolar (old, orqa, chap, o'ng).
 
-### 9.5 Do'kon buyurtmasi (`shop/domain/shop-order-status.ts`, 9-bosqich)
+### 9.5 Do'kon buyurtmasi (`shop/domain/shop-order.ts`, 9-bosqich)
 
 | Qayerdan | Qayerga | Kim | Shart va natija | Ombor |
 |---|---|---|---|---|
@@ -1112,13 +1112,12 @@ Yo'llar `packages/shared/src/routes`, sxemalar `contract` da. Guruhlar va autent
 
 | Yo'l | Vazifa |
 |---|---|
-| `GET /api/client/shop/categories`, `GET /api/client/shop/products?categoryId&q&inStock&sort&cursor`, `GET .../products/:id` | Katalog va karta: narx, `availability`, `maxQty`, fotolar |
+| `GET /api/client/shop/categories`, `GET /api/client/shop/products?categoryId&q&inStock&sort`, `GET .../products/:id` | Katalog va karta: narx, `availability`, `maxQty`, fotolar (ro'yxat sahifalanmaydi, 22-bo'lim) |
 | `POST /api/client/shop/quote` | Savat: narxlar, jami, eskirgan yoki yetmaydigan pozitsiyalar |
-| `POST /api/client/shop/orders`, `GET .../:id`, `POST .../:id/cancel` | Buyurtma (`requestId`), kuzatuv, bekor qilish |
-| `GET /api/client/orders` | Xizmat va do'kon buyurtmalari birga, `kind` bilan |
+| `POST /api/client/shop/orders`, `GET .../orders?tab`, `GET .../:id`, `POST .../:id/cancel` | Buyurtma (`requestId`), ro'yxat ("Buyurtmalarim" uni xizmat arizalari bilan birlashtiradi, 22-bo'lim), kuzatuv, bekor qilish |
 | `GET /api/admin/shop/orders?tab&q`, `GET .../:id` | Do'kon buyurtmalari (A9) |
 | `POST /api/admin/shop/orders/:id/call`, `.../ready`, `.../cancel`, `PUT .../discount`, `POST .../checkout` | Holatlar va to'lov |
-| `POST /api/admin/shop/quick-sale` | Tezkor sotuv |
+| `POST /api/admin/shop/quick-sale`, `GET /api/admin/shop/products` | Tezkor sotuv va peshtaxta uchun tovarlar (bo'sh qoldiq bilan) |
 
 Ro'yxatlar `cursor` bilan sahifalanadi. Cheklovlar: hamma `/api` ga IP bo'yicha daqiqasiga 600 so'rov (2026-11-19 gacha 120 edi, 22-bo'lim)
 (`@fastify/rate-limit`, oqimdan himoya). Kirishga biznes-qoida: bir odamga 15 daqiqada 10 ta noto'g'ri
@@ -1221,7 +1220,7 @@ Docker yo'q, barbershop_bot bilan bir xil yondashuv:
 | 6 | Topshirish va to'lov | Qabul qilindi | [bosqich-6.md](reports/bosqich-6.md) |
 | 7 | Ishga tushirish | Kamchilik bilan: repo qismi tayyor, production server kutilmoqda | [bosqich-7.md](reports/bosqich-7.md) |
 | 8 | Ombor | Qabul qilindi | [bosqich-8.md](reports/bosqich-8.md) |
-| 9 | Do'kon | Jarayonda | — |
+| 9 | Do'kon | Qabul qilindi | [bosqich-9.md](reports/bosqich-9.md) |
 | 10 | "Mashina bilan birga" | Kutilmoqda | — |
 
 ### Bosqich 0 — Poydevor
@@ -1622,6 +1621,7 @@ Yangilari tepada.
 
 | Sana | Qaror | Sabab |
 |---|---|---|
+| 2026-11-24 | 9-bosqichni bajarishda: mijozning do'kon buyurtmalari alohida `GET /api/client/shop/orders?tab` dan keladi, "Buyurtmalarim" ikkala ro'yxatni ilovada birlashtiradi (xizmat arizasi bron vaqti, do'kon buyurtmasi yaratilgan vaqti bo'yicha, yangisi tepada); katalog sahifalanmaydi; savat va mahsulot ekranida jami server `quote` idan olinadi, faqat tezkor sotuv oynasi summani ko'rsatish uchun o'zi qo'shadi (server baribir qayta hisoblaydi va mos kelmasa rad etadi); do'kon to'lovining usulini tuzatish (`admin.correctPayment`) bu bosqichda yo'q; tezkor sotuv mijozsiz (`client_id` null) — mijozni tanlash keyin; panel qidiruvi va A9 qidiruvida 1–7 xonali raqam buyurtma raqami deb olinadi va barcha tab'lardan qidiriladi (raqamlar xizmat arizasi bilan umumiy); "Muddatida olib ketilmadi" sababi nomida soat yo'q, chunki muddat sozlamada (`shopPickupHours`, 72); tovar sarlavhasi faqat nom, hajm kartada alohida | Kontraktni sodda tutish va mavjud `client.orders` ni buzmaslik; bitta ustaxonada tovarlar yuzlab. Biznes-qoida serverda qoladi. Tuzatish oqimi xizmat arizasiga bog'langan, do'konga alohida ekran kerak. Raqam bitta buyurtmani aniqlaydi, telefon raqamlari bilan aralashmasligi uchun uzunlik chegarasi. Hajm bitta tilda yoziladi: nomga qo'shilganda ruschada "1 л, 1 l" chiqardi (brauzerda topildi) |
 | 2026-11-24 | Telefon bitta ko'rinishda: bazada `+998XXXXXXXXX` (chet el raqami `+` va 8–15 raqam). Server avvalgidek hamma kirishni `normalizePhone` dan o'tkazadi (Telegram'ning `998...` ham); bunga baza CHECK'i qo'shildi (`users_phone_format`, `settings_workshop_phone_format`, migratsiya 0010). Panelda `PhoneField`: `+998 ` oldindan, yozilgan va qo'yilgan raqam `+998 90 123 45 67` ga tushadi (`formatPhoneInput`), chala raqamda saqlash o'chiq va sababi yoziladi (`phoneInputState`). Kirish sahifasidagi "Login yoki telefon" va qidiruvda niqob yo'q. Migratsiya production'da serverning o'zida `dist/migrate.js` bilan (DEPLOY.md) | Foydalanuvchi so'rovi: raqam qayerdan kelmasin bitta formatda saqlansin, panelda shablon yoki majburlash bo'lsin; chet el raqamlari qolsin, CHECK bazada ham bo'lsin. Migratsiyani serverda ishga tushirish baza parolini chatga va kompyuterga chiqarmaydi |
 | 2026-11-24 | 8-bosqichni bajarishda: ombor ro'yxati (`admin.stock`) sahifalanmaydi, to'liq qaytadi; hisobdan chiqarish sababi bazada faqat o'tkazilgan hujjatda majburiy (qoralamada keyin tanlanadi); hujjatda bitta nakladnoy rasmini `media` servisi hujjat qulfi ostida saqlaydi, indeks yo'q; A5 dagi "Bugungi harakatlar" o'rniga "So'nggi harakatlar" (oxirgi 8 ta); qatordagi kam/tugagan holat fon bilan emas, chap chiziq va yozuvli chip bilan | Bitta ustaxonada yuzlab mahsulot. Sabab qoralama yaratilgandan keyin tanlanadi. Enum'ga qo'shilgan qiymatni o'sha migratsiyadagi indeks sharti ishlata olmaydi (PostgreSQL). "Bugun" uchun sanani klient hisoblamaydi (CLAUDE.md). `*-soft` fonlar ikkala mavzuda och, qorong'ida oq matn o'qilmasdi (brauzerda topildi) |
 | 2026-11-24 | Ombor va do'kon v2 ro'yxatidan chiqib, 8–10-bosqichlar sifatida rejaga kirdi (20-bo'lim tartibi). Qarorlar: rezerv `new` da (TZ 12.2 da `confirmed`); do'kon buyurtmasi alohida jadvalda, raqami xizmat arizasi bilan umumiy `order_number_seq` dan; bitta kassa (`payments` va `fiscal_receipts` ikkala turga yoziladi); sotiladigan tovar donada, har qadoq alohida mahsulot; mijozga aniq qoldiq ko'rsatilmaydi, savat chegarasi `min(free, 10)`; kam qoldiq — kuniga bitta jamlangan xabar; kirim narxini admin kiritadi, tannarxni faqat rahbar va egasi ko'radi (`costs.read`); mahsulot kartasi va chakana narx faqat egasida; qaytarish, material sarfi, filial va kamera bilan skanerlash kirmaydi | Foydalanuvchi: do'kon qo'shilsin, reja loyihasini tasdiqladi ("ishni boshlang"). Oxirgi tovar ikki mijozga sotilmasin; kassa va qidiruv bitta bo'lsin; TZ 2 dagi xarid narxi qoidasi |

@@ -44,4 +44,7 @@ export type { ExtrasService } from './app/extras';
 export { extrasBotHandlers, reviewBotHandlers } from './bot/handlers';
 export { extrasAdminRoutes, extrasClientRoutes } from './http/extras-routes';
 export type { OrdersService } from './app/orders';
+/** The discount rule (PLAN 11), which the shop applies to its orders too. */
+export { checkDiscount, type DiscountInput } from './domain/discount';
+export { holdAfterNoAnswer } from './domain/hold';
 export { ordersClientRoutes } from './http/routes';

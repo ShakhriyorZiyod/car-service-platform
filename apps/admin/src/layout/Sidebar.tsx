@@ -8,7 +8,7 @@ import { useT, type Texts } from '../i18n';
 import { WORKSHOP_KEY } from '../lib/keys';
 import { Preferences, Who } from './Preferences';
 
-/** The menu of docs/DESIGN.md (section 6); the warehouse came in stage 8, the shop comes in 9. */
+/** The menu of docs/DESIGN.md (section 6); the warehouse came in stage 8, the shop in 9. */
 const NAV_ITEMS: readonly {
   to: string;
   label: keyof Texts['nav'];
@@ -21,6 +21,7 @@ const NAV_ITEMS: readonly {
   { to: '/tasks', label: 'tasks', permissions: ['tasks.review'] },
   { to: '/handover', label: 'handover', permissions: ['checkout.write'] },
   { to: '/clients', label: 'clients', permissions: ['clients.read'] },
+  { to: '/shop', label: 'shop', permissions: ['shop.read'] },
   { to: '/stock', label: 'stock', permissions: ['stock.read'] },
   {
     to: '/settings',

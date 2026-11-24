@@ -1,8 +1,10 @@
-import type {
-  ProductUnit,
-  StockDocumentKind,
-  StockState,
-  WriteOffReason,
+import {
+  LIMITS,
+  type ProductAvailability,
+  type ProductUnit,
+  type StockDocumentKind,
+  type StockState,
+  type WriteOffReason,
 } from '@cs/shared/vocabulary';
 
 /**
@@ -123,6 +125,20 @@ export function stockState(level: Level, minQty: number): StockState {
 /** Below the minimum: what the "Bugun" block and the daily message list. */
 export const isLow = (level: Level, minQty: number): boolean =>
   minQty > 0 && roundQty(level.onHand - level.reserved) <= minQty;
+
+/**
+ * What a client is told instead of the stock (TZ 4.5, section 9.6): out when nothing is free, low
+ * at the minimum or under it.
+ */
+export function availabilityOf(free: number, minQty: number): ProductAvailability {
+  if (free <= 0) return 'out';
+  if (minQty > 0 && free <= minQty) return 'low';
+  return 'in_stock';
+}
+
+/** How many a cart may hold: whole pieces of what is free, and never more than the cart's cap. */
+export const maxCartQty = (free: number): number =>
+  Math.max(0, Math.min(Math.floor(free), LIMITS.cartQty.max));
 
 /** One message a day (section 12): the outbox drops a second one with the same key. */
 export const stockDigestKey = (localDate: string): string => `stock_low:${localDate}`;

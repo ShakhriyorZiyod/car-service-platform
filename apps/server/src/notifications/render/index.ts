@@ -1,6 +1,7 @@
 import type { Lang } from '@cs/shared/i18n';
-import type { Notification, RenderedMessage, WorkNotification } from '../types';
+import type { Notification, RenderedMessage, ShopNotification, WorkNotification } from '../types';
 import { renderRu } from './ru';
+import { renderShop } from './shop';
 import { renderUz } from './uz';
 import { renderWork } from './work';
 
@@ -16,8 +17,12 @@ const isWork = (notification: Notification): notification is WorkNotification =>
     'staff.extra_decided',
   ].includes(notification.type);
 
+const isShop = (notification: Notification): notification is ShopNotification =>
+  notification.type.startsWith('shop.') || notification.type.startsWith('staff.shop_');
+
 /** The text and button of a message in the recipient's language. Pure. */
 export function renderNotification(notification: Notification, lang: Lang): RenderedMessage {
   if (isWork(notification)) return renderWork(notification, lang);
+  if (isShop(notification)) return renderShop(notification, lang);
   return lang === 'ru' ? renderRu(notification) : renderUz(notification);
 }

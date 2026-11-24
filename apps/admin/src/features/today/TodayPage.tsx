@@ -147,6 +147,27 @@ export function TodayPage() {
                 </section>
               )}
               {data.cash && <CashCard cash={data.cash} />}
+              {data.shop && (data.shop.newOrders > 0 || data.shop.readyForPickup > 0) && (
+                <section className="card today__reports">
+                  <h2 className="section-title">{t.shop.today.title}</h2>
+                  <ul className="today__report-list">
+                    {data.shop.newOrders > 0 && (
+                      <li>
+                        <Link className="today__report" to="/shop?tab=new">
+                          <span>{t.shop.today.newOrders(data.shop.newOrders)}</span>
+                        </Link>
+                      </li>
+                    )}
+                    {data.shop.readyForPickup > 0 && (
+                      <li>
+                        <Link className="today__report" to="/shop?tab=ready_for_pickup">
+                          <span>{t.shop.today.ready(data.shop.readyForPickup)}</span>
+                        </Link>
+                      </li>
+                    )}
+                  </ul>
+                </section>
+              )}
               {data.lowStock && (
                 <section className="card today__reports">
                   <h2 className="section-title">{t.stock.low.title}</h2>

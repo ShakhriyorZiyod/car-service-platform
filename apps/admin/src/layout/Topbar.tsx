@@ -22,10 +22,21 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
   const [confirmingExit, setConfirmingExit] = useState(false);
   const can = useCan();
 
-  // The search finds orders: by number, the client's name or phone, or the plate.
-  const search = (event: FormEvent) => {
+  // The search finds orders: by number, the client's name or phone, or the plate. A number may
+  // be a shop order's (they share the numbers): then it opens on the shop's page.
+  const search = async (event: FormEvent) => {
     event.preventDefault();
     const q = text.trim();
+    if (/^№?\d{1,7}$/.test(q) && can('shop.read')) {
+      const found = await call('admin.shopOrders', { query: { tab: 'new', q } }).catch(() => null);
+      const order = found?.items[0];
+      if (order) {
+        const tab =
+          order.status === 'completed' || order.status === 'cancelled' ? 'done' : order.status;
+        void navigate(`/shop?tab=${tab}&order=${order.id}`);
+        return;
+      }
+    }
     void navigate(q ? `/orders?q=${encodeURIComponent(q)}` : '/orders');
   };
 
@@ -51,7 +62,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
       >
         <Menu size={20} aria-hidden="true" />
       </button>
-      <form className="topbar__search" role="search" onSubmit={search}>
+      <form className="topbar__search" role="search" onSubmit={(event) => void search(event)}>
         <Search size={16} aria-hidden="true" />
         <input
           type="search"

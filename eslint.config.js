@@ -38,11 +38,12 @@ const SERVER_MODULES = [
   'payments',
   'dashboard',
   'stock',
+  'shop',
 ];
 const MODULE_LAYERS = ['domain', 'app', 'http', 'bot'];
 
 const TMA_SHELLS = {
-  client: ['home', 'garage', 'booking', 'orders', 'profile'],
+  client: ['home', 'garage', 'booking', 'orders', 'profile', 'shop'],
   master: ['tasks', 'task', 'photo-queue'],
   staff: [],
 };
@@ -58,6 +59,8 @@ const ADMIN_FEATURES = [
   'schedule',
   'clients',
   'settings',
+  'stock',
+  'shop',
 ];
 
 const TRANSPORT = ['fastify', 'fastify/*', '@fastify/*', 'grammy', 'grammy/*', '@grammyjs/*'];

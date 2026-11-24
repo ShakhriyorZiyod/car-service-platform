@@ -1,5 +1,6 @@
 import type { Dictionary } from '@cs/shared/i18n';
 import { stockRu } from './stock.ru';
+import { shopRu } from './shop.ru';
 import type { uz } from './uz';
 
 export const ru: Dictionary<typeof uz> = {
@@ -13,6 +14,7 @@ export const ru: Dictionary<typeof uz> = {
     handover: 'Выдача и касса',
     clients: 'Клиенты',
     stock: 'Склад',
+    shop: 'Заказы магазина',
     settings: 'Настройки',
   },
   notFound: 'Страница не найдена.',
@@ -150,6 +152,10 @@ export const ru: Dictionary<typeof uz> = {
       holdNewWorkMin: {
         label: 'Удержание новой заявки, рабочих минут',
         hint: 'Пока администратор не позвонил, время занято столько рабочих минут.',
+      },
+      shopPickupHours: {
+        label: 'Срок самовывоза заказа магазина, часов',
+        hint: 'Собранный заказ ждёт столько часов, затем резерв снимается автоматически.',
       },
       holdNoAnswerHours: {
         label: 'После «Не отвечает», часов',
@@ -370,6 +376,7 @@ export const ru: Dictionary<typeof uz> = {
     discount_over_limit: 'Скидка больше вашего лимита. Больше может дать только владелец.',
     sku_taken: 'Этот артикул уже есть у другого товара.',
     barcode_taken: 'Этот штрихкод уже есть у другого товара.',
+    out_of_stock: 'Товара не хватает: свободного остатка мало или он в резерве под другие заказы.',
     insufficient_stock:
       'Не хватает свободного остатка: на складе столько нет или часть зарезервирована под заказы.',
     not_found: 'Не найдено. Обновите список.',
@@ -875,4 +882,5 @@ export const ru: Dictionary<typeof uz> = {
     waiting: 'Ждёт проверки',
   },
   stock: stockRu,
+  shop: shopRu,
 };

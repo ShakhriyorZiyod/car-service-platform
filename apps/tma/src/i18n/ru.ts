@@ -126,7 +126,13 @@ export const ru: Dictionary<typeof uz> = {
     profile: { title: 'Профиль', language: 'Язык' },
   },
   client: {
-    tabs: { home: 'Главная', garage: 'Гараж', orders: 'Заказы', profile: 'Профиль' },
+    tabs: {
+      home: 'Главная',
+      garage: 'Гараж',
+      shop: 'Магазин',
+      orders: 'Заказы',
+      profile: 'Профиль',
+    },
     common: {
       back: 'Назад',
       retry: 'Повторить',
@@ -149,6 +155,8 @@ export const ru: Dictionary<typeof uz> = {
       car_has_active_orders: 'У этой машины есть активный заказ.',
       invalid_transition: 'Сейчас это действие недоступно.',
       already_decided: 'На этот вопрос уже ответили.',
+      out_of_stock: 'Некоторые товары закончились. Проверьте корзину.',
+      not_found: 'Не найдено.',
     },
     status: {
       new: 'Новая',
@@ -333,6 +341,82 @@ export const ru: Dictionary<typeof uz> = {
         confirmedAt: (via: string, when: string) => `Подтверждено: ${when} (${via})`,
         via: { bot: 'в боте', tma: 'в приложении', verbal: 'устно' },
       },
+    },
+    shop: {
+      title: 'Автокосметика',
+      search: 'Шампунь, полироль, салфетка…',
+      all: 'Все',
+      inStockOnly: 'Только в наличии',
+      sort: { popular: 'Популярные', price_asc: 'Дешевле', price_desc: 'Дороже' },
+      availability: { in_stock: 'В наличии', low: 'Мало', out: 'Нет в наличии' },
+      noPhoto: 'Нет фото',
+      add: 'Добавить',
+      less: 'Меньше',
+      more: 'Больше',
+      emptyTitle: 'Ничего не найдено',
+      emptyText: 'Попробуйте другое слово или раздел.',
+      emptyShopTitle: 'Магазин пока пуст',
+      emptyShopText: 'Товары скоро появятся.',
+      cartBar: (n) => `Корзина: ${n} шт.`,
+      pack: 'Объём',
+      sku: 'Артикул',
+      brand: 'Бренд',
+      pickup: 'Самовывоз',
+      toCart: 'В корзину',
+      inCart: (n) => `В корзине: ${n} шт.`,
+      maxReached: 'Сейчас есть столько',
+      cart: {
+        title: 'Корзина',
+        count: (n) => {
+          const ten = n % 10;
+          const hundred = n % 100;
+          const word =
+            ten === 1 && hundred !== 11
+              ? 'товар'
+              : ten >= 2 && ten <= 4 && (hundred < 12 || hundred > 14)
+                ? 'товара'
+                : 'товаров';
+          return `${n} ${word}`;
+        },
+        empty: 'Корзина пуста',
+        emptyText: 'Выберите товар в каталоге.',
+        toCatalog: 'В каталог',
+        addMore: 'Добавить ещё',
+        remove: 'Убрать',
+        gone: 'Больше не продаётся',
+        short: (n) => (n > 0 ? `Сейчас есть только ${n} шт.` : 'Закончился'),
+        how: 'Как получить',
+        pickupTitle: 'Самовывоз из мастерской',
+        pickupText: 'Сообщим, когда соберём',
+        info: 'Оплата при получении: наличными или картой. Администратор позвонит и подтвердит заказ.',
+        comment: 'Комментарий',
+        commentHint: 'необязательно',
+        total: 'Итого',
+        order: 'Оформить заказ',
+        fix: 'Исправьте корзину: некоторые товары изменились.',
+      },
+      sentTitle: 'Заказ принят',
+      sentText: (n) => `Заказ №${n}. Администратор позвонит и подтвердит, товар отложен для вас.`,
+      myOrders: 'Мои заказы',
+      toShop: 'Вернуться в магазин',
+      kind: 'Магазин',
+      status: {
+        new: 'Новый',
+        confirmed: 'Подтверждён',
+        ready_for_pickup: 'Готов к выдаче',
+        completed: 'Выдан',
+        cancelled: 'Отменён',
+      },
+      detailTitle: (n) => `Заказ №${n}`,
+      items: 'Товары',
+      pickupUntil: (when) => `Заберите до ${when}`,
+      where: 'Адрес',
+      waitCall: 'Администратор позвонит и подтвердит заказ.',
+      gathering: 'Заказ собирается. Сообщим, когда будет готов.',
+      cancel: 'Отменить заказ',
+      homeTitle: 'Магазин автокосметики',
+      homeText: 'Шампуни, полироли и другие товары: закажите и заберите в мастерской.',
+      homeOpen: 'Смотреть каталог',
     },
     profile: {
       title: 'Профиль',

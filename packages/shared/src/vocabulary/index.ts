@@ -6,5 +6,6 @@ export * from './limits';
 export * from './orders';
 export * from './roles';
 export * from './shells';
+export * from './shop';
 export * from './stock';
 export * from './work';

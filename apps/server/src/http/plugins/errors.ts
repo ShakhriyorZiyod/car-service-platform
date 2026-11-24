@@ -44,6 +44,7 @@ const APP_ERROR_STATUS: Record<AppErrorCode, number> = {
   sku_taken: 409,
   barcode_taken: 409,
   insufficient_stock: 409,
+  out_of_stock: 409,
 };
 
 export const errorBody = (code: ApiErrorCode, paths?: readonly string[]): ApiError => ({

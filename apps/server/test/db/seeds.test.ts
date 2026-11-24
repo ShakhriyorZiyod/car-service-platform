@@ -44,7 +44,7 @@ describe('seed:reference (TZ 14.1–14.4)', () => {
       serviceTypes: 6,
       zones: 11 + 7 + 9 + 3 + 6 + 4,
       excludes: 5 + 4 + 6 + 5,
-      cancelReasons: 9,
+      cancelReasons: 10,
       productCategories: 7 + 3,
     });
     expect(await rows(carBrands)).toBe(5);
@@ -133,14 +133,14 @@ describe('seed:reference (TZ 14.1–14.4)', () => {
       5, 23, 6,
     ]);
     expect([await rows(services), await rows(serviceExcludes), await rows(cancelReasons)]).toEqual([
-      40, 20, 9,
+      40, 20, 10,
     ]);
   });
 
   it('two runs at once write the data once', async () => {
     await Promise.all([seedReference(database.db), seedReference(database.db)]);
     expect([await rows(carBrands), await rows(services), await rows(cancelReasons)]).toEqual([
-      5, 40, 9,
+      5, 40, 10,
     ]);
   });
 
