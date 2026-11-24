@@ -1,5 +1,5 @@
 import type { StockRow } from '@cs/shared';
-import { formatMoney, formatQty, formatQtyNumber } from '@cs/shared/format';
+import { formatMoney, formatQty, formatQtyNumber, phoneInputState } from '@cs/shared/format';
 import {
   STOCK_DOCUMENT_KINDS,
   STOCK_FILTERS,
@@ -20,6 +20,7 @@ import { Button } from '../../ui/Button';
 import { Dialog } from '../../ui/Dialog';
 import { Field } from '../../ui/Field';
 import { Notice } from '../../ui/Notice';
+import { PhoneField, phoneFieldText } from '../../ui/PhoneField';
 import './stock.css';
 
 const TABS = ['levels', 'documents', 'journal', 'suppliers'] as const;
@@ -605,7 +606,7 @@ function SupplierDialog({
   const t = useT();
   const queryClient = useQueryClient();
   const [name, setName] = useState(supplier?.name ?? '');
-  const [phone, setPhone] = useState(supplier?.phone ?? '');
+  const [phone, setPhone] = useState(phoneFieldText(supplier?.phone));
   const [inn, setInn] = useState(supplier?.inn ?? '');
   const [note, setNote] = useState(supplier?.note ?? '');
   const [hidden, setHidden] = useState(supplier ? !supplier.isActive : false);
@@ -613,7 +614,12 @@ function SupplierDialog({
 
   const save = useMutation({
     mutationFn: () => {
-      const body = { name, phone: orNull(phone), inn: orNull(inn), note: orNull(note) };
+      const body = {
+        name,
+        phone: phoneInputState(phone) === 'empty' ? null : phone,
+        inn: orNull(inn),
+        note: orNull(note),
+      };
       return supplier
         ? call('admin.updateSupplier', {
             params: { id: supplier.id },
@@ -647,13 +653,11 @@ function SupplierDialog({
           onChange={(event) => setName(event.target.value)}
         />
         <div className="form-row">
-          <Field
+          <PhoneField
             label={t.stock.suppliers.phone}
-            inputMode="tel"
             value={phone}
-            maxLength={32}
             error={error('phone')}
-            onChange={(event) => setPhone(event.target.value)}
+            onChange={setPhone}
           />
           <Field
             label={t.stock.suppliers.inn}
@@ -689,7 +693,11 @@ function SupplierDialog({
           <Button variant="secondary" onClick={onClose}>
             {t.form.cancel}
           </Button>
-          <Button type="submit" busy={save.isPending} disabled={!name.trim()}>
+          <Button
+            type="submit"
+            busy={save.isPending}
+            disabled={!name.trim() || phoneInputState(phone) === 'incomplete'}
+          >
             {t.form.save}
           </Button>
         </div>

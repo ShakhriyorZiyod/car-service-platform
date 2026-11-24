@@ -20,7 +20,7 @@ kartalari, toifalar, fotolar va yetkazib beruvchilarni yuritadi. Do'kon (9-bosqi
 | Qism | Nima qilindi | Asosiy fayllar |
 |---|---|---|
 | Reja | Do'kon va ombor rejasi 20-bo'lim tartibida PLAN'ga ko'chirildi: 1.2, 1.3, 4.1–4.4, 7.14, 7.15, 8, 9.5, 9.6, 11, 12, 13, 18 (8–10-bosqichlar), 19, 21 (11–16-savollar), 22; `DESIGN.md` 7–8 | `docs/PLAN.md`, `docs/DESIGN.md` |
-| Baza | 0010: `stock_document_number_seq`; 0011: `product_categories`, `products`, `stock_levels`, `suppliers`, `stock_documents`, `stock_document_lines`, `stock_movements`, `media` ga `product_id` va `stock_document_id`; 0012: `stock_movements` ga UPDATE va DELETE ni rad etuvchi trigger | `apps/server/src/db/migrations/0010–0012`, `db/schema/stock.ts`, `db/schema/media.ts` |
+| Baza | 0011: `stock_document_number_seq`; 0012: `product_categories`, `products`, `stock_levels`, `suppliers`, `stock_documents`, `stock_document_lines`, `stock_movements`, `media` ga `product_id` va `stock_document_id`; 0013: `stock_movements` ga UPDATE va DELETE ni rad etuvchi trigger | `apps/server/src/db/migrations/0011–0013`, `db/schema/stock.ts`, `db/schema/media.ts` |
 | `stock` (yangi modul) | Toifalar (ikki daraja), yetkazib beruvchilar, mahsulot kartalari va fotolari (5 tagacha); hujjatlar: yaratish, tahrirlash va o'chirish (faqat qoralama), o'tkazish (qulf `product_id` tartibida, harakat va qoldiq SQL'da); qoldiqlar ro'yxati, harakatlar jurnali, kam qoldiq; kunlik xabar vazifasi | `modules/stock/{domain,app,http}`, `index.ts` |
 | `media` | Ikki yangi ega: mahsulot va ombor hujjati; yangi nakladnoy rasmi eskisining o'rnini oladi | `modules/media/app/media.ts` |
 | `dashboard` | `admin.today` javobida `lowStock` (`stock.read` bo'lmasa `null`) | `modules/dashboard/app/dashboard.ts` |
@@ -81,9 +81,9 @@ Headless Chrome, `_test` baza, `seed:demo` bilan.
 
 - **Alohida worktree.** Bosqich `feat/stock` branch'ida, `D:\Projects\car-service-platform-stock` papkasida va
   `carservice_stock_test` bazasida qilindi. Sabab: asosiy papkada boshqa sessiya telefon formatini
-  o'zgartiryapti (o'z `0010_phone_format` migratsiyasi, sxema, admin i18n bilan). Bitta papkada migratsiya
-  raqamlari va test bazasi to'qnashardi. Birlashtirishda ombor migratsiyalari telefon migratsiyasidan keyinga
-  qayta raqamlanadi (0011–0013) va drizzle snapshot'lari qayta yaratiladi.
+  o'zgartirayotgan edi (o'z `0010_phone_format` migratsiyasi, sxema, admin i18n bilan). Bitta papkada migratsiya
+  raqamlari va test bazasi to'qnashardi. Qabuldan keyin telefon ishi tekshirilib alohida commit qilindi, ombor
+  uning ustiga ko'chirildi: migratsiyalar 0011–0013 ga qayta raqamlandi, drizzle snapshot'lari qayta yaratildi.
 - 22-bo'limdagi 2026-11-24 qarorlari: ro'yxat sahifalanmaydi, sabab o'tkazishda majburiy, nakladnoy indeksi yo'q,
   "So'nggi harakatlar", qator holati chiziq bilan.
 
