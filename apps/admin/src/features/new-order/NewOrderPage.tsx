@@ -1,5 +1,5 @@
 import type { Car, ClientCard, Slot } from '@cs/shared';
-import { formatPhone } from '@cs/shared/format';
+import { formatPhone, PHONE_PREFIX, phoneInputState } from '@cs/shared/format';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -19,6 +19,7 @@ import { Button } from '../../ui/Button';
 import { CarForm, type CarValues } from '../../ui/CarForm';
 import { Field } from '../../ui/Field';
 import { Notice } from '../../ui/Notice';
+import { PhoneField } from '../../ui/PhoneField';
 import { PlateChip } from '../../ui/PlateChip';
 import { SelectField } from '../../ui/SelectField';
 import { SlotPicker } from '../../ui/SlotPicker';
@@ -252,7 +253,7 @@ function ClientStep({ onChosen }: { onChosen: (client: Chosen) => void }) {
   const [debounced, setDebounced] = useState('');
   const [creating, setCreating] = useState(false);
   const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState(PHONE_PREFIX);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebounced(text.trim()), 300);
@@ -291,13 +292,11 @@ function ClientStep({ onChosen }: { onChosen: (client: Chosen) => void }) {
             error={invalid.has('fullName') ? t.errors.validation : null}
             onChange={(event) => setFullName(event.target.value)}
           />
-          <Field
+          <PhoneField
             label={t.newOrder.clientPhone}
-            inputMode="tel"
             value={phone}
-            maxLength={32}
             error={invalid.has('phone') ? t.errors.validation : null}
-            onChange={(event) => setPhone(event.target.value)}
+            onChange={setPhone}
           />
         </div>
         {create.isError && <Notice tone="danger">{apiMessage(create.error, t)}</Notice>}
@@ -308,7 +307,7 @@ function ClientStep({ onChosen }: { onChosen: (client: Chosen) => void }) {
           <Button
             type="submit"
             busy={create.isPending}
-            disabled={!fullName.trim() || !phone.trim()}
+            disabled={!fullName.trim() || phoneInputState(phone) !== 'complete'}
           >
             {t.newOrder.clientCreate}
           </Button>

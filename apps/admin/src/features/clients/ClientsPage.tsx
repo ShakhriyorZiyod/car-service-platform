@@ -1,4 +1,4 @@
-import { formatDateLong, formatPhone } from '@cs/shared/format';
+import { formatDateLong, formatPhone, PHONE_PREFIX, phoneInputState } from '@cs/shared/format';
 import { CLIENT_FILTERS, type ClientFilter } from '@cs/shared/vocabulary';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Search } from 'lucide-react';
@@ -13,6 +13,7 @@ import { Button } from '../../ui/Button';
 import { Dialog } from '../../ui/Dialog';
 import { Field } from '../../ui/Field';
 import { Notice } from '../../ui/Notice';
+import { PhoneField } from '../../ui/PhoneField';
 import { UnmappedCars } from './UnmappedCars';
 import './clients.css';
 
@@ -171,7 +172,7 @@ function NewClientDialog({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState(PHONE_PREFIX);
 
   const create = useMutation({
     mutationFn: () => call('admin.createClient', { body: { fullName, phone } }),
@@ -198,14 +199,12 @@ function NewClientDialog({ onClose }: { onClose: () => void }) {
           error={invalid.has('fullName') ? t.errors.validation : null}
           onChange={(event) => setFullName(event.target.value)}
         />
-        <Field
+        <PhoneField
           label={t.newOrder.clientPhone}
           hint={t.clients.newHint}
-          inputMode="tel"
           value={phone}
-          maxLength={32}
           error={invalid.has('phone') ? t.errors.validation : null}
-          onChange={(event) => setPhone(event.target.value)}
+          onChange={setPhone}
         />
         {create.isError && <Notice tone="danger">{apiMessage(create.error, t)}</Notice>}
         <div className="dialog__actions">
@@ -215,7 +214,7 @@ function NewClientDialog({ onClose }: { onClose: () => void }) {
           <Button
             type="submit"
             busy={create.isPending}
-            disabled={!fullName.trim() || !phone.trim()}
+            disabled={!fullName.trim() || phoneInputState(phone) !== 'complete'}
           >
             {t.clients.create}
           </Button>

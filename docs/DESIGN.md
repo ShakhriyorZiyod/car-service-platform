@@ -229,6 +229,7 @@ qutisi ichida yonga suriladi. Dialog ekran kengligida. Tugma, filtr va menyu ban
 | `OrderCard` | Raqam + manba (TMA/Telefon), o'ngda taymer yoki vaqt; mashina + kichik `PlateChip`; ishlar; mijoz va boks; ostida amal tugmalari yoki progress (vazifalar "2 / 4") | A1 |
 | `CallActions` | "Tasdiqladi" (`--teal` to'la), "Javobsiz" (chegarali), "Rad etdi" (`--danger` chegarali) | A1 |
 | `KpiCard` | Yorliq, katta raqam, izoh; e'tibor kerak bo'lsa `--accent` chegara va `--danger` raqam | A6 |
+| `PhoneField` | Telefon maydoni: `+998 ` oldindan turadi, raqamlar yozilgan yoki qo'yilgan sari `+998 90 123 45 67` ga tushadi; `+` va boshqa kod chet el raqamini oladi. Chala raqamda ostida nima yetishmasligi (yozayotganda izoh, maydondan chiqqanda xato) va forma saqlanmaydi | mijoz, yangi ariza, xodim, ustaxona |
 | `DataTable` | Sarlavha 12 px muted, qator ≈ 56 px, raqamlar o'ngda raqam shriftida | A10, A13 |
 | `ScheduleGrid` | Qatorlar bokslar, ustunlar soatlar; kartalar holat rangida; "hozir" chizig'i `--accent` va pastida "Hozir 14:57" yorlig'i; bloklangan oraliq qiya chiziqli | A4 |
 | `StepChips` | Qabul qadamlari: bajarilgani `--success-soft`, joriysi `--accent-soft` ("3. Fotolar: 3 / 4") | A2 |

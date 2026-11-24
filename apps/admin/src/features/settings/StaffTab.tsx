@@ -1,5 +1,5 @@
 import type { Staff } from '@cs/shared';
-import { formatDateLong, formatPhone } from '@cs/shared/format';
+import { formatDateLong, formatPhone, phoneInputState } from '@cs/shared/format';
 import { ROLE_LABELS } from '@cs/shared/i18n';
 import { isPanelRole, LIMITS, ROLES, type Role } from '@cs/shared/vocabulary';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -11,6 +11,7 @@ import { errorCodeOf, genericMessage, invalidFields } from '../../lib/errors';
 import { Button } from '../../ui/Button';
 import { Field } from '../../ui/Field';
 import { Notice } from '../../ui/Notice';
+import { PhoneField, phoneFieldText } from '../../ui/PhoneField';
 
 const STAFF_KEY = ['staff'] as const;
 
@@ -105,7 +106,7 @@ function StaffEditor({ staff, onSaved }: { staff: Staff | null; onSaved: (staff:
   const isNew = staff === null;
   const [form, setForm] = useState<Form>({
     fullName: staff?.fullName ?? '',
-    phone: staff ? formatPhone(staff.phone) : '',
+    phone: phoneFieldText(staff?.phone),
     roles: staff?.roles ?? ['master'],
     specialization: staff?.specialization ?? '',
     login: staff?.login ?? '',
@@ -206,15 +207,13 @@ function StaffEditor({ staff, onSaved }: { staff: Staff | null; onSaved: (staff:
           error={fieldError('fullName')}
           onChange={(event) => set('fullName', event.target.value)}
         />
-        <Field
+        <PhoneField
           label={t.staff.phone}
           value={form.phone}
-          required
-          inputMode="tel"
           disabled={staff?.telegramLinked === true}
           hint={staff?.telegramLinked ? t.staff.phoneLocked : undefined}
           error={fieldError('phone', code === 'phone_taken' ? t.staff.phoneTaken : undefined)}
-          onChange={(event) => set('phone', event.target.value)}
+          onChange={(text) => set('phone', text)}
         />
 
         <fieldset className="staff__roles">
@@ -279,7 +278,14 @@ function StaffEditor({ staff, onSaved }: { staff: Staff | null; onSaved: (staff:
         )}
 
         <div>
-          <Button type="submit" busy={save.isPending} disabled={form.roles.length === 0}>
+          <Button
+            type="submit"
+            busy={save.isPending}
+            disabled={
+              form.roles.length === 0 ||
+              (staff?.telegramLinked !== true && phoneInputState(form.phone) !== 'complete')
+            }
+          >
             {isNew ? t.staff.create : t.staff.save}
           </Button>
         </div>

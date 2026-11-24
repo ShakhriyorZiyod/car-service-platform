@@ -14,7 +14,7 @@ import {
   uuid,
   type AnyPgColumn,
 } from 'drizzle-orm/pg-core';
-import { createdAt, idColumn, instant, updatedAt } from './columns';
+import { createdAt, idColumn, instant, phoneFormatCheck, updatedAt } from './columns';
 
 /** Tables of the identity module (docs/PLAN.md, section 7.2). Only this module writes them. */
 
@@ -59,6 +59,7 @@ export const users = pgTable(
   },
   (t) => [
     check('users_verified_phone_exists', sql`not ${t.phoneVerified} or ${t.phone} is not null`),
+    check('users_phone_format', phoneFormatCheck(sql`${t.phone}`)),
   ],
 );
 

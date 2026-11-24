@@ -1,0 +1,2 @@
+ALTER TABLE "users" ADD CONSTRAINT "users_phone_format" CHECK ("users"."phone" ~ '^[+][1-9][0-9]{7,14}$' and ("users"."phone" !~ '^[+]998' or "users"."phone" ~ '^[+]998[0-9]{9}$'));--> statement-breakpoint
+ALTER TABLE "settings" ADD CONSTRAINT "settings_workshop_phone_format" CHECK (("settings"."data" -> 'workshop' ->> 'phone') ~ '^[+][1-9][0-9]{7,14}$' and (("settings"."data" -> 'workshop' ->> 'phone') !~ '^[+]998' or ("settings"."data" -> 'workshop' ->> 'phone') ~ '^[+]998[0-9]{9}$'));

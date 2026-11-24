@@ -13,7 +13,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { serviceTypes } from './catalog';
-import { createdAt, idColumn, updatedAt } from './columns';
+import { createdAt, idColumn, phoneFormatCheck, updatedAt } from './columns';
 import { users } from './identity';
 
 /** Tables of the workshop module (docs/PLAN.md, section 7.4). Only this module writes them. */
@@ -30,7 +30,14 @@ export const settings = pgTable(
     updatedAt: updatedAt(),
     updatedBy: uuid().references(() => users.id),
   },
-  (t) => [check('settings_single_row', sql`${t.id} = 1`)],
+  (t) => [
+    check('settings_single_row', sql`${t.id} = 1`),
+    // The workshop's phone, shown to clients ("Servisga qo'ng'iroq qilish").
+    check(
+      'settings_workshop_phone_format',
+      phoneFormatCheck(sql`(${t.data} -> 'workshop' ->> 'phone')`),
+    ),
+  ],
 );
 
 /** One row per working weekday (1 = Monday … 7 = Sunday); a weekday without a row is a day off. */

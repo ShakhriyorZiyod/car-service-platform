@@ -220,15 +220,22 @@ loyihalar bilan umumiy bo'lgani uchun o'rnatish yuqoridagi tartibdan farq qiladi
   `apps/server/dist`, `apps/tma/dist`, `apps/admin/dist` arxivlanib serverga yuklanadi va
   `/opt/car-service` ichida (`carservice` egaligida) ochiladi. Serverda faqat backend paketlari:
   `npm ci --omit=dev --workspace=@cs/server` (Node 24, `nice` bilan).
-- **Migratsiya va `seed:reference`** kompyuterdan SSH tunnel orqali:
+- **Migratsiya serverning o'zida**, yangi build bilan va xizmatning o'z muhitida, baza paroli
+  serverdan chiqmaydi (2026-11-24 dan). Build `apps/server/dist/migrate.js` va
+  `apps/server/dist/migrations/` ni ham beradi; yangi `dist` eskisining o'rniga qo'yilishidan oldin:
+  `cd /opt/car-service/apps/server && sudo -u carservice /opt/node-24/bin/node --env-file=/etc/car-service.env dist.new/migrate.js`.
+  Migratsiyalar bitta tranzaksiyada: yiqilsa baza o'zgarmaydi va eski versiya ishlashda davom
+  etadi.
+- **`seed:reference`** (faqat birinchi o'rnatishda) kompyuterdan SSH tunnel orqali:
   `ssh -N -L 15432:127.0.0.1:5432 -p 2222 <user>@138.249.7.81`, so'ng
-  `DATABASE_URL=postgres://carservice:<parol>@127.0.0.1:15432/carservice npm run db:migrate`.
+  `DATABASE_URL=postgres://carservice:<parol>@127.0.0.1:15432/carservice npm run seed:reference`.
   Parol `/etc/car-service.env` da.
 - **Bu serverda `deploy/deploy.sh` ishga tushirilmaydi:** u build'ni serverda qiladi va bo'sh RAM
   (≈150 MB) bilan boshqa saytlarni bo'g'ib qo'yadi. Yangilash tartibi: kompyuterda `npm run check` →
   build → zaxira (`sudo -u carservice bash /opt/car-service/deploy/backup.sh`) → serverda `git pull`
-  (`carservice` nomidan) → dist arxivini yuklab ochish → `npm ci --omit=dev --workspace=@cs/server` →
-  tunnel orqali migratsiya → `sudo systemctl restart car-service` → `curl 127.0.0.1:3300/health`.
+  (`carservice` nomidan) → dist arxivini yuklab ochish → `npm ci --omit=dev --workspace=@cs/server`
+  (paketlar o'zgargan bo'lsa) → yangi `dist` bilan migratsiya → `dist` almashtirish →
+  `sudo systemctl restart car-service` → `curl 127.0.0.1:3300/health`.
 - **qanchaga** xizmatlari (`qanchaga-api`, `qanchaga-tgbot`, `qanchaga-web`) RAM bo'shatish uchun
   to'xtatilgan va avtomatik ishga tushishi o'chirilgan (egasi roziligi bilan). Qaytarish:
   `sudo systemctl enable --now qanchaga-api qanchaga-tgbot qanchaga-web` (RAM yetishiga ishonch hosil

@@ -32,6 +32,12 @@ export const uz = {
       'Dalolatnoma mijoz nomidan tasdiqlanadi va unga botda tasdiqlash so‘rovi kelmaydi. Buni qaytarib bo‘lmaydi.',
     verbalSubmit: 'Ha, tasdiqladi',
   },
+  phoneField: {
+    example: '+998 90 123 45 67',
+    hint: 'Format: +998 90 123 45 67. Boshqa davlat raqami uchun “+” va davlat kodini yozing.',
+    incompleteLocal: (missing: number) => `+998 dan keyin 9 ta raqam kerak: yana ${missing} ta.`,
+    incompleteForeign: 'Raqam to‘liq emas: “+”, davlat kodi va raqam, jami 8–15 ta raqam.',
+  },
   framed: {
     title: 'Panelni yangi oynada oching',
     text: 'Telegram Web ichida panelga kirib bo‘lmaydi. Uni brauzerning yangi oynasida oching.',

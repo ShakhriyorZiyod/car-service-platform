@@ -1,5 +1,5 @@
 import type { Settings } from '@cs/shared';
-import { formatPhone } from '@cs/shared/format';
+import { phoneInputState } from '@cs/shared/format';
 import { LIMITS, RULE_LIMITS } from '@cs/shared/vocabulary';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
@@ -10,6 +10,7 @@ import { WORKSHOP_KEY } from '../../lib/keys';
 import { Button } from '../../ui/Button';
 import { Field } from '../../ui/Field';
 import { Notice } from '../../ui/Notice';
+import { PhoneField, phoneFieldText } from '../../ui/PhoneField';
 
 const SETTINGS_KEY = ['settings'] as const;
 
@@ -41,7 +42,7 @@ interface Draft {
 const draftOf = ({ workshop, rules }: Settings): Draft => ({
   name: workshop.name,
   address: workshop.address ?? '',
-  phone: workshop.phone ? formatPhone(workshop.phone) : '',
+  phone: phoneFieldText(workshop.phone),
   mapUrl: workshop.mapUrl ?? '',
   policyUrl: workshop.policyUrl ?? '',
   policyVersion: workshop.policyVersion,
@@ -72,7 +73,8 @@ function settingsOf(draft: Draft): Settings {
     workshop: {
       name: draft.name,
       address: blankToNull(draft.address),
-      phone: blankToNull(draft.phone),
+      // The number is optional: a field with only "+998" in it is none.
+      phone: phoneInputState(draft.phone) === 'empty' ? null : draft.phone,
       mapUrl: blankToNull(draft.mapUrl),
       policyUrl: blankToNull(draft.policyUrl),
       policyVersion: draft.policyVersion,
@@ -151,13 +153,12 @@ function WorkshopForm({ initial }: { initial: Settings }) {
           onChange={(event) => change({ address: event.target.value })}
         />
         <div className="form-row">
-          <Field
+          <PhoneField
             label={t.workshop.phone}
             value={draft.phone}
-            inputMode="tel"
             hint={t.workshop.phoneHint}
             error={errorAt('body.workshop.phone')}
-            onChange={(event) => change({ phone: event.target.value })}
+            onChange={(phone) => change({ phone })}
           />
           <Field
             label={t.workshop.policyVersion}
@@ -221,7 +222,11 @@ function WorkshopForm({ initial }: { initial: Settings }) {
       </section>
 
       <div>
-        <Button type="submit" busy={save.isPending}>
+        <Button
+          type="submit"
+          busy={save.isPending}
+          disabled={phoneInputState(draft.phone) === 'incomplete'}
+        >
           {t.form.save}
         </Button>
       </div>

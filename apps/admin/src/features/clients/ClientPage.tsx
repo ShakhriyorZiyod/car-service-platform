@@ -1,5 +1,11 @@
 import type { ClientCard } from '@cs/shared';
-import { formatDateLong, formatMoney, formatPhone } from '@cs/shared/format';
+import {
+  formatDateLong,
+  formatMoney,
+  formatPhone,
+  normalizePhone,
+  phoneInputState,
+} from '@cs/shared/format';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { useState } from 'react';
@@ -14,6 +20,7 @@ import { CarForm, type CarValues } from '../../ui/CarForm';
 import { Dialog } from '../../ui/Dialog';
 import { Field } from '../../ui/Field';
 import { Notice } from '../../ui/Notice';
+import { PhoneField, phoneFieldText } from '../../ui/PhoneField';
 import { PlateChip } from '../../ui/PlateChip';
 import { StatusChip } from '../../ui/StatusChip';
 import './clients.css';
@@ -46,7 +53,7 @@ function CardView({ card }: { card: ClientCard }) {
   const [addingCar, setAddingCar] = useState(false);
   const [erasing, setErasing] = useState(false);
   const [fullName, setFullName] = useState(card.fullName);
-  const [phone, setPhone] = useState(card.phone ?? '');
+  const [phone, setPhone] = useState(phoneFieldText(card.phone));
   const [note, setNote] = useState(card.internalNote ?? '');
   const canWrite = can('clients.write') && !card.isAnonymized;
 
@@ -65,9 +72,11 @@ function CardView({ card }: { card: ClientCard }) {
     onSuccess: (updated) => refresh(updated),
   });
   const invalid = invalidFields(save.error);
+  // An emptied field is no change: a client's number is not removed here, only replaced.
+  const phoneState = card.phoneVerified ? 'empty' : phoneInputState(phone);
+  const phoneChanged = phoneState === 'complete' && normalizePhone(phone) !== card.phone;
   const contactChanged =
-    fullName.trim() !== card.fullName ||
-    (!card.phoneVerified && phone.trim() !== (card.phone ?? ''));
+    (fullName.trim() !== card.fullName || phoneChanged) && phoneState !== 'incomplete';
   const noteChanged = note.trim() !== (card.internalNote ?? '');
 
   const erase = useMutation({
@@ -112,8 +121,7 @@ function CardView({ card }: { card: ClientCard }) {
                 event.preventDefault();
                 save.mutate({
                   ...(fullName.trim() !== card.fullName && { fullName: fullName.trim() }),
-                  ...(!card.phoneVerified &&
-                    phone.trim() !== (card.phone ?? '') && { phone: phone.trim() }),
+                  ...(phoneChanged && { phone }),
                 });
               }}
             >
@@ -126,15 +134,13 @@ function CardView({ card }: { card: ClientCard }) {
                   error={invalid.has('fullName') ? t.errors.validation : null}
                   onChange={(event) => setFullName(event.target.value)}
                 />
-                <Field
+                <PhoneField
                   label={t.clients.card.editPhone}
-                  inputMode="tel"
                   value={card.phoneVerified && card.phone ? formatPhone(card.phone) : phone}
-                  maxLength={32}
                   disabled={!canWrite || card.phoneVerified}
                   hint={card.phoneVerified ? t.clients.card.phoneLocked : undefined}
                   error={invalid.has('phone') ? t.errors.validation : null}
-                  onChange={(event) => setPhone(event.target.value)}
+                  onChange={setPhone}
                 />
               </div>
               <p className="client__chips">
